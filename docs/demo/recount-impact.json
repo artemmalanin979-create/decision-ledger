@@ -1,0 +1,71 @@
+{
+  "sources": {
+    "brief": {
+      "sha": "c138bb7f232c96919bbedd1370c9c95911eeb8d381e86f2529dbf24d2712653f",
+      "path": "input/brief.md",
+      "at": "2026-11-06T22:47:48+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "dictionary": {
+      "sha": "f1f0c0db1e33303307ff940a72a79759f483b8985d473c4f41071f159736da8a",
+      "path": "input/data_dictionary.md",
+      "at": "2026-11-06T22:47:49+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "pilot": {
+      "sha": "56ade9f45b6c744cfb3d18dbbb38904f993cc010c9da8eca6c4472697754a637",
+      "path": "input/recount.csv",
+      "at": "2026-11-06T22:53:44+00:00",
+      "kind": "synthetic",
+      "url": null,
+      "health": "ok"
+    },
+    "market": {
+      "sha": "d842f7ee4b3492cb6b6f6df343478b479b579761cc054dc93947f2a55364dc3c",
+      "path": "input/market.md",
+      "at": "2026-11-06T22:47:49+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "manager": {
+      "sha": "ab52f9a87295c0936883b6322c949eee699c659a83caf5efa9bb4a98808ebf75",
+      "path": "input/manager.md",
+      "at": "2026-11-06T22:49:34+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    }
+  },
+  "approved_impact": {
+    "sources": [
+      "pilot"
+    ],
+    "unreviewed": [],
+    "findings": [
+      "baseline",
+      "direct_gate",
+      "kit",
+      "kit_effect",
+      "legacy_gate",
+      "managed_all",
+      "managed_direct",
+      "managed_legacy"
+    ],
+    "options": [
+      "close",
+      "keep",
+      "managed_failover",
+      "self_service"
+    ],
+    "strategy": [
+      "communication",
+      "experiment",
+      "product"
+    ]
+  }
+}

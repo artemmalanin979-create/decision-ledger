@@ -1,0 +1,88 @@
+{
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "medium",
+  "cli": "Codex CLI 0.166.0",
+  "agent_commit": "dcf9b86e112785e0b49bcdf5a4f3dbfab4c59024",
+  "runs": {
+    "01-intake": {
+      "seconds": 86.76,
+      "input_tokens": 266722,
+      "cached_input_tokens": 221952,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2907,
+      "reasoning_output_tokens": 164,
+      "shell_calls": 10,
+      "failed_shell_calls": 1
+    },
+    "02-strategy": {
+      "seconds": 227.03,
+      "input_tokens": 226936,
+      "cached_input_tokens": 180224,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 8541,
+      "reasoning_output_tokens": 539,
+      "shell_calls": 7,
+      "failed_shell_calls": 0
+    },
+    "03-followup": {
+      "seconds": 182.02,
+      "input_tokens": 406000,
+      "cached_input_tokens": 351488,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6456,
+      "reasoning_output_tokens": 242,
+      "shell_calls": 9,
+      "failed_shell_calls": 0
+    },
+    "baseline-before": {
+      "seconds": 92.0,
+      "input_tokens": 31775,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3421,
+      "reasoning_output_tokens": 347,
+      "shell_calls": 0,
+      "failed_shell_calls": 0
+    },
+    "baseline-after": {
+      "seconds": 71.24,
+      "input_tokens": 34953,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2594,
+      "reasoning_output_tokens": 178,
+      "shell_calls": 0,
+      "failed_shell_calls": 0
+    },
+    "04-transfer": {
+      "seconds": 56.71,
+      "input_tokens": 227195,
+      "cached_input_tokens": 181504,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1688,
+      "reasoning_output_tokens": 67,
+      "shell_calls": 7,
+      "failed_shell_calls": 1
+    }
+  },
+  "agent_total": {
+    "seconds": 495.81,
+    "input_tokens": 899658,
+    "cached_input_tokens": 753664,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 17904,
+    "reasoning_output_tokens": 945,
+    "shell_calls": 26,
+    "failed_shell_calls": 1
+  },
+  "baseline_total": {
+    "seconds": 163.24,
+    "input_tokens": 66728,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 6015,
+    "reasoning_output_tokens": 525,
+    "shell_calls": 0,
+    "failed_shell_calls": 0
+  }
+}
