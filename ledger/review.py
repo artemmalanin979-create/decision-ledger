@@ -165,7 +165,7 @@ def render(proposal, source_records, decision=None):
                      f"Снимок `{review['sha']}`.")
     lines += ["", "## Обязательства", ""]
     for action in proposal["actions"]:
-        completion = action.get("completion")
+        completion = decision.get("completions", {}).get(action["id"]) if decision else None
         state = f"выполнено ({completion['note']})" if completion else "открыто"
         lines.append(f"- **{action['id']}** · {action['owner']} · до {action['due']} · {state}. "
                      f"{action['task']} Условие пересмотра — {action['trigger']}.")

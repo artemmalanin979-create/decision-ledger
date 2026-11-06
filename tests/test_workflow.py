@@ -122,11 +122,44 @@ class WorkflowTest(unittest.TestCase):
     def test_checkpoint_and_actions_survive_new_processes(self):
         self.call("checkpoint", "research", "Проверить рыночные источники")
         self.approve()
-        self.call("done", "check", "--note", "Протокол подготовлен")
+        self.call("done", "check", "--decision", "1", "--note", "Протокол подготовлен")
         status = self.status()
         self.assertEqual(status["checkpoint"]["stage"], "research")
         self.assertEqual(status["approved"]["actions"][0]["completion"]["note"], "Протокол подготовлен")
-        self.call("done", "check", "--note", "Повтор", ok=False)
+        self.call("done", "check", "--decision", "1", "--note", "Повтор", ok=False)
+
+    def test_database_symlink_is_rejected(self):
+        alias = self.case.parent / "alias"
+        alias.mkdir()
+        (alias / "case.sqlite3").symlink_to(self.case / "case.sqlite3")
+        result = subprocess.run(
+            [sys.executable, "-m", "ledger", "checkpoint", str(alias), "review", "unexpected"],
+            cwd=ROOT, capture_output=True, check=False,
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(self.status()["checkpoint"]["stage"], "intake")
+
+    def test_completion_stays_on_the_approved_revision(self):
+        self.approve()
+        proposal = self.proposal()
+        proposal["actions"][0]["owner"] = "QA"
+        self.propose(proposal)
+        self.accept(self.status()["draft"]["sha"])
+        self.call("done", "check", "--decision", "1", "--note", "PM finished", ok=False)
+        self.assertEqual(self.status()["approved"]["actions"][0]["status"], "open")
+        self.call("done", "check", "--decision", "2", "--note", "QA finished")
+        self.assertNotIn("QA finished", self.call("view", "--decision", "1"))
+        self.assertIn("QA finished", self.call("view", "--decision", "2"))
+
+    def test_evidence_replays_exact_bytes(self):
+        content = b"sample  \r\n\r\n"
+        self.raw.write_bytes(content)
+        digest = json.loads(self.call("source", "pilot", "synthetic", "sample.csv"))["sha"]
+        result = subprocess.run(
+            [sys.executable, "-m", "ledger", "evidence", str(self.case), digest],
+            cwd=ROOT, capture_output=True, check=True,
+        )
+        self.assertEqual(result.stdout, content)
 
     def test_source_path_cannot_escape_case(self):
         (self.case.parent / "private.md").write_text("PRIVATE")

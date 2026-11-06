@@ -66,18 +66,19 @@ def decision_status(state, sources, today):
     approved = history[-1] if history else None
     current = approved["proposal"] if approved else None
     draft = state["draft"]
-    actions = [
-        {**action, "status": "done" if action.get("completion") else
-         ("overdue" if action["due"] < today else "open")}
-        for action in (current["actions"] if current else [])
-    ]
+    actions = []
+    if approved:
+        for action in current["actions"]:
+            completion = approved.get("completions", {}).get(action["id"])
+            status = "done" if completion else ("overdue" if action["due"] < today else "open")
+            actions.append({**action, "completion": completion, "status": status})
     return {
         "request": state["request"],
         "checkpoint": state["checkpoint"],
         "sources": sources,
         "draft": ({"title": draft["title"], "option": draft["recommended"], "sha": fingerprint(draft)} if draft else None),
         "draft_impact": impact(draft, sources) if draft else None,
-        "approved": ({k: v for k, v in approved.items() if k != "proposal"} |
+        "approved": ({k: v for k, v in approved.items() if k not in {"proposal", "completions"}} |
                      {"actions": actions} if approved else None),
         "approved_impact": impact(current, sources) if current else None,
         "history": [{"revision": entry["revision"], "option": entry["option"], "at": entry["at"]}
@@ -118,6 +119,7 @@ def parse_args():
     checkpoint.add_argument("next")
     done = command("done", "Complete a follow-up task")
     done.add_argument("id")
+    done.add_argument("--decision", type=int, required=True)
     done.add_argument("--note", required=True)
     rates = sub.add_parser("rates", help="Compute auditable weighted rates from CSV")
     rates.add_argument("file", type=Path)
@@ -141,7 +143,7 @@ def run_case(args):
             row = db.execute("SELECT content FROM evidence WHERE sha = ?", (args.sha,)).fetchone()
             if not row:
                 raise ValueError("Unknown evidence snapshot")
-            return row[0].decode("utf-8-sig")
+            return row[0]
         if cmd == "checkpoint":
             if not args.next.strip():
                 raise ValueError("Next step is empty")
@@ -162,10 +164,15 @@ def run_case(args):
         if cmd == "done":
             if not args.note.strip() or not decisions:
                 raise ValueError("A recorded decision and completion note are required")
-            for action in decisions[-1]["proposal"]["actions"]:
-                if action["id"] == args.id and not action.get("completion"):
-                    action["completion"] = {"at": now(), "note": args.note}
-                    return action
+            current = decisions[-1]
+            if current["revision"] != args.decision:
+                raise ValueError("Follow-up belongs to a different decision revision")
+            completions = current.setdefault("completions", {})
+            for action in current["proposal"]["actions"]:
+                if action["id"] == args.id and action["id"] not in completions:
+                    completion = {"at": now(), "note": args.note}
+                    completions[action["id"]] = completion
+                    return {**action, "completion": completion}
             raise ValueError("No open follow-up with this ID")
 
         sources = source_health(case, state["sources"])
@@ -195,6 +202,9 @@ def run_case(args):
 
 
 def main():
+    for stream in (sys.stdout, sys.stderr):
+        if not stream.isatty():
+            stream.reconfigure(encoding="utf-8")
     args = parse_args()
     try:
         if args.command == "rates":
@@ -202,7 +212,10 @@ def main():
                                      denominator=args.denominator, numerators=args.numerators)
         else:
             result = run_case(args)
-        print(result.rstrip() if isinstance(result, str) else dumps(result))
+        if isinstance(result, bytes):
+            sys.stdout.buffer.write(result)
+        else:
+            print(result if isinstance(result, str) else dumps(result))
     except (ValueError, OSError, sqlite3.Error) as error:
         print(f"ledger: {error}", file=sys.stderr)
         return 2

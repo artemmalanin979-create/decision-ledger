@@ -58,6 +58,8 @@ def init(case, request):
 @contextmanager
 def transaction(case, *, write=False, create=False):
     path = case / DATABASE
+    if path.is_symlink():
+        raise ValueError("Case database must be a regular file inside the case")
     mode = "rwc" if create else "rw"
     if not create and not path.is_file():
         raise ValueError("Case is not initialized. Use init first.")
