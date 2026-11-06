@@ -63,7 +63,22 @@ class WorkflowTest(unittest.TestCase):
 
     def approve(self):
         self.propose(self.proposal())
-        self.call("accept", "warn", "--by", "PM", "--reason", "Пилот")
+        fingerprint = self.status()["draft"]["sha"]
+        self.accept(fingerprint)
+        return fingerprint
+
+    def accept(self, fingerprint, *, ok=True):
+        return self.call("accept", "warn", "--by", "PM", "--reason", "Пилот", "--expect", fingerprint, ok=ok)
+
+    def test_replacing_draft_with_same_option_invalidates_confirmation(self):
+        original = self.proposal()
+        self.propose(original)
+        fingerprint = self.status()["draft"]["sha"]
+        original["summary"] = "Другие условия"
+        self.propose(original)
+        self.accept(fingerprint, ok=False)
+        self.assertIsNone(self.status()["approved"])
+        self.accept(self.status()["draft"]["sha"])
 
     def status(self):
         return json.loads(self.call("status"))
@@ -79,15 +94,16 @@ class WorkflowTest(unittest.TestCase):
 
     def test_new_source_and_stale_draft_block_acceptance(self):
         self.propose(self.proposal())
+        fingerprint = self.status()["draft"]["sha"]
         (self.case / "new.md").write_text("Новые сведения")
         self.call("source", "new", "document", "new.md")
         self.assertEqual(self.status()["draft_impact"]["unreviewed"], ["new"])
-        self.call("accept", "warn", "--by", "PM", "--reason", "Пилот", ok=False)
+        self.accept(fingerprint, ok=False)
         self.assertIsNone(self.status()["approved"])
 
     def test_history_retains_old_snapshot_and_duplicate_accept_is_rejected(self):
-        self.approve()
-        self.call("accept", "warn", "--by", "PM", "--reason", "Пилот", ok=False)
+        fingerprint = self.approve()
+        self.accept(fingerprint, ok=False)
         self.raw.write_text("eligible,events\n100,9\n")
         self.call("source", "pilot", "synthetic", "sample.csv")
         self.assertIn("100,4", self.call("evidence", self.digest))

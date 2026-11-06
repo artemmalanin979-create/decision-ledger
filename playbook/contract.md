@@ -11,7 +11,7 @@ python3 -m ledger status .cases/demo
 python3 -m ledger checkpoint .cases/demo research "Сравнить сегменты"
 python3 -m ledger propose .cases/demo recommendation.json
 python3 -m ledger view .cases/demo --draft
-python3 -m ledger accept .cases/demo pilot --by "Руководитель продукта" --reason "В пределах порогов"
+python3 -m ledger accept .cases/demo pilot --expect <sha-черновика> --by "Руководитель продукта" --reason "В пределах порогов"
 python3 -m ledger view .cases/demo --decision 1
 python3 -m ledger evidence .cases/demo <sha>
 python3 -m ledger done .cases/demo verify --note "Протокол проверки готов"

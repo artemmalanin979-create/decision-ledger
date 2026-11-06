@@ -1,6 +1,7 @@
 """Local tools for an IDE product-research agent."""
 
 import argparse
+import hashlib
 import json
 import re
 import sqlite3
@@ -56,6 +57,10 @@ def outstanding(proposal, sources):
     return any(impact(proposal, sources).values())
 
 
+def fingerprint(proposal):
+    return hashlib.sha256(dumps(proposal).encode("utf-8")).hexdigest()
+
+
 def decision_status(state, sources, today):
     history = state["decisions"]
     approved = history[-1] if history else None
@@ -70,7 +75,7 @@ def decision_status(state, sources, today):
         "request": state["request"],
         "checkpoint": state["checkpoint"],
         "sources": sources,
-        "draft": ({"title": draft["title"], "option": draft["recommended"]} if draft else None),
+        "draft": ({"title": draft["title"], "option": draft["recommended"], "sha": fingerprint(draft)} if draft else None),
         "draft_impact": impact(draft, sources) if draft else None,
         "approved": ({k: v for k, v in approved.items() if k != "proposal"} |
                      {"actions": actions} if approved else None),
@@ -99,6 +104,7 @@ def parse_args():
     command("propose", "Check and stage a recommendation").add_argument("file")
     accept = command("accept", "Record explicit approval of the drafted option")
     accept.add_argument("option")
+    accept.add_argument("--expect", required=True)
     accept.add_argument("--by", required=True)
     accept.add_argument("--reason", required=True)
     status = command("status", "Show what to resume, review, and follow up")
@@ -172,15 +178,17 @@ def run_case(args):
             validate(proposal, sources)
             state["draft"] = proposal
             return {"draft": proposal["recommended"], "findings": len(proposal["findings"]),
-                    "options": len(proposal["options"])}
+                    "options": len(proposal["options"]), "sha": fingerprint(proposal)}
         if not draft or draft["recommended"] != args.option:
             raise ValueError("Option must match the current draft")
+        if args.expect != fingerprint(draft):
+            raise ValueError("Draft differs from the recommendation that was reviewed")
         if outstanding(draft, sources):
             raise ValueError("Evidence changed. Review the case status before accepting.")
         if not args.by.strip() or not args.reason.strip():
             raise ValueError("Approver and reason are required")
         decision = {"revision": len(decisions) + 1, "option": args.option,
-                    "by": args.by, "reason": args.reason, "at": now(), "proposal": draft}
+                    "by": args.by, "reason": args.reason, "at": now(), "sha": args.expect, "proposal": draft}
         decisions.append(decision)
         state["draft"] = None
         return {k: v for k, v in decision.items() if k != "proposal"}
