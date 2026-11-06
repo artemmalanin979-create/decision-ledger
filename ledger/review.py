@@ -33,8 +33,9 @@ def dependencies(record, findings, *, required=False):
 def validate(proposal, sources):
     required_text(proposal, "title", "summary", "recommended")
     reviewed = require_map(proposal, "reviewed")
-    if not reviewed or reviewed.keys() != sources.keys():
-        raise ValueError("Review all registered sources before proposing")
+    active_sources = {key for key, source in sources.items() if source["health"] != "retired"}
+    if not reviewed or reviewed.keys() != active_sources:
+        raise ValueError("Review all active sources before proposing")
     for key, review in reviewed.items():
         required_text(review, "sha", "note")
         if review["sha"] != sources[key]["sha"] or sources[key]["health"] != "ok":
@@ -119,7 +120,8 @@ def impact(proposal, sources):
             affected.add(key)
     return {
         "sources": sorted(changed),
-        "unreviewed": sorted(sources.keys() - proposal["reviewed"].keys()),
+        "unreviewed": sorted(key for key, source in sources.items()
+                             if source["health"] != "retired" and key not in proposal["reviewed"]),
         "findings": sorted(affected),
         "options": sorted(key for key, option in proposal["options"].items()
                           if affected.intersection(option["depends_on"])),

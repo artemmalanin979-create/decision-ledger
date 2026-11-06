@@ -13,6 +13,7 @@ python3 -m ledger propose .cases/demo recommendation.json
 python3 -m ledger view .cases/demo --draft
 python3 -m ledger accept .cases/demo pilot --expect <sha-черновика> --by "Руководитель продукта" --reason "В пределах порогов"
 python3 -m ledger view .cases/demo --decision 1
+python3 -m ledger retire .cases/demo pilot --reason "Выгрузка отозвана"
 python3 -m ledger evidence .cases/demo <sha>
 python3 -m ledger done .cases/demo verify --decision 1 --note "Протокол проверки готов"
 ```
@@ -21,7 +22,7 @@ python3 -m ledger done .cases/demo verify --decision 1 --note "Протокол 
 
 ## Черновик JSON
 
-В `reviewed` запиши все зарегистрированные ID и текущий `sha` из `status`. В `note` укажи роль, охват или причину исключения. Связывай каждый факт и наблюдение с источником и точным местом. Вывод может опираться на другие утверждения. Отмечай зависимости максимально узко, иначе пересмотр затронет лишнее. Каждому варианту и каждой части стратегии нужна опора на утверждения.
+В `reviewed` запиши все активные ID и текущий `sha` из `status`. В `note` укажи роль, охват или причину исключения. Связывай каждый факт и наблюдение с источником и точным местом. Вывод может опираться на другие утверждения. Отмечай зависимости максимально узко, иначе пересмотр затронет лишнее. Каждому варианту и каждой части стратегии нужна опора на утверждения.
 
 | Поле | Структура |
 | --- | --- |

@@ -20,6 +20,9 @@ def source_health(case, records):
     for key, record in records.items():
         version = record["versions"][-1]
         current = {**version, "kind": record["kind"], "url": record["url"], "health": "ok"}
+        if record.get("retired"):
+            health[key] = {**current, "health": "retired", "retired": record["retired"]}
+            continue
         try:
             current_sha, _ = digest(case_file(case, version["path"]))
             if current_sha != version["sha"]:
@@ -45,7 +48,8 @@ def register(args, case, state, db):
     record = state["sources"].setdefault(args.id, {"kind": args.kind, "url": args.url, "versions": []})
     if (args.kind, args.url) != (record["kind"], record["url"]):
         raise ValueError("Use a new source ID when the type or URL changes")
-    relative = path.relative_to(case).as_posix()
+    relative = Path(args.file).as_posix()
+    record.pop("retired", None)
     versions = record["versions"]
     if not versions or (sha, relative) != (versions[-1]["sha"], versions[-1]["path"]):
         db.execute("INSERT OR IGNORE INTO evidence VALUES (?, ?)", (sha, content))
@@ -57,8 +61,8 @@ def outstanding(proposal, sources):
     return any(impact(proposal, sources).values())
 
 
-def fingerprint(proposal):
-    return hashlib.sha256(dumps(proposal).encode("utf-8")).hexdigest()
+def fingerprint(proposal, sequence):
+    return hashlib.sha256(dumps([sequence, proposal]).encode("utf-8")).hexdigest()
 
 
 def decision_status(state, sources, today):
@@ -76,7 +80,7 @@ def decision_status(state, sources, today):
         "request": state["request"],
         "checkpoint": state["checkpoint"],
         "sources": sources,
-        "draft": ({"title": draft["title"], "option": draft["recommended"], "sha": fingerprint(draft)} if draft else None),
+        "draft": ({"title": draft["title"], "option": draft["recommended"], "sha": fingerprint(draft, state.get("draft_sequence", 0))} if draft else None),
         "draft_impact": impact(draft, sources) if draft else None,
         "approved": ({k: v for k, v in approved.items() if k not in {"proposal", "completions"}} |
                      {"actions": actions} if approved else None),
@@ -101,6 +105,9 @@ def parse_args():
     source.add_argument("kind", choices=["document", "table", "web", "synthetic"])
     source.add_argument("file")
     source.add_argument("--url")
+    retire = command("retire", "Withdraw a source and preserve its history")
+    retire.add_argument("id")
+    retire.add_argument("--reason", required=True)
     command("evidence", "Read an archived text snapshot by SHA-256").add_argument("sha")
     command("propose", "Check and stage a recommendation").add_argument("file")
     accept = command("accept", "Record explicit approval of the drafted option")
@@ -136,9 +143,15 @@ def run_case(args):
     if cmd == "init":
         init(case, args.request)
         return {"case": str(case), "stage": "intake"}
-    with load(case, write=cmd in {"source", "propose", "accept", "checkpoint", "done"}) as (state, db):
+    with load(case, write=cmd in {"source", "retire", "propose", "accept", "checkpoint", "done"}) as (state, db):
         if cmd == "source":
             return register(args, case, state, db)
+        if cmd == "retire":
+            record = state["sources"].get(args.id)
+            if not record or record.get("retired") or not args.reason.strip():
+                raise ValueError("An active source and a reason are required")
+            record["retired"] = {"reason": args.reason, "at": now()}
+            return {"id": args.id, "retired": record["retired"]}
         if cmd == "evidence":
             row = db.execute("SELECT content FROM evidence WHERE sha = ?", (args.sha,)).fetchone()
             if not row:
@@ -184,11 +197,12 @@ def run_case(args):
             proposal = json.loads(content.decode("utf-8-sig"))
             validate(proposal, sources)
             state["draft"] = proposal
+            sequence = state["draft_sequence"] = state.get("draft_sequence", 0) + 1
             return {"draft": proposal["recommended"], "findings": len(proposal["findings"]),
-                    "options": len(proposal["options"]), "sha": fingerprint(proposal)}
+                    "options": len(proposal["options"]), "sha": fingerprint(proposal, sequence)}
         if not draft or draft["recommended"] != args.option:
             raise ValueError("Option must match the current draft")
-        if args.expect != fingerprint(draft):
+        if args.expect != fingerprint(draft, state.get("draft_sequence", 0)):
             raise ValueError("Draft differs from the recommendation that was reviewed")
         if outstanding(draft, sources):
             raise ValueError("Evidence changed. Review the case status before accepting.")

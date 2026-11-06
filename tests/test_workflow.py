@@ -161,6 +161,40 @@ class WorkflowTest(unittest.TestCase):
         )
         self.assertEqual(result.stdout, content)
 
+    def test_retired_source_can_be_replaced_without_losing_history(self):
+        self.approve()
+        self.raw.unlink()
+        self.call("retire", "pilot", "--reason", "Отозвано владельцем")
+        self.assertEqual(self.status()["approved_impact"]["findings"], ["f1", "f2"])
+        alternate = self.case / "replacement.csv"
+        alternate.write_text("eligible,events\n100,5\n")
+        replacement = json.loads(self.call("source", "replacement", "synthetic", "replacement.csv"))
+        data = self.proposal()
+        data["reviewed"] = {"replacement": {"sha": replacement["sha"], "note": "Сверенные данные"}}
+        data["findings"]["f1"]["citations"][0]["source"] = "replacement"
+        self.propose(data)
+        self.accept(self.status()["draft"]["sha"])
+        self.assertEqual(self.status()["approved_impact"]["sources"], [])
+        self.assertIn("100,4", self.call("evidence", self.digest))
+
+    def test_new_staging_cannot_reuse_previous_approval(self):
+        previous = self.approve()
+        self.propose(self.proposal())
+        self.accept(previous, ok=False)
+        self.assertEqual(len(self.status()["history"]), 1)
+        self.accept(self.status()["draft"]["sha"])
+
+    def test_retargeted_source_is_detected(self):
+        alias = self.case / "current.csv"
+        alias.symlink_to(self.raw)
+        self.call("source", "pilot", "synthetic", "current.csv")
+        self.approve()
+        alternate = self.case / "next.csv"
+        alternate.write_text("eligible,events\n100,8\n")
+        alias.unlink()
+        alias.symlink_to(alternate)
+        self.assertEqual(self.status()["approved_impact"]["sources"], ["pilot"])
+
     def test_source_path_cannot_escape_case(self):
         (self.case.parent / "private.md").write_text("PRIVATE")
         self.call("source", "external", "document", "../private.md", ok=False)
