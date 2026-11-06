@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -23,7 +24,7 @@ class WorkflowTest(unittest.TestCase):
     def call(self, command, *arguments, ok=True):
         result = subprocess.run(
             [sys.executable, "-m", "ledger", command, str(self.case), *arguments],
-            cwd=ROOT, text=True, capture_output=True, check=False,
+            cwd=ROOT, encoding="utf-8", capture_output=True, check=False,
         )
         self.assertEqual(result.returncode, 0 if ok else 2, result.stderr)
         return result.stdout if ok else result.stderr
@@ -95,7 +96,7 @@ class WorkflowTest(unittest.TestCase):
     def test_new_source_and_stale_draft_block_acceptance(self):
         self.propose(self.proposal())
         fingerprint = self.status()["draft"]["sha"]
-        (self.case / "new.md").write_text("Новые сведения")
+        (self.case / "new.md").write_text("Новые сведения", encoding="utf-8")
         self.call("source", "new", "document", "new.md")
         self.assertEqual(self.status()["draft_impact"]["unreviewed"], ["new"])
         self.accept(fingerprint, ok=False)
@@ -128,10 +129,18 @@ class WorkflowTest(unittest.TestCase):
         self.assertEqual(status["approved"]["actions"][0]["completion"]["note"], "Протокол подготовлен")
         self.call("done", "check", "--decision", "1", "--note", "Повтор", ok=False)
 
+    def symlink(self, alias, target):
+        try:
+            alias.symlink_to(target)
+        except OSError:
+            if os.name == "nt":
+                self.skipTest("Symbolic links require additional privileges on this Windows host")
+            raise
+
     def test_database_symlink_is_rejected(self):
         alias = self.case.parent / "alias"
         alias.mkdir()
-        (alias / "case.sqlite3").symlink_to(self.case / "case.sqlite3")
+        self.symlink(alias / "case.sqlite3", self.case / "case.sqlite3")
         result = subprocess.run(
             [sys.executable, "-m", "ledger", "checkpoint", str(alias), "review", "unexpected"],
             cwd=ROOT, capture_output=True, check=False,
@@ -186,13 +195,13 @@ class WorkflowTest(unittest.TestCase):
 
     def test_retargeted_source_is_detected(self):
         alias = self.case / "current.csv"
-        alias.symlink_to(self.raw)
+        self.symlink(alias, self.raw)
         self.call("source", "pilot", "synthetic", "current.csv")
         self.approve()
         alternate = self.case / "next.csv"
         alternate.write_text("eligible,events\n100,8\n")
         alias.unlink()
-        alias.symlink_to(alternate)
+        self.symlink(alias, alternate)
         self.assertEqual(self.status()["approved_impact"]["sources"], ["pilot"])
 
     def test_source_path_cannot_escape_case(self):
