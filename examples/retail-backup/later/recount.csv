@@ -1,0 +1,7 @@
+cohort,group,drills,network_recovered,checkout_completed,false_success
+direct_pos,as_is,240,150,137,0
+direct_pos,self_service,240,210,202,1
+direct_pos,managed_failover,240,238,231,1
+legacy_gateway,as_is,20,11,9,0
+legacy_gateway,self_service,20,17,15,0
+legacy_gateway,managed_failover,20,20,14,6

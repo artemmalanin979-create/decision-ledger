@@ -1,0 +1,10 @@
+cohort,group,eligible,avoided_spam,missed_important
+everyday,as_is,18000,1260,19
+everyday,warning,18000,1950,22
+everyday,hard_block,18000,3000,27
+service_callbacks,as_is,7000,420,12
+service_callbacks,warning,7000,805,15
+service_callbacks,hard_block,7000,1225,18
+priority_callbacks,as_is,2000,80,4
+priority_callbacks,warning,2000,210,5
+priority_callbacks,hard_block,2000,320,18
