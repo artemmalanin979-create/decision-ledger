@@ -111,7 +111,7 @@ python3 -m ledger audit-repo .
 python3 -m ledger rates examples/retail-backup/later/recount.csv \
   --group group --segment cohort --denominator drills \
   --numerators network_recovered checkout_completed false_success \
-  --ci --guardrail checkout_completed>=0.90 --guardrail false_success<=0.03
+  --ci --guardrail "checkout_completed>=0.90" --guardrail "false_success<=0.03"
 
 # Расчёт юнит-экономики и стресс-тестов (+15% / +25% к затратам, -10% к цене)
 python3 -m ledger economics examples/retail-backup/initial/economics.json

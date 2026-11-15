@@ -35,5 +35,5 @@ jobs:
           python3 -m ledger rates examples/retail-backup/later/recount.csv \
             --group group --segment cohort --denominator drills \
             --numerators network_recovered checkout_completed false_success \
-            --ci --guardrail checkout_completed>=0.90 --guardrail false_success<=0.03 >/dev/null
+            --ci --guardrail "checkout_completed>=0.90" --guardrail "false_success<=0.03" >/dev/null
           python3 -m ledger economics examples/retail-backup/initial/economics.json >/dev/null

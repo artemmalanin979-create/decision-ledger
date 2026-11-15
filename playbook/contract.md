@@ -19,7 +19,7 @@ python3 -m ledger checkpoint .cases/demo research "Сравнить сегмен
 # Детерминированная аналитика (zero-LLM тир)
 python3 -m ledger rates .cases/demo/input/pilot.csv --group group --segment cohort \
   --denominator drills --numerators network_recovered checkout_completed false_success \
-  --ci --guardrail checkout_completed>=0.90 --guardrail false_success<=0.03
+  --ci --guardrail "checkout_completed>=0.90" --guardrail "false_success<=0.03"
 python3 -m ledger economics .cases/demo/input/economics.json
 
 # Черновик, аудит обещаний, дашборд и утверждение человеком

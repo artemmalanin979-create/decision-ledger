@@ -13,7 +13,7 @@ description: Воспроизводимый когортный аудит CSV (9
    ```sh
    python3 -m ledger rates <путь.csv> --group <группа> --segment <когорта> \
      --denominator <знаменатель> --numerators <м1> <м2> \
-     --ci --guardrail <м1>>=0.90 --guardrail <м2><=0.03
+     --ci --guardrail "<м1>>=0.90" --guardrail "<м2><=0.03"
    ```
 3. Проверь массив `anomalies` в ответе:
    - `masked_segment_failure` — агрегат проходит порог, но конкретный сегмент проваливает его;
