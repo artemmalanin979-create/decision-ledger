@@ -1,0 +1,107 @@
+{
+  "stage": "intake",
+  "budget": "balanced",
+  "workspace_scan": {
+    "unregistered_files": [
+      {
+        "path": "input/brief.md",
+        "bytes": 966,
+        "ext": ".md"
+      },
+      {
+        "path": "input/data_dictionary.md",
+        "bytes": 5173,
+        "ext": ".md"
+      },
+      {
+        "path": "input/economics.json",
+        "bytes": 1546,
+        "ext": ".json"
+      },
+      {
+        "path": "input/manager.md",
+        "bytes": 3668,
+        "ext": ".md"
+      },
+      {
+        "path": "input/market.md",
+        "bytes": 2387,
+        "ext": ".md"
+      },
+      {
+        "path": "input/pilot.csv",
+        "bytes": 295,
+        "ext": ".csv"
+      },
+      {
+        "path": "input/pos_ux_mockup.png",
+        "bytes": 81588,
+        "ext": ".png"
+      },
+      {
+        "path": "input/synthetic_store_probe.md",
+        "bytes": 2435,
+        "ext": ".md"
+      },
+      {
+        "path": "input/ux_checkout_notes.md",
+        "bytes": 2516,
+        "ext": ".md"
+      }
+    ],
+    "modalities": {
+      "table": 1,
+      "document": 7,
+      "image_ux": 1,
+      "audio_video": 0
+    },
+    "total_bytes": 100574
+  },
+  "recovery": null,
+  "primary_route": {
+    "step": "triage_new_inputs",
+    "process": "intake_or_followup",
+    "tool": "ledger source",
+    "skill": "problem-framing",
+    "subagent": "evidence-extractor",
+    "model_tier": "fast",
+    "estimated_cost_tier": "low",
+    "why": "Найдено 9 незарегистрированных файлов (100574 байт).",
+    "stop_condition": "Все разрешённые входные файлы зарегистрированы с SHA-256."
+  },
+  "pipeline": [
+    {
+      "step": "triage_new_inputs",
+      "process": "intake_or_followup",
+      "tool": "ledger source",
+      "skill": "problem-framing",
+      "subagent": "evidence-extractor",
+      "model_tier": "fast",
+      "estimated_cost_tier": "low",
+      "why": "Найдено 9 незарегистрированных файлов (100574 байт).",
+      "stop_condition": "Все разрешённые входные файлы зарегистрированы с SHA-256."
+    },
+    {
+      "step": "ux_and_interview_synthesis",
+      "process": "qualitative_analysis",
+      "tool": "read_file (image/transcript) + ledger kb",
+      "skill": "synthetic-interviews-ux",
+      "subagent": "evidence-extractor",
+      "model_tier": "fast_multimodal",
+      "estimated_cost_tier": "low",
+      "why": "Разбор видимых элементов интерфейса и кодирование интервью/синтетических респондентов без смешения с рыночными фактами.",
+      "stop_condition": "Зафиксированы барьеры восприятия и проверяемые гипотезы для коммуникации."
+    },
+    {
+      "step": "strategy_and_skeptic_gate",
+      "process": "strategy_synthesis",
+      "tool": "ledger propose + ledger audit-claims + ledger dashboard",
+      "skill": "strategy-and-claims",
+      "subagent": "skeptic-reviewer",
+      "model_tier": "deep_reasoning",
+      "estimated_cost_tier": "medium",
+      "why": "Сборка минимум 3 вариантов (keep/change/close), согласование продукта и обещаний коммуникации, проверка стоп-правил.",
+      "stop_condition": "propose и audit-claims проходят без high-severity предупреждений; ждём подтверждения человека."
+    }
+  ]
+}

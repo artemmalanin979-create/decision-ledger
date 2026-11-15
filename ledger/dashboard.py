@@ -26,6 +26,18 @@ OPTION_TYPE_LABELS = {
 }
 
 
+def _plural_ru(n: int, one: str, few: str, many: str) -> str:
+    n_abs = abs(n) % 100
+    n1 = n_abs % 10
+    if 11 <= n_abs <= 19:
+        return f"{n} {many}"
+    if n1 == 1:
+        return f"{n} {one}"
+    if 2 <= n1 <= 4:
+        return f"{n} {few}"
+    return f"{n} {many}"
+
+
 def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
     decisions = state.get("decisions", [])
     latest_decision = decisions[-1] if decisions else None
@@ -199,8 +211,9 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
             f'<div><strong>Обнаружено обновление входных данных после Решения №{latest_decision["revision"] if latest_decision else 1}</strong>'
             f'<p>Изменившиеся источники: <span class="mono">{escape(", ".join(approved_impact["sources"]) or "нет")}</span> · '
             f'Новые источники: <span class="mono">{escape(", ".join(approved_impact["unreviewed"]) or "нет")}</span> · '
-            f'Затронуто транзитивно: {len(approved_impact["findings"])} оснований, '
-            f'{len(approved_impact["options"])} вариантов, {len(approved_impact["strategy"])} блока стратегии.</p></div>'
+            f'Затронуто транзитивно: {_plural_ru(len(approved_impact["findings"]), "основание", "основания", "оснований")}, '
+            f'{_plural_ru(len(approved_impact["options"]), "вариант", "варианта", "вариантов")}, '
+            f'{_plural_ru(len(approved_impact["strategy"]), "блок", "блока", "блоков")} стратегии.</p></div>'
             f'</section>'
         )
 
@@ -341,11 +354,11 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
     </div>
     <div class="metric-card">
       <div class="metric-label">Источники и ревизии</div>
-      <div class="metric-value">{len(sources_health)} источников · {len(decisions)} утверждённых решений</div>
+      <div class="metric-value">{_plural_ru(len(sources_health), "источник", "источника", "источников")} · {_plural_ru(len(decisions), "утверждённое решение", "утверждённых решения", "утверждённых решений")}</div>
     </div>
     <div class="metric-card">
       <div class="metric-label">Телеметрия сеансов</div>
-      <div class="metric-value">{telemetry["events"]} шагов · {telemetry["total_seconds"]} с · {telemetry["tool_calls"]} вызовов CLI</div>
+      <div class="metric-value">{_plural_ru(telemetry["events"], "шаг", "шага", "шагов")} · {telemetry["total_seconds"]} с · {_plural_ru(telemetry["tool_calls"], "вызов", "вызова", "вызовов")} CLI</div>
     </div>
   </section>
 

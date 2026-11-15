@@ -1,0 +1,22 @@
+{
+  "sources": [
+    "pilot"
+  ],
+  "unreviewed": [],
+  "findings": [
+    "cashier_friction_hypothesis",
+    "direct_pos_preliminary",
+    "gate_recommendation",
+    "legacy_gateway_wilson_risk"
+  ],
+  "options": [
+    "keep_stand",
+    "managed_failover",
+    "self_service_kit"
+  ],
+  "strategy": [
+    "communication",
+    "experiment",
+    "product"
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "currency": "RUB",
+  "unit": "paying_store_month_ex_vat",
+  "min_margin_rate": 0.45,
+  "viable_plans": [
+    "managed_failover",
+    "self_service"
+  ],
+  "plans": {
+    "self_service": {
+      "title": "Комплект SIM + LTE-роутер (самостоятельное переключение)",
+      "monthly_revenue": 1290.0,
+      "recurring_cost": 350.0,
+      "upfront_total": 2400.0,
+      "amortize_months": 12,
+      "amortized_upfront": 200.0,
+      "direct_cost": 550.0,
+      "contribution": 740.0,
+      "contribution_rate": 0.573643,
+      "min_margin_rate": 0.45,
+      "meets_target": true,
+      "max_allowable_cost": 709.5,
+      "cost_headroom": 159.5,
+      "max_cost_increase_pct": 29.0,
+      "operational_payback_months": 2.55,
+      "sensitivity": {
+        "cost_plus_15pct": {
+          "monthly_revenue": 1290.0,
+          "direct_cost": 632.5,
+          "contribution": 657.5,
+          "contribution_rate": 0.50969,
+          "meets_target": true
+        },
+        "cost_plus_25pct": {
+          "monthly_revenue": 1290.0,
+          "direct_cost": 687.5,
+          "contribution": 602.5,
+          "contribution_rate": 0.467054,
+          "meets_target": true
+        },
+        "price_minus_10pct": {
+          "monthly_revenue": 1161.0,
+          "direct_cost": 550.0,
+          "contribution": 611.0,
+          "contribution_rate": 0.52627,
+          "meets_target": true
+        }
+      },
+      "unknowns": [
+        "Готовность платить за связность без проверки кассы",
+        "Стабильность ручного переключения сменным кассиром"
+      ]
+    },
+    "managed_failover": {
+      "title": "Настроенный LTE-резерв с проверкой оплаты и чека на кассе",
+      "monthly_revenue": 2490.0,
+      "recurring_cost": 700.0,
+      "upfront_total": 6000.0,
+      "amortize_months": 12,
+      "amortized_upfront": 500.0,
+      "direct_cost": 1200.0,
+      "contribution": 1290.0,
+      "contribution_rate": 0.518072,
+      "min_margin_rate": 0.45,
+      "meets_target": true,
+      "max_allowable_cost": 1369.5,
+      "cost_headroom": 169.5,
+      "max_cost_increase_pct": 14.12,
+      "operational_payback_months": 3.35,
+      "sensitivity": {
+        "cost_plus_15pct": {
+          "monthly_revenue": 2490.0,
+          "direct_cost": 1380.0,
+          "contribution": 1110.0,
+          "contribution_rate": 0.445783,
+          "meets_target": false
+        },
+        "cost_plus_25pct": {
+          "monthly_revenue": 2490.0,
+          "direct_cost": 1500.0,
+          "contribution": 990.0,
+          "contribution_rate": 0.39759,
+          "meets_target": false
+        },
+        "price_minus_10pct": {
+          "monthly_revenue": 2241.0,
+          "direct_cost": 1200.0,
+          "contribution": 1041.0,
+          "contribution_rate": 0.464525,
+          "meets_target": true
+        }
+      },
+      "unknowns": [
+        "Фактические часы выездной поддержки и повторных приёмок",
+        "Удержание точки на горизонте 12 месяцев для возврата 6 000 ₽ разовых затрат",
+        "Стоимость доработки несовместимых касс со старым шлюзом (legacy_gateway)"
+      ]
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "currency": "RUB",
+  "unit": "paying_store_month_ex_vat",
+  "min_margin_rate": 0.45,
+  "plans": {
+    "self_service": {
+      "title": "Комплект SIM + LTE-роутер (самостоятельное переключение)",
+      "monthly_revenue": 1290,
+      "recurring_costs": {
+        "sim_and_traffic": 250,
+        "support": 100
+      },
+      "upfront_costs": {
+        "lte_router": 2400
+      },
+      "amortize_months": 12,
+      "unknowns": [
+        "Готовность платить за связность без проверки кассы",
+        "Стабильность ручного переключения сменным кассиром"
+      ]
+    },
+    "managed_failover": {
+      "title": "Настроенный LTE-резерв с проверкой оплаты и чека на кассе",
+      "monthly_revenue": 2490,
+      "recurring_costs": {
+        "sim_and_traffic": 300,
+        "support_and_rechecks": 400
+      },
+      "upfront_costs": {
+        "lte_router": 3600,
+        "onsite_install_and_test": 2400
+      },
+      "amortize_months": 12,
+      "unknowns": [
+        "Фактические часы выездной поддержки и повторных приёмок",
+        "Удержание точки на горизонте 12 месяцев для возврата 6 000 ₽ разовых затрат",
+        "Стоимость доработки несовместимых касс со старым шлюзом (legacy_gateway)"
+      ]
+    }
+  }
+}

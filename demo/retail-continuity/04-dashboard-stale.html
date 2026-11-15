@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Резервный интернет с проверкой кассы — решение комитета (до финальной сверки) — Decision Ledger</title>
+<style>
+  :root {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --ink: #0F172A;
+    --muted: #475569;
+    --subtle: #64748B;
+    --line: #E2E8F0;
+    --accent: #0F766E;
+    --accent-soft: #F0FDFA;
+    --warn: #B45309;
+    --warn-soft: #FFFBEB;
+    --alert: #B91C1C;
+    --alert-soft: #FEF2F2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 40px 56px;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    font-size: 14px;
+  }
+  .container { max-width: 1360px; margin: 0 auto; }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
+    padding-bottom: 20px; border-bottom: 1px solid var(--line); margin-bottom: 24px;
+  }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px;
+  }
+  h1 { margin: 0 0 8px; font-size: 26px; line-height: 1.2; letter-spacing: -0.02em; }
+  h2 { margin: 28px 0 12px; font-size: 16px; letter-spacing: -0.01em; }
+  h3 { margin: 0; font-size: 14px; }
+  .summary { margin: 0; color: var(--muted); max-width: 840px; font-size: 14px; }
+  .status-pill {
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--line); background: var(--surface); white-space: nowrap;
+  }
+  .status-ok { border-color: #99F6E4; background: var(--accent-soft); color: var(--accent); }
+  .status-warn { border-color: #FDE68A; background: var(--warn-soft); color: var(--warn); }
+  .status-alert { border-color: #FECACA; background: var(--alert-soft); color: var(--alert); }
+  .meta-strip {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px;
+  }
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+  }
+  .metric-label { font-size: 11px; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-value { font-size: 14px; font-weight: 600; margin-top: 4px; }
+  .impact-banner {
+    background: var(--alert-soft); border: 1px solid #FECACA; border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 20px; color: #7F1D1D;
+  }
+  .impact-banner p { margin: 4px 0 0; font-size: 13px; }
+  .lineage-grid {
+    display: grid; grid-template-columns: 0.85fr 1.25fr 1.1fr; gap: 16px; align-items: start;
+  }
+  .col-title {
+    font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 10px; display: flex; justify-content: space-between;
+  }
+  .node-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 11px 13px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.12s ease, opacity 0.12s ease;
+  }
+  .node-card:hover { border-color: #94A3B8; }
+  .node-card.selected-option { border-left: 3px solid var(--accent); }
+  .node-card.stale, .strategy-card.stale { border-color: #FCA5A5; background: #FFFDFD; }
+  .node-card.active-link, .strategy-card.active-link { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .node-card.dimmed, .strategy-card.dimmed { opacity: 0.35; }
+  .node-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .node-body { font-size: 13px; color: var(--ink); margin-bottom: 6px; }
+  .objection-line { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; margin-bottom: 6px; }
+  .objection-line span { font-weight: 600; color: var(--ink); }
+  .node-meta { font-size: 11px; color: var(--subtle); }
+  .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--line);
+    color: var(--muted); background: #F8FAFC;
+  }
+  .tag-ok { border-color: #99F6E4; background: var(--accent-soft); color: var(--accent); }
+  .tag-warn { border-color: #FDE68A; background: var(--warn-soft); color: var(--warn); }
+  .tag-alert { border-color: #FECACA; background: var(--alert-soft); color: var(--alert); }
+  .strategy-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .strategy-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; cursor: pointer;
+  }
+  .strategy-card p { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+  .claim-ok { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--accent); font-weight: 500; }
+  .claim-warn { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--alert); font-weight: 500; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtle); background: #F8FAFC; }
+  .history-list { display: grid; gap: 8px; }
+  .history-item {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; font-size: 13px;
+  }
+  .mono { font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; font-size: 12px; }
+  .reset-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 5px; padding: 2px 8px; font-size: 11px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Decision Ledger · Паспорт продуктового решения · retail-continuity</div>
+      <h1>Резервный интернет с проверкой кассы — решение комитета (до финальной сверки)</h1>
+      <p class="summary">Рекомендуется подготовить ограниченный платный пилот настроенного LTE-резерва (до 20 магазинов) только для совместимых касс direct_pos, отложив фактический допуск до завершения двухдневной сверки чеков. Кассы со старым шлюзом legacy_gateway исключаются из первой волны: при 0/20 ложных успехов верхняя граница 95% интервала Вильсона составляет 16,11% (выше порога 3%), а UX-разбор выявил риск вводящего в заблуждение окна очереди.</p>
+    </div>
+    <div class="status-pill status-alert">Решение №1 требует пересмотра (обновились данные)</div>
+  </header>
+
+  <section class="meta-strip">
+    <div class="metric-card">
+      <div class="metric-label">Исходный запрос</div>
+      <div class="metric-value">Стоит ли запускать платный резервный интернет для касс малых магазинов и что можно обещать владельцу?</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Контрольная точка (follow-up)</div>
+      <div class="metric-value">Дождаться сверки recount.csv и решить вопрос о допуске direct_pos.</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Источники и ревизии</div>
+      <div class="metric-value">9 источников · 1 утверждённое решение</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Телеметрия сеансов</div>
+      <div class="metric-value">1 шаг · 38.4 с · 5 вызовов CLI</div>
+    </div>
+  </section>
+
+  <section class="impact-banner"><div><strong>Обнаружено обновление входных данных после Решения №1</strong><p>Изменившиеся источники: <span class="mono">pilot</span> · Новые источники: <span class="mono">нет</span> · Затронуто транзитивно: 4 основания, 3 варианта, 3 блока стратегии.</p></div></section>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h2>Трассировка оснований (кликните узел для подсветки зависимостей)</h2>
+    <button class="reset-btn" onclick="resetSelection()">Сбросить фильтр</button>
+  </div>
+  <section class="lineage-grid">
+    <div>
+      <div class="col-title"><span>1. Источники (9)</span></div>
+      <div class="node-card" data-node="source:brief" onclick="selectNode('source:brief')"><div class="node-head"><span class="mono">brief</span><span class="tag">document · ok</span></div><div class="node-meta">input/brief.md · <span class="mono">c138bb7f23</span></div></div><div class="node-card" data-node="source:dictionary" onclick="selectNode('source:dictionary')"><div class="node-head"><span class="mono">dictionary</span><span class="tag">document · ok</span></div><div class="node-meta">input/data_dictionary.md · <span class="mono">f1f0c0db1e</span></div></div><div class="node-card" data-node="source:economics" onclick="selectNode('source:economics')"><div class="node-head"><span class="mono">economics</span><span class="tag">document · ok</span></div><div class="node-meta">input/economics.json · <span class="mono">878d83865d</span></div></div><div class="node-card" data-node="source:manager" onclick="selectNode('source:manager')"><div class="node-head"><span class="mono">manager</span><span class="tag">document · ok</span></div><div class="node-meta">input/manager.md · <span class="mono">ab52f9a872</span></div></div><div class="node-card" data-node="source:market" onclick="selectNode('source:market')"><div class="node-head"><span class="mono">market</span><span class="tag">document · ok</span></div><div class="node-meta">input/market.md · <span class="mono">d842f7ee4b</span></div></div><div class="node-card stale" data-node="source:pilot" onclick="selectNode('source:pilot')"><div class="node-head"><span class="mono">pilot</span><span class="tag tag-warn">synthetic · ok</span></div><div class="node-meta">input/pilot.csv · <span class="mono">56ade9f45b</span></div></div><div class="node-card" data-node="source:synth_probe" onclick="selectNode('source:synth_probe')"><div class="node-head"><span class="mono">synth_probe</span><span class="tag tag-warn">synthetic · ok</span></div><div class="node-meta">input/synthetic_store_probe.md · <span class="mono">b29b888b1b</span></div></div><div class="node-card" data-node="source:ux_mockup" onclick="selectNode('source:ux_mockup')"><div class="node-head"><span class="mono">ux_mockup</span><span class="tag">ux · ok</span></div><div class="node-meta">input/pos_ux_mockup.png · <span class="mono">1037d65c56</span></div></div><div class="node-card" data-node="source:ux_notes" onclick="selectNode('source:ux_notes')"><div class="node-head"><span class="mono">ux_notes</span><span class="tag">ux · ok</span></div><div class="node-meta">input/ux_checkout_notes.md · <span class="mono">9a5ad10077</span></div></div>
+    </div>
+    <div>
+      <div class="col-title"><span>2. Утверждения и гипотезы (9)</span></div>
+      <div class="node-card" data-node="finding:scope_and_thresholds" onclick="selectNode('finding:scope_and_thresholds')"><div class="node-head"><span class="mono">scope_and_thresholds</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Комитет выбирает один формат на месяц (до 20 магазинов с 1–2 кассами и рабочим LTE). Для обещания проверки кассы требуются &gt;=90% завершённых покупок и &lt;=3% ложных успехов в целом и в каждом допускаемом сегменте, а также маржинальный вклад &gt;=45%.</div><div class="node-meta">Опора: brief:Записка команды малого бизнеса, manager:Абзацы 1–3, пороги допуска и экономики</div></div><div class="node-card" data-node="finding:market_mechanisms" onclick="selectNode('finding:market_mechanisms')"><div class="node-head"><span class="mono">market_mechanisms</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Открытые источники подтверждают, что LTE-резерв требует проверки сигнала на адресе и резервного питания (Verizon), сетевой пинг проверяет только связность маршрута (Digi), а офлайн-очередь платежей может отклоняться после синхронизации (Square).</div><div class="node-meta">Опора: market:Пункты M1, M2, M3</div></div><div class="node-card stale" data-node="finding:direct_pos_preliminary" onclick="selectNode('finding:direct_pos_preliminary')"><div class="node-head"><span class="mono">direct_pos_preliminary</span><div class="tags"><span class="tag tag-ok">Наблюдение</span><span class="tag tag-alert">Перепроверить</span></div></div><div class="node-body">В сегменте direct_pos настроенный резерв показал 238/240 (99,17%) восстановления сети и 232/240 (96,67%, 95% ДИ Вильсона [93,56%; 98,30%]) предварительных покупок при 0/240 (ДИ [0,00%; 1,57%]) выявленных ложных успехов — оба интервала укладываются в пороги 90%/3% до сверки.</div><div class="node-meta">Опора: pilot:group=managed_failover, cohort=direct_pos, dictionary:Определения drills, checkout_completed, false_success</div></div><div class="node-card stale" data-node="finding:legacy_gateway_wilson_risk" onclick="selectNode('finding:legacy_gateway_wilson_risk')"><div class="node-head"><span class="mono">legacy_gateway_wilson_risk</span><div class="tags"><span class="tag tag-ok">Наблюдение</span><span class="tag tag-alert">Перепроверить</span></div></div><div class="node-body">В сегменте legacy_gateway всего 20 прогонов на 4 конфигурациях: при точечной оценке 0/20 ложных успехов верхняя граница 95% ДИ Вильсона равна 16,11% (&gt;3% лимита), то есть выборка статистически не подтверждает безопасность до сверки.</div><div class="node-meta">Опора: pilot:group=managed_failover, cohort=legacy_gateway</div></div><div class="node-card" data-node="finding:ux_and_promo_barrier" onclick="selectNode('finding:ux_and_promo_barrier')"><div class="node-head"><span class="mono">ux_and_promo_barrier</span><div class="tags"><span class="tag tag-ok">Наблюдение</span></div></div><div class="node-body">На экране legacy_gateway зелёная плашка «Принято в очередь» появляется при несформированном чеке, а черновик баннера маркетинга содержит неподтверждённый слоган про 0 потерянных продаж на любой кассе.</div><div class="node-meta">Опора: ux_mockup:Левая и правая панели UI, ux_notes:Пункты 1–2 разбора</div></div><div class="node-card stale" data-node="finding:cashier_friction_hypothesis" onclick="selectNode('finding:cashier_friction_hypothesis')"><div class="node-head"><span class="mono">cashier_friction_hypothesis</span><div class="tags"><span class="tag tag-warn">Гипотеза</span><span class="tag tag-alert">Перепроверить</span></div></div><div class="node-body">Основной операционный страх магазина в час пик — зависание между оплатой и чеком у сменного кассира; ручной комплект SIM+роутер даёт на стенде лишь 83,46% завершённых покупок и не снимает этот барьер.</div><div class="node-meta">Опора: synth_probe:Операционный сценарий смены кассира, pilot:group=self_service, 217/260 завершений</div></div><div class="node-card" data-node="finding:unit_economics_headroom" onclick="selectNode('finding:unit_economics_headroom')"><div class="node-head"><span class="mono">unit_economics_headroom</span><div class="tags"><span class="tag ">Вывод</span></div></div><div class="node-body">По модели экономики настроенный резерв даёт вклад 1 290 ₽/мес (51,81% от 2 490 ₽ при прямых затратах 1 200 ₽ и разовых вложениях 6 000 ₽ на 12 мес). Запас до порога 45% составляет всего 169,50 ₽/мес (+14,1% к затратам): рост прямых затрат на +15% пробивает целевую маржу, а окупаемость разовых затрат из операционного потока занимает 3,35 месяца.</div><div class="node-meta">Опора: economics:plans.managed_failover, scope_and_thresholds</div></div><div class="node-card" data-node="finding:field_demand_and_recount_unknown" onclick="selectNode('finding:field_demand_and_recount_unknown')"><div class="node-head"><span class="mono">field_demand_and_recount_unknown</span><div class="tags"><span class="tag tag-warn">Неизвестно</span></div></div><div class="node-body">Итоговая сверка журналов эквайера и чеков ещё не завершена; фактическая готовность магазинов платить 2 490 ₽/мес, 12-месячное удержание и стоимость исправления старых шлюзов неизвестны.</div><div class="node-meta">Опора: dictionary:Раздел про предварительный характер pilot.csv, manager:Исключения финансовой модели</div></div><div class="node-card stale" data-node="finding:gate_recommendation" onclick="selectNode('finding:gate_recommendation')"><div class="node-head"><span class="mono">gate_recommendation</span><div class="tags"><span class="tag ">Вывод</span><span class="tag tag-alert">Перепроверить</span></div></div><div class="node-body">Оптимальный шаг до сверки — готовить протокол и приёмку платного пилота исключительно для direct_pos с жёстким гейтом допуска после сверки, заблокировать агрессивный рекламный баннер и отложить legacy_gateway.</div><div class="node-meta">Опора: scope_and_thresholds, market_mechanisms, direct_pos_preliminary, legacy_gateway_wilson_risk, ux_and_promo_barrier, unit_economics_headroom, field_demand_and_recount_unknown</div></div>
+    </div>
+    <div>
+      <div class="col-title"><span>3. Альтернативы комитета (4)</span></div>
+      <div class="node-card stale" data-node="option:keep_stand" onclick="selectNode('option:keep_stand')"><div class="node-head"><strong>Оставить текущую схему и провести только стендовую досверку</strong><div class="tags"><span class="tag">Оставить как есть</span><span class="tag tag-alert">Основание изменилось</span></div></div><div class="node-body">Не тратит квоту подрядчика до полной ясности по всем типам касс, включая legacy_gateway.</div><div class="objection-line"><span>Возражение:</span> Теряется месяц полевой проверки спроса и фактических затрат на сегменте direct_pos, который уже проходит интервальные границы на стенде.</div><div class="node-meta">Основания: direct_pos_preliminary, field_demand_and_recount_unknown</div></div><div class="node-card stale" data-node="option:self_service_kit" onclick="selectNode('option:self_service_kit')"><div class="node-head"><strong>Запустить коробку SIM + LTE-роутер для самостоятельного переключения</strong><div class="tags"><span class="tag">Изменить продукт</span><span class="tag tag-alert">Основание изменилось</span></div></div><div class="node-body">Проще логистика, расчётный вклад 57,36% (740 ₽ из 1 290 ₽), разовые вложения вдвое ниже (2 400 ₽).</div><div class="objection-line"><span>Возражение:</span> Проходит только 83,46% покупок на стенде (ниже порога 90%) и перекладывает переключение на кассира в момент аварии — обещать защиту кассы нельзя.</div><div class="node-meta">Основания: cashier_friction_hypothesis, scope_and_thresholds</div></div><div class="node-card selected-option stale" data-node="option:managed_failover" onclick="selectNode('option:managed_failover')"><div class="node-head"><strong>Подготовить платный пилот настроенного резерва для direct_pos (допуск после сверки)</strong><div class="tags"><span class="tag">Изменить продукт</span><span class="tag tag-ok">Рекомендован</span><span class="tag tag-alert">Основание изменилось</span></div></div><div class="node-body">Сочетает высокую долю завершённых покупок в direct_pos (96,67%), проверяемую на месте приёмку кассы и проверку реальной готовности платить 2 490 ₽/мес на 20 точках.</div><div class="objection-line"><span>Возражение:</span> Узкий запас по прямым затратам (169,50 ₽/мес до порога 45%) и зависимость допуска от результатов финальной сверки журналов.</div><div class="node-meta">Основания: gate_recommendation, unit_economics_headroom</div></div><div class="node-card" data-node="option:close_initiative" onclick="selectNode('option:close_initiative')"><div class="node-head"><strong>Закрыть инициативу и переключить команду на другой продукт портфеля</strong><div class="tags"><span class="tag">Закрыть инициативу</span></div></div><div class="node-body">Освобождает команду и подрядчика от операционно сложного продукта с выездной инсталляцией.</div><div class="objection-line"><span>Возражение:</span> Отказ от проверки подтверждённого клиентского запроса при наличии рабочего сегмента direct_pos без затрат на масштабный запуск.</div><div class="node-meta">Основания: scope_and_thresholds, field_demand_and_recount_unknown</div></div>
+    </div>
+  </section>
+
+  <h2>Согласованная продуктовая и коммуникационная стратегия</h2>
+  <section class="strategy-grid">
+    <div class="strategy-card stale" data-node="strategy:product" onclick="selectNode('strategy:product')"><div class="node-head"><h3>Продуктовая стратегия</h3><span class="mono">gate_recommendation, unit_economics_headroom, cashier_friction_hypothesis</span></div><p>Целевой сегмент первой волны: независимые магазины с 1–2 кассами только на схеме direct_pos (до 20 точек). Осознанные отказы: кассы с legacy_gateway не допускаются в пилот до сверки и разбора UX-окна очереди; коробочный роутер параллельно не запускаем. Состав услуги за 2 490 ₽/мес (без НДС): проверка сигнала LTE в помещении, настройка автопереключения, обязательная контрольная оплата с выходом фискального чека при выдернутом кабеле, памятка кассиру и повторная приёмка при смене кассового ПО. Экономическая граница: держать прямые затраты &lt;=1 369,50 ₽/мес на точку (базовый план 1 200 ₽/мес).</p></div><div class="strategy-card stale" data-node="strategy:communication" onclick="selectNode('strategy:communication')"><div class="node-head"><h3>Коммуникационная стратегия</h3><span class="mono">market_mechanisms, ux_and_promo_barrier, gate_recommendation</span></div><p>Снять черновик баннера про бесперебойную работу любой кассы. Ключевое сообщение владельцу магазина перед подключением (при условии совместимой кассы direct_pos, подтверждённого LTE в помещении, рабочего питания и доступности платёжного сервиса): «Настроим автоматический переход на LTE на случай обрыва проводного интернета и при подключении вместе проверим на вашей кассе, что проходит контрольная оплата и печатается чек. Оставим короткую инструкцию кассиру, как проверить статус операции перед повторным списанием». Канал: прямой пресейл-звонок по квалифицированной базе + карточка приёмки на кассе.</p><div class="claim-ok">Аудит обещаний: границы применимости согласованы с продуктом</div></div><div class="strategy-card stale" data-node="strategy:experiment" onclick="selectNode('strategy:experiment')"><div class="node-head"><h3>План проверки и стоп-правила</h3><span class="mono">scope_and_thresholds, direct_pos_preliminary, unit_economics_headroom, field_demand_and_recount_unknown</span></div><p>Шаг 1 (гейт допуска, 2 рабочих дня): получить финальную сверку логов касс, эквайера и чеков. Критерий открытия пилота для direct_pos: &gt;=90% завершённых покупок и &lt;=3% ложных успехов. Шаг 2 (полевой платный пилот, до 30.11.2026): предложить подключение до 20 магазинам direct_pos, замерить конверсию в оплату (ориентир продолжения &gt;=5 платящих точек из 20), фактическое время выезда/поддержки и прямые затраты на точку. Стоп-правило: при любом подтверждённом ложном успехе на живой кассе или превышении потолка затрат 1 369,50 ₽/мес без пути снижения — остановить новые подключения и вынести пересмотр на комитет.</p></div>
+  </section>
+
+  <h2>Обязательства команды и триггеры пересмотра</h2>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Владелец</th><th>Срок</th><th>Задача</th><th>Условие пересмотра</th><th>Статус</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mono">verify_recount</td><td>Аналитик пилота</td><td class="mono">2026-11-10</td><td>Провести поштучную сверку логов кассы, платёжного эмулятора и фискальных чеков по всем 260 прогонам</td><td>Любое расхождение статуса оплаты переводит кейс на пересмотр допуска</td><td>Открыто</td></tr><tr><td class="mono">fix_promo_copy</td><td>Продуктовый маркетолог</td><td class="mono">2026-11-11</td><td>Заменить заблокированный макет лендинга на формулировку с проверкой совместимой кассы direct_pos и явными условиями</td><td>Появление в материалах обещаний без оговорки питания, LTE и типа кассы</td><td>Выполнено (Баннер с обещанием 100% снят, согласован скрипт пресейла)</td></tr><tr><td class="mono">prepare_field_protocol</td><td>Руководитель продукта</td><td class="mono">2026-11-14</td><td>Подготовить чек-лист выездной приёмки на 20 точек direct_pos и карточку кассира</td><td>Провал порога &gt;=90% или &lt;=3% после сверки блокирует старт подключений</td><td>Открыто</td></tr>
+    </tbody>
+  </table>
+
+  <h2>История принятых решений</h2>
+  <section class="history-list">
+    <div class="history-item"><span class="mono">Решение №1</span><strong>managed_failover</strong><span>Утвердил: Продуктовый комитет · 2026-11-15T22:41:27+00:00</span><div class="node-meta">Одобрена подготовка пилота только для direct_pos; допуск после финальной сверки чеков. · снимок <span class="mono">064a7662b47b</span></div></div>
+  </section>
+</div>
+<script>
+const GRAPH = {"sources": {}, "findings": {"scope_and_thresholds": {"sources": ["brief", "manager"], "depends_on": []}, "market_mechanisms": {"sources": ["market"], "depends_on": []}, "direct_pos_preliminary": {"sources": ["pilot", "dictionary"], "depends_on": []}, "legacy_gateway_wilson_risk": {"sources": ["pilot"], "depends_on": []}, "ux_and_promo_barrier": {"sources": ["ux_mockup", "ux_notes"], "depends_on": []}, "cashier_friction_hypothesis": {"sources": ["synth_probe", "pilot"], "depends_on": []}, "unit_economics_headroom": {"sources": ["economics"], "depends_on": ["scope_and_thresholds"]}, "field_demand_and_recount_unknown": {"sources": ["dictionary", "manager"], "depends_on": []}, "gate_recommendation": {"sources": [], "depends_on": ["scope_and_thresholds", "market_mechanisms", "direct_pos_preliminary", "legacy_gateway_wilson_risk", "ux_and_promo_barrier", "unit_economics_headroom", "field_demand_and_recount_unknown"]}}, "targets": {"option:keep_stand": ["direct_pos_preliminary", "field_demand_and_recount_unknown"], "option:self_service_kit": ["cashier_friction_hypothesis", "scope_and_thresholds"], "option:managed_failover": ["gate_recommendation", "unit_economics_headroom"], "option:close_initiative": ["scope_and_thresholds", "field_demand_and_recount_unknown"], "strategy:product": ["gate_recommendation", "unit_economics_headroom", "cashier_friction_hypothesis"], "strategy:communication": ["market_mechanisms", "ux_and_promo_barrier", "gate_recommendation"], "strategy:experiment": ["scope_and_thresholds", "direct_pos_preliminary", "unit_economics_headroom", "field_demand_and_recount_unknown"]}};
+function relatedSet(nodeId) {
+  const rel = new Set([nodeId]);
+  if (nodeId.startsWith("source:")) {
+    const sid = nodeId.slice(7);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [fid, f] of Object.entries(GRAPH.findings)) {
+        const key = "finding:" + fid;
+        if (rel.has(key)) continue;
+        if (f.sources.includes(sid) || f.depends_on.some(d => rel.has("finding:" + d))) {
+          rel.add(key); changed = true;
+        }
+      }
+    }
+    for (const [tid, deps] of Object.entries(GRAPH.targets)) {
+      if (deps.some(d => rel.has("finding:" + d))) rel.add(tid);
+    }
+  } else if (nodeId.startsWith("finding:")) {
+    const start = nodeId.slice(8);
+    // Upstream
+    const up = [start];
+    while (up.length) {
+      const cur = up.pop();
+      const f = GRAPH.findings[cur];
+      if (!f) continue;
+      f.sources.forEach(s => rel.add("source:" + s));
+      f.depends_on.forEach(d => { if (!rel.has("finding:" + d)) { rel.add("finding:" + d); up.push(d); } });
+    }
+    // Downstream
+    const down = new Set([start]);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [fid, f] of Object.entries(GRAPH.findings)) {
+        if (!down.has(fid) && f.depends_on.some(d => down.has(d))) {
+          down.add(fid); rel.add("finding:" + fid); changed = true;
+        }
+      }
+    }
+    for (const [tid, deps] of Object.entries(GRAPH.targets)) {
+      if (deps.some(d => down.has(d))) rel.add(tid);
+    }
+  } else {
+    const deps = GRAPH.targets[nodeId] || [];
+    const stack = [...deps];
+    stack.forEach(d => rel.add("finding:" + d));
+    while (stack.length) {
+      const cur = stack.pop();
+      const f = GRAPH.findings[cur];
+      if (!f) continue;
+      f.sources.forEach(s => rel.add("source:" + s));
+      f.depends_on.forEach(d => { if (!rel.has("finding:" + d)) { rel.add("finding:" + d); stack.push(d); } });
+    }
+  }
+  return rel;
+}
+function selectNode(nodeId) {
+  const rel = relatedSet(nodeId);
+  document.querySelectorAll("[data-node]").forEach(el => {
+    const id = el.getAttribute("data-node");
+    el.classList.toggle("active-link", rel.has(id));
+    el.classList.toggle("dimmed", !rel.has(id));
+  });
+}
+function resetSelection() {
+  document.querySelectorAll("[data-node]").forEach(el => {
+    el.classList.remove("active-link", "dimmed");
+  });
+}
+</script>
+</body>
+</html>

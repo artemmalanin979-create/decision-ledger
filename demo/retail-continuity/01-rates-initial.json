@@ -1,0 +1,330 @@
+{
+  "rows": 6,
+  "overall": {
+    "as_is": {
+      "denominator": 260,
+      "numerators": {
+        "network_recovered": {
+          "count": 161,
+          "rate": 0.6192307692307693,
+          "ci95_low": 0.558878,
+          "ci95_high": 0.676112
+        },
+        "checkout_completed": {
+          "count": 146,
+          "rate": 0.5615384615384615,
+          "ci95_low": 0.500763,
+          "ci95_high": 0.620522,
+          "guardrails": {
+            ">=0.9": "violated"
+          }
+        },
+        "false_success": {
+          "count": 0,
+          "rate": 0.0,
+          "ci95_low": 0.0,
+          "ci95_high": 0.01456,
+          "guardrails": {
+            "<=0.03": "pass"
+          }
+        }
+      }
+    },
+    "managed_failover": {
+      "denominator": 260,
+      "numerators": {
+        "network_recovered": {
+          "count": 258,
+          "rate": 0.9923076923076923,
+          "ci95_low": 0.972392,
+          "ci95_high": 0.997888
+        },
+        "checkout_completed": {
+          "count": 252,
+          "rate": 0.9692307692307692,
+          "ci95_low": 0.94047,
+          "ci95_high": 0.984328,
+          "guardrails": {
+            ">=0.9": "pass"
+          }
+        },
+        "false_success": {
+          "count": 0,
+          "rate": 0.0,
+          "ci95_low": 0.0,
+          "ci95_high": 0.01456,
+          "guardrails": {
+            "<=0.03": "pass"
+          }
+        }
+      }
+    },
+    "self_service": {
+      "denominator": 260,
+      "numerators": {
+        "network_recovered": {
+          "count": 227,
+          "rate": 0.8730769230769231,
+          "ci95_low": 0.827112,
+          "ci95_high": 0.908178
+        },
+        "checkout_completed": {
+          "count": 217,
+          "rate": 0.8346153846153846,
+          "ci95_low": 0.78465,
+          "ci95_high": 0.874837,
+          "guardrails": {
+            ">=0.9": "violated"
+          }
+        },
+        "false_success": {
+          "count": 1,
+          "rate": 0.0038461538461538464,
+          "ci95_low": 0.000679,
+          "ci95_high": 0.021461,
+          "guardrails": {
+            "<=0.03": "pass"
+          }
+        }
+      }
+    }
+  },
+  "segments": {
+    "direct_pos": {
+      "as_is": {
+        "denominator": 240,
+        "numerators": {
+          "network_recovered": {
+            "count": 150,
+            "rate": 0.625,
+            "ci95_low": 0.562234,
+            "ci95_high": 0.683827
+          },
+          "checkout_completed": {
+            "count": 137,
+            "rate": 0.5708333333333333,
+            "ci95_low": 0.507583,
+            "ci95_high": 0.631852,
+            "guardrails": {
+              ">=0.9": "violated"
+            }
+          },
+          "false_success": {
+            "count": 0,
+            "rate": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.015754,
+            "guardrails": {
+              "<=0.03": "pass"
+            }
+          }
+        }
+      },
+      "managed_failover": {
+        "denominator": 240,
+        "numerators": {
+          "network_recovered": {
+            "count": 238,
+            "rate": 0.9916666666666667,
+            "ci95_low": 0.97013,
+            "ci95_high": 0.997712
+          },
+          "checkout_completed": {
+            "count": 232,
+            "rate": 0.9666666666666667,
+            "ci95_low": 0.935615,
+            "ci95_high": 0.983015,
+            "guardrails": {
+              ">=0.9": "pass"
+            }
+          },
+          "false_success": {
+            "count": 0,
+            "rate": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.015754,
+            "guardrails": {
+              "<=0.03": "pass"
+            }
+          }
+        }
+      },
+      "self_service": {
+        "denominator": 240,
+        "numerators": {
+          "network_recovered": {
+            "count": 210,
+            "rate": 0.875,
+            "ci95_low": 0.827164,
+            "ci95_high": 0.911021
+          },
+          "checkout_completed": {
+            "count": 202,
+            "rate": 0.8416666666666667,
+            "ci95_low": 0.790149,
+            "ci95_high": 0.882419,
+            "guardrails": {
+              ">=0.9": "violated"
+            }
+          },
+          "false_success": {
+            "count": 1,
+            "rate": 0.004166666666666667,
+            "ci95_low": 0.000736,
+            "ci95_high": 0.02322,
+            "guardrails": {
+              "<=0.03": "pass"
+            }
+          }
+        }
+      }
+    },
+    "legacy_gateway": {
+      "as_is": {
+        "denominator": 20,
+        "numerators": {
+          "network_recovered": {
+            "count": 11,
+            "rate": 0.55,
+            "ci95_low": 0.342085,
+            "ci95_high": 0.741802
+          },
+          "checkout_completed": {
+            "count": 9,
+            "rate": 0.45,
+            "ci95_low": 0.258198,
+            "ci95_high": 0.657915,
+            "guardrails": {
+              ">=0.9": "violated"
+            }
+          },
+          "false_success": {
+            "count": 0,
+            "rate": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.161125,
+            "guardrails": {
+              "<=0.03": "uncertain_small_sample"
+            }
+          }
+        }
+      },
+      "managed_failover": {
+        "denominator": 20,
+        "numerators": {
+          "network_recovered": {
+            "count": 20,
+            "rate": 1.0,
+            "ci95_low": 0.838875,
+            "ci95_high": 1.0
+          },
+          "checkout_completed": {
+            "count": 20,
+            "rate": 1.0,
+            "ci95_low": 0.838875,
+            "ci95_high": 1.0,
+            "guardrails": {
+              ">=0.9": "uncertain_small_sample"
+            }
+          },
+          "false_success": {
+            "count": 0,
+            "rate": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.161125,
+            "guardrails": {
+              "<=0.03": "uncertain_small_sample"
+            }
+          }
+        }
+      },
+      "self_service": {
+        "denominator": 20,
+        "numerators": {
+          "network_recovered": {
+            "count": 17,
+            "rate": 0.85,
+            "ci95_low": 0.639581,
+            "ci95_high": 0.947631
+          },
+          "checkout_completed": {
+            "count": 15,
+            "rate": 0.75,
+            "ci95_low": 0.531299,
+            "ci95_high": 0.888138,
+            "guardrails": {
+              ">=0.9": "violated"
+            }
+          },
+          "false_success": {
+            "count": 0,
+            "rate": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.161125,
+            "guardrails": {
+              "<=0.03": "uncertain_small_sample"
+            }
+          }
+        }
+      }
+    }
+  },
+  "anomalies": [
+    {
+      "kind": "masked_segment_uncertainty",
+      "group": "managed_failover",
+      "segment": "legacy_gateway",
+      "metric": "checkout_completed",
+      "guardrail": "checkout_completed>=0.9",
+      "overall_rate": 0.969231,
+      "segment_rate": 1.0,
+      "ci95": [
+        0.838875,
+        1.0
+      ],
+      "segment_denominator": 20
+    },
+    {
+      "kind": "masked_segment_uncertainty",
+      "group": "as_is",
+      "segment": "legacy_gateway",
+      "metric": "false_success",
+      "guardrail": "false_success<=0.03",
+      "overall_rate": 0.0,
+      "segment_rate": 0.0,
+      "ci95": [
+        0.0,
+        0.161125
+      ],
+      "segment_denominator": 20
+    },
+    {
+      "kind": "masked_segment_uncertainty",
+      "group": "managed_failover",
+      "segment": "legacy_gateway",
+      "metric": "false_success",
+      "guardrail": "false_success<=0.03",
+      "overall_rate": 0.0,
+      "segment_rate": 0.0,
+      "ci95": [
+        0.0,
+        0.161125
+      ],
+      "segment_denominator": 20
+    },
+    {
+      "kind": "masked_segment_uncertainty",
+      "group": "self_service",
+      "segment": "legacy_gateway",
+      "metric": "false_success",
+      "guardrail": "false_success<=0.03",
+      "overall_rate": 0.003846,
+      "segment_rate": 0.0,
+      "ci95": [
+        0.0,
+        0.161125
+      ],
+      "segment_denominator": 20
+    }
+  ]
+}
