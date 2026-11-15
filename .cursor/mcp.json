@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "decision-ledger": {
+      "command": "python3",
+      "args": ["-m", "ledger", "mcp"]
+    }
+  }
+}

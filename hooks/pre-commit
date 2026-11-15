@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+python3 -m ledger audit-repo "$ROOT" >/dev/null
+python3 -m unittest discover -s tests -q

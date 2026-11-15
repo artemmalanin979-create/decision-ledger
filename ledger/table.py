@@ -1,8 +1,12 @@
-"""Summarize experiment counts from a UTF-8 CSV file."""
+"""Summarize experiment counts from a UTF-8 CSV file with optional Wilson CIs and guardrails."""
+
+from __future__ import annotations
 
 import csv
 from collections import Counter, defaultdict
 from pathlib import Path
+
+from .stats import detect_cohort_anomalies, evaluate_guardrail, parse_guardrail, wilson_interval
 
 
 def _count(value: str, column: str, line: int) -> int:
@@ -15,23 +19,51 @@ def _count(value: str, column: str, line: int) -> int:
 
 
 def _group_rates(
-    groups: dict[str, Counter[str]], denominator: str, numerators: list[str]
+    groups: dict[str, Counter[str]],
+    denominator: str,
+    numerators: list[str],
+    *,
+    include_ci: bool = False,
+    parsed_guardrails: list[tuple[str, str, float]] | None = None,
 ) -> dict:
+    guardrail_map = {}
+    for metric, op, threshold in parsed_guardrails or []:
+        guardrail_map.setdefault(metric, []).append((op, threshold))
+
     result = {}
     for group, totals in sorted(groups.items()):
         total = totals[denominator]
+        num_summary = {}
+        for name in numerators:
+            count = totals[name]
+            rate = count / total if total else None
+            entry: dict = {"count": count, "rate": rate}
+            if include_ci or parsed_guardrails:
+                bounds = wilson_interval(count, total)
+                entry["ci95_low"] = bounds[0] if bounds else None
+                entry["ci95_high"] = bounds[1] if bounds else None
+                if name in guardrail_map:
+                    entry["guardrails"] = {
+                        f"{op}{threshold}": evaluate_guardrail(rate, bounds, op, threshold)
+                        for op, threshold in guardrail_map[name]
+                    }
+            num_summary[name] = entry
         result[group] = {
             "denominator": total,
-            "numerators": {
-                name: {"count": totals[name], "rate": totals[name] / total if total else None}
-                for name in numerators
-            },
+            "numerators": num_summary,
         }
     return result
 
 
 def summarize_rates(
-    path: Path, *, group: str, segment: str | None, denominator: str, numerators: list[str]
+    path: Path,
+    *,
+    group: str,
+    segment: str | None,
+    denominator: str,
+    numerators: list[str],
+    ci: bool = False,
+    guardrails: list[str] | None = None,
 ) -> dict:
     """Sum counts by group and optional segment before calculating rates."""
     labels = [group] if segment is None else [group, segment]
@@ -39,6 +71,11 @@ def summarize_rates(
     required = [*labels, *count_columns]
     if len(set(required)) != len(required):
         raise ValueError("Group, segment, denominator and numerator columns must be distinct")
+
+    parsed_guardrails = [parse_guardrail(item) for item in (guardrails or [])]
+    for metric, _, _ in parsed_guardrails:
+        if metric not in numerators:
+            raise ValueError(f"Guardrail metric {metric!r} must be listed in numerators")
 
     overall: dict[str, Counter[str]] = defaultdict(Counter)
     segments: dict[str, dict[str, Counter[str]]] = defaultdict(lambda: defaultdict(Counter))
@@ -81,11 +118,23 @@ def summarize_rates(
         except UnicodeDecodeError as error:
             raise ValueError("CSV must be encoded as UTF-8") from error
 
-    return {
-        "rows": rows,
-        "overall": _group_rates(overall, denominator, numerators),
-        "segments": {
-            label: _group_rates(groups, denominator, numerators)
-            for label, groups in sorted(segments.items())
-        },
+    extended = bool(ci or parsed_guardrails)
+    overall_rates = _group_rates(
+        overall, denominator, numerators, include_ci=extended, parsed_guardrails=parsed_guardrails
+    )
+    segment_rates = {
+        label: _group_rates(
+            groups, denominator, numerators, include_ci=extended, parsed_guardrails=parsed_guardrails
+        )
+        for label, groups in sorted(segments.items())
     }
+    response = {
+        "rows": rows,
+        "overall": overall_rates,
+        "segments": segment_rates,
+    }
+    if extended:
+        response["anomalies"] = detect_cohort_anomalies(
+            overall_rates, segment_rates, numerators, parsed_guardrails
+        )
+    return response

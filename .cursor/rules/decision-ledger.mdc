@@ -1,6 +1,6 @@
 ---
-description: Product research, decision trace, and follow-up
+description: Product research, strategy alignment, decision lineage, and post-decision follow-up
 alwaysApply: true
 ---
 
-Прочитай AGENTS.md в корне проекта и следуй ему. Для конкретного этапа открывай только нужный файл в playbook/.
+Прочитай `AGENTS.md` в корне проекта и следуй ему. На каждом шаге запускай `python3 -m ledger route <кейс>` (или MCP-инструмент `ledger_route`) и открывай только релевантный навык из `.agents/skills/` и методичку из `playbook/`.
