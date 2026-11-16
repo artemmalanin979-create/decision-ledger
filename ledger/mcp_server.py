@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 
 from .claims import audit_claims
+from .cost import append_cost_entry, summarize_case_cost
 from .dashboard import write_dashboard
 from .economics import evaluate_economics
 from .kb import ingest_case_into_kb, search_kb
@@ -116,6 +117,27 @@ TOOLS = [
             "required": ["case"],
         },
     },
+    {
+        "name": "ledger_cost",
+        "description": "Inspect or append a step to .cases/<case>/cost.jsonl with cited model pricing, retries, and human minutes.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "case": {"type": "string"},
+                "step": {"type": "string"},
+                "session": {"type": "string", "default": "session-1"},
+                "model": {"type": "string", "default": "zero_llm"},
+                "input_tokens": {"type": "integer", "default": 0},
+                "cached_tokens": {"type": "integer", "default": 0},
+                "output_tokens": {"type": "integer", "default": 0},
+                "wall_seconds": {"type": "number", "default": 0.0},
+                "retries": {"type": "integer", "default": 0},
+                "human_minutes": {"type": "number", "default": 0.0},
+                "note": {"type": "string", "default": ""},
+            },
+            "required": ["case"],
+        },
+    },
 ]
 
 
@@ -143,10 +165,28 @@ def _dispatch_tool(name: str, arguments: dict, *, source_health_fn, decision_sta
         )
 
     case = Path(arguments["case"]).resolve()
+    if name == "ledger_cost":
+        if arguments.get("step"):
+            return append_cost_entry(
+                case,
+                step=arguments["step"],
+                session=arguments.get("session", "session-1"),
+                model=arguments.get("model", "zero_llm"),
+                input_tokens=int(arguments.get("input_tokens", 0)),
+                cached_tokens=int(arguments.get("cached_tokens", 0)),
+                output_tokens=int(arguments.get("output_tokens", 0)),
+                wall_seconds=float(arguments.get("wall_seconds", 0.0)),
+                retries=int(arguments.get("retries", 0)),
+                human_minutes=float(arguments.get("human_minutes", 0.0)),
+                note=arguments.get("note", ""),
+            )
+        with load(case, write=False) as (state, _):
+            return summarize_case_cost(case, state.get("telemetry", []))
+
     with load(case, write=False) as (state, _):
         sources = source_health_fn(case, state["sources"])
         if name == "ledger_status":
-            return decision_status_fn(state, sources, date.today().isoformat())
+            return decision_status_fn(state, sources, date.today().isoformat(), case)
         if name == "ledger_route":
             return route_next_step(
                 case,

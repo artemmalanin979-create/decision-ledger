@@ -1,0 +1,58 @@
+{
+  "currency": "RUB",
+  "min_margin_rate": 0.55,
+  "note": "Сценарная постатейная модель юнит-экономики на 1 платящую подписку (30 дней) на основе публичных цен МегаФона/МТС и оценочных прямых технологических/партнёрских затрат для сравнения вариантов комитета на 2027 год.",
+  "plans": {
+    "opt0_keep_individual_149": {
+      "title": "(0) Текущая индивидуальная «Моя безопасность +» (149 ₽ / 30 дн.)",
+      "monthly_revenue": 149,
+      "recurring_costs": {
+        "ai_voice_and_deepfake_inference": 22,
+        "sms_and_push_notifications": 6,
+        "support_and_billing_ops": 10
+      },
+      "upfront_costs": {
+        "digital_cac_and_promo_trial": 260
+      },
+      "amortize_months": 5
+    },
+    "opt1_bundle_heavy_premium_299": {
+      "title": "(1) База бесплатно во всех тарифах + индивидуальный премиум со страховкой до 1,5 млн ₽ (299 ₽ / 30 дн.)",
+      "monthly_revenue": 299,
+      "recurring_costs": {
+        "ai_voice_and_messenger_shield": 34,
+        "fraud_insurance_underwriting_fee": 92,
+        "claims_and_vip_support": 18
+      },
+      "upfront_costs": {
+        "campaign_and_onboarding_cac": 420
+      },
+      "amortize_months": 6
+    },
+    "opt2_family_parents_shield_249": {
+      "title": "(2) Семейный флагман «Защити родителей» (до 5 номеров + приватный алерт + антифишинг мессенджеров, 249 ₽ / 30 дн.)",
+      "monthly_revenue": 249,
+      "recurring_costs": {
+        "multi_number_ai_scoring_and_deepfake": 42,
+        "realtime_family_alert_routing": 14,
+        "support_and_family_onboarding": 16
+      },
+      "upfront_costs": {
+        "family_base_activation_and_cac": 310
+      },
+      "amortize_months": 11
+    },
+    "opt3_b2b2c_bank_coantifraud_180": {
+      "title": "(3) B2B2C совместный антифрод-контур с банками (revenue-share за защищённого клиента, 180 ₽ / 30 дн.)",
+      "monthly_revenue": 180,
+      "recurring_costs": {
+        "telco_risk_signal_api_and_scoring": 36,
+        "sla_monitoring_and_compliance": 18
+      },
+      "upfront_costs": {
+        "partner_integration_per_active_user": 190
+      },
+      "amortize_months": 14
+    }
+  }
+}

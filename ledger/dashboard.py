@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from .claims import audit_claims
+from .cost import summarize_case_cost
 from .review import impact
 from .router import summarize_telemetry
 
@@ -48,6 +49,7 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
     approved_impact = impact(latest_decision["proposal"], sources_health) if latest_decision else None
     claims_report = audit_claims(active_proposal, sources_health) if active_proposal else None
     telemetry = summarize_telemetry(state.get("telemetry", []))
+    cost_summary = summarize_case_cost(case, state.get("telemetry", []))
 
     has_stale = bool(approved_impact and (approved_impact["sources"] or approved_impact["unreviewed"]))
     if draft and latest_decision:
@@ -204,6 +206,92 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
             f'</div>'
         )
 
+    # Optional methodology sections (JTBD, OST, Pre-mortem, Promise Matrix)
+    methodology_html = ""
+    meth = (active_proposal or {}).get("methodology") or {}
+    meth_affected = set((approved_impact or active_impact or {}).get("methodology", []))
+    if meth:
+        meth_blocks = []
+        if "jtbd" in meth:
+            jtbd = meth["jtbd"]
+            forces = jtbd["forces"]
+            stale_cls = " stale" if "jtbd" in meth_affected else ""
+            meth_blocks.append(
+                f'<div class="strategy-card{stale_cls}" style="margin-bottom:14px;">'
+                f'<div class="node-head"><h3>JTBD: Покупатель vs Пользователь</h3>'
+                f'<span class="mono">{escape(", ".join(jtbd.get("depends_on", [])))}</span></div>'
+                f'<p><strong>Задача плательщика:</strong> {escape(jtbd["payer_job"])}<br/>'
+                f'<strong>Задача пользователя:</strong> {escape(jtbd["user_job"])}</p>'
+                f'<div class="node-meta" style="margin-top:8px;">'
+                f'<strong>Толчок:</strong> {escape(forces["push"])} · '
+                f'<strong>Притяжение:</strong> {escape(forces["pull"])} · '
+                f'<strong>Тревога:</strong> {escape(forces["anxiety"])} · '
+                f'<strong>Инерция:</strong> {escape(forces["habit"])}</div></div>'
+            )
+        if "ost" in meth:
+            ost = meth["ost"]
+            opp_cards = []
+            for opp in ost["opportunities"]:
+                ost_stale = " stale" if f"ost:{opp['id']}" in meth_affected else ""
+                sol_items = "".join(
+                    f'<li><span class="mono">{escape(s["option_id"])}</span> — тест допущения: {escape(s["assumption_test"])}</li>'
+                    for s in opp["solutions"]
+                )
+                opp_cards.append(
+                    f'<div class="node-card{ost_stale}">'
+                    f'<div class="node-head"><span class="mono">{escape(opp["id"])}</span>'
+                    f'<span class="tag">{escape(", ".join(opp["depends_on"]))}</span></div>'
+                    f'<div class="node-body"><strong>{escape(opp["statement"])}</strong></div>'
+                    f'<ul style="margin:6px 0 0 18px;padding:0;font-size:12px;color:var(--muted);">{sol_items}</ul></div>'
+                )
+            meth_blocks.append(
+                f'<div style="margin-bottom:14px;">'
+                f'<div class="col-title"><span>Opportunity Solution Tree · Исход: {escape(ost["outcome"])}</span></div>'
+                f'<div class="strategy-grid">{"".join(opp_cards)}</div></div>'
+            )
+        if "promise_matrix" in meth:
+            pm_rows = []
+            for idx, r in enumerate(meth["promise_matrix"], 1):
+                row_stale = ' style="background:#FFFDFD;"' if f"promise_matrix:{idx}" in meth_affected else ""
+                pm_rows.append(
+                    f'<tr{row_stale}><td><strong>{escape(r["promise"])}</strong></td>'
+                    f'<td>{escape(r["capability"])}</td>'
+                    f'<td class="mono">{escape(", ".join(r["proof_findings"]))}</td>'
+                    f'<td>{escape(r["boundary"])}</td>'
+                    f'<td>{escape(r["channel"])}</td></tr>'
+                )
+            meth_blocks.append(
+                f'<div style="margin-bottom:14px;">'
+                f'<div class="col-title"><span>Матрица «Обещание коммуникации ↔ Возможность продукта»</span></div>'
+                f'<table><thead><tr><th>Обещание аудитории</th><th>Механизм продукта</th><th>Основания</th><th>Честная граница</th><th>Канал</th></tr></thead>'
+                f'<tbody>{"".join(pm_rows)}</tbody></table></div>'
+            )
+        if "premortem" in meth:
+            pre_rows = []
+            for idx, r in enumerate(meth["premortem"], 1):
+                row_stale = ' style="background:#FFFDFD;"' if f"premortem:{idx}" in meth_affected else ""
+                pre_rows.append(
+                    f'<tr{row_stale}><td>{escape(r["failure_mode"])}</td>'
+                    f'<td class="mono">{escape(r["probability"])}</td>'
+                    f'<td class="mono">{escape(r["impact"])}</td>'
+                    f'<td class="mono">{escape(r["preventability"])}</td>'
+                    f'<td>{escape(r["mitigation"])}</td></tr>'
+                )
+            meth_blocks.append(
+                f'<div style="margin-bottom:14px;">'
+                f'<div class="col-title"><span>Pre-mortem выбранного варианта (через 6 месяцев)</span></div>'
+                f'<table><thead><tr><th>Сценарий провала</th><th>Вероятность</th><th>Влияние</th><th>Предотвратимость</th><th>Защитная мера / стоп-правило</th></tr></thead>'
+                f'<tbody>{"".join(pre_rows)}</tbody></table></div>'
+            )
+        methodology_html = f'<h2>Продуктовая методология и контроль рисков</h2>{"".join(meth_blocks)}'
+
+    cost_card_val = (
+        f'{cost_summary["api_cost_rub"]:.2f} ₽ (${cost_summary["api_cost_usd"]:.3f}) · '
+        f'{cost_summary["wall_seconds"]} с · чел: {cost_summary["human_minutes"]} мин'
+        if cost_summary["steps"] > 0
+        else f'{_plural_ru(telemetry["events"], "шаг", "шага", "шагов")} · {telemetry["total_seconds"]} с · {_plural_ru(telemetry["tool_calls"], "вызов", "вызова", "вызовов")} CLI'
+    )
+
     impact_banner = ""
     if approved_impact and (approved_impact["sources"] or approved_impact["unreviewed"]):
         impact_banner = (
@@ -357,8 +445,8 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
       <div class="metric-value">{_plural_ru(len(sources_health), "источник", "источника", "источников")} · {_plural_ru(len(decisions), "утверждённое решение", "утверждённых решения", "утверждённых решений")}</div>
     </div>
     <div class="metric-card">
-      <div class="metric-label">Телеметрия сеансов</div>
-      <div class="metric-value">{_plural_ru(telemetry["events"], "шаг", "шага", "шагов")} · {telemetry["total_seconds"]} с · {_plural_ru(telemetry["tool_calls"], "вызов", "вызова", "вызовов")} CLI</div>
+      <div class="metric-label">Затраты и участие человека</div>
+      <div class="metric-value">{escape(cost_card_val)}</div>
     </div>
   </section>
 
@@ -387,6 +475,8 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
   <section class="strategy-grid">
     {"".join(strategy_cards) or '<div class="node-meta">Стратегия появится после этапа propose.</div>'}
   </section>
+
+  {methodology_html}
 
   <h2>Обязательства команды и триггеры пересмотра</h2>
   <table>

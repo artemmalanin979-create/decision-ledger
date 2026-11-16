@@ -27,8 +27,8 @@ jobs:
       - name: Run unit test suite (0 external dependencies)
         run: python3 -W error::ResourceWarning -m unittest discover -s tests -v
 
-      - name: Run repository security & JSON hygiene audit
-        run: python3 -m ledger audit-repo .
+      - name: Run repository security, PII & full git-history audit
+        run: python3 -m ledger audit-repo . --history
 
       - name: Smoke-check CLI analytics on demo dataset
         run: |

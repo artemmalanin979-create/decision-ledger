@@ -17,7 +17,7 @@ test:
 	$(PYTHON) -W default -m unittest discover -s tests -v
 
 audit:
-	$(PYTHON) -m ledger audit-repo .
+	$(PYTHON) -m ledger audit-repo . --history
 
 showcase:
 	$(PYTHON) scripts/build_demo_showcase.py

@@ -12,7 +12,8 @@ import sqlite3
 import sys
 from urllib.parse import urlsplit
 
-from .claims import audit_claims
+from .claims import audit_claims, scan_untrusted_text
+from .cost import append_cost_entry, summarize_case_cost
 from .dashboard import write_dashboard
 from .economics import evaluate_economics_file
 from .kb import ingest_case_into_kb, link_entries, retract_entry, search_kb, upsert_entry
@@ -22,6 +23,7 @@ from .review import impact, render, validate
 from .router import record_telemetry, route_next_step, summarize_telemetry
 from .store import case_file, digest, dumps, init, load, now
 from .table import summarize_rates
+from .web_fetch import fetch_open_webpage
 
 SOURCE_KINDS = ["document", "table", "web", "synthetic", "interview", "ux"]
 
@@ -65,10 +67,19 @@ def register(args, case, state, db):
         raise ValueError("Use a new source ID when the type or URL changes")
     relative = Path(args.file).as_posix()
     record.pop("retired", None)
+    inj_flags = []
+    if path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".pdf"}:
+        try:
+            inj_flags = scan_untrusted_text(content.decode("utf-8", errors="ignore"))
+        except OSError:
+            inj_flags = []
     versions = record["versions"]
     if not versions or (sha, relative) != (versions[-1]["sha"], versions[-1]["path"]):
         db.execute("INSERT OR IGNORE INTO evidence VALUES (?, ?)", (sha, content))
-        versions.append({"sha": sha, "path": relative, "at": now()})
+        ver_entry = {"sha": sha, "path": relative, "at": now()}
+        if inj_flags:
+            ver_entry["injection_flags"] = inj_flags
+        versions.append(ver_entry)
     return {"id": args.id, **versions[-1]}
 
 
@@ -80,7 +91,7 @@ def fingerprint(proposal, sequence):
     return hashlib.sha256(dumps([sequence, proposal]).encode("utf-8")).hexdigest()
 
 
-def decision_status(state, sources, today):
+def decision_status(state, sources, today, case=None):
     history = state["decisions"]
     approved = history[-1] if history else None
     current = approved["proposal"] if approved else None
@@ -91,7 +102,7 @@ def decision_status(state, sources, today):
             completion = approved.get("completions", {}).get(action["id"])
             status = "done" if action_done(completion) else ("overdue" if action["due"] < today else "open")
             actions.append({**action, "completion": completion, "status": status})
-    return {
+    res = {
         "request": state["request"],
         "checkpoint": state["checkpoint"],
         "sources": sources,
@@ -117,6 +128,9 @@ def decision_status(state, sources, today):
         ],
         "telemetry": summarize_telemetry(state.get("telemetry", [])),
     }
+    if case is not None:
+        res["cost"] = summarize_case_cost(case, state.get("telemetry", []))
+    return res
 
 
 def action_done(completion):
@@ -138,6 +152,12 @@ def parse_args():
     source.add_argument("kind", choices=SOURCE_KINDS)
     source.add_argument("file")
     source.add_argument("--url")
+
+    fetch_cmd = command("fetch", "Fetch an open HTTPS webpage snapshot and register it as a web source")
+    fetch_cmd.add_argument("id")
+    fetch_cmd.add_argument("url")
+    fetch_cmd.add_argument("--out", help="Relative destination inside the case directory")
+    fetch_cmd.add_argument("--timeout", type=float, default=12.0)
 
     retire = command("retire", "Withdraw a source and preserve its history")
     retire.add_argument("id")
@@ -179,6 +199,7 @@ def parse_args():
 
     telemetry = command("telemetry", "Record or inspect run time, tokens, retries, and human gates")
     telemetry.add_argument("--step")
+    telemetry.add_argument("--session", default="session-1")
     telemetry.add_argument("--model", default="zero_llm")
     telemetry.add_argument("--seconds", type=float, default=0.0)
     telemetry.add_argument("--input-tokens", type=int, default=0)
@@ -186,8 +207,23 @@ def parse_args():
     telemetry.add_argument("--output-tokens", type=int, default=0)
     telemetry.add_argument("--tool-calls", type=int, default=1)
     telemetry.add_argument("--retries", type=int, default=0)
+    telemetry.add_argument("--human-minutes", type=float, default=0.0)
     telemetry.add_argument("--human", default="")
     telemetry.add_argument("--note", default="")
+
+    cost_cmd = command("cost", "Append to or summarize .cases/<case>/cost.jsonl with cited model pricing")
+    cost_cmd.add_argument("--step")
+    cost_cmd.add_argument("--session", default="session-1")
+    cost_cmd.add_argument("--model", default="zero_llm")
+    cost_cmd.add_argument("--seconds", type=float, default=0.0)
+    cost_cmd.add_argument("--input-tokens", type=int, default=0)
+    cost_cmd.add_argument("--cached-tokens", type=int, default=0)
+    cost_cmd.add_argument("--output-tokens", type=int, default=0)
+    cost_cmd.add_argument("--tool-calls", type=int, default=1)
+    cost_cmd.add_argument("--retries", type=int, default=0)
+    cost_cmd.add_argument("--human-minutes", type=float, default=0.0)
+    cost_cmd.add_argument("--human", default="")
+    cost_cmd.add_argument("--note", default="")
 
     command("audit-claims", "Audit communication promises against product bounds and evidence kinds")
 
@@ -245,6 +281,7 @@ def parse_args():
 
     audit_repo = sub.add_parser("audit-repo", help="Check repository for secret leaks, stray DBs, and invalid JSON")
     audit_repo.add_argument("root", nargs="?", type=Path, default=Path("."))
+    audit_repo.add_argument("--history", action="store_true", help="Also scan all blobs across git commit history")
 
     return root.parse_args()
 
@@ -295,13 +332,21 @@ def run_case(args):
         init(case, args.request)
         return {"case": str(case), "stage": "intake"}
 
-    write_cmds = {"source", "retire", "propose", "accept", "checkpoint", "done"}
-    if cmd == "telemetry" and args.step:
-        write_cmds.add("telemetry")
+    write_cmds = {"source", "fetch", "retire", "propose", "accept", "checkpoint", "done"}
+    if cmd in {"telemetry", "cost"} and args.step:
+        write_cmds.add(cmd)
+
+    fetched_meta = None
+    if cmd == "fetch":
+        fetched_meta = fetch_open_webpage(case, args.id, args.url, relative_out=args.out, timeout=args.timeout)
 
     with load(case, write=cmd in write_cmds) as (state, db):
         if cmd == "source":
             return register(args, case, state, db)
+        if cmd == "fetch":
+            shim = argparse.Namespace(id=args.id, kind="web", file=fetched_meta["relative_path"], url=fetched_meta["url"])
+            reg = register(shim, case, state, db)
+            return {**reg, **fetched_meta}
         if cmd == "retire":
             record = state["sources"].get(args.id)
             if not record or record.get("retired") or not args.reason.strip():
@@ -318,10 +363,12 @@ def run_case(args):
                 raise ValueError("Next step is empty")
             state["checkpoint"] = {"stage": args.stage, "next": args.next, "at": now()}
             return state["checkpoint"]
-        if cmd == "telemetry":
+        if cmd in {"telemetry", "cost"}:
             if not args.step:
+                if cmd == "cost":
+                    return summarize_case_cost(case, state.get("telemetry", []))
                 return summarize_telemetry(state.get("telemetry", []))
-            return record_telemetry(
+            tel = record_telemetry(
                 state,
                 step=args.step,
                 model=args.model,
@@ -334,19 +381,36 @@ def run_case(args):
                 human_intervention=args.human,
                 note=args.note,
             )
+            cost_rec = append_cost_entry(
+                case,
+                step=args.step,
+                session=args.session,
+                model=args.model,
+                input_tokens=args.input_tokens,
+                cached_tokens=args.cached_tokens,
+                output_tokens=args.output_tokens,
+                wall_seconds=args.seconds,
+                tool_calls=args.tool_calls,
+                retries=args.retries,
+                human_minutes=args.human_minutes,
+                human_intervention=args.human,
+                note=args.note,
+            )
+            return cost_rec if cmd == "cost" else tel
 
         decisions = state["decisions"]
         draft = state["draft"]
         if cmd == "view":
+            cs = summarize_case_cost(case, state.get("telemetry", []))
             if args.draft or (args.decision is None and not decisions):
                 if not draft:
                     raise ValueError("No draft")
-                return render(draft, state["sources"])
+                return render(draft, state["sources"], cost_summary=cs)
             revision = args.decision if args.decision is not None else len(decisions)
             if not 1 <= revision <= len(decisions):
                 raise ValueError("Decision revision does not exist")
             entry = decisions[revision - 1]
-            return render(entry["proposal"], state["sources"], entry)
+            return render(entry["proposal"], state["sources"], entry, cost_summary=cs)
         if cmd == "done":
             if not args.note.strip() or not decisions:
                 raise ValueError("A recorded decision and completion note are required")
@@ -363,7 +427,7 @@ def run_case(args):
 
         sources = source_health(case, state["sources"])
         if cmd == "status":
-            return decision_status(state, sources, args.today.isoformat())
+            return decision_status(state, sources, args.today.isoformat(), case)
         if cmd == "route":
             return route_next_step(
                 case,
@@ -447,7 +511,7 @@ def main():
         elif args.command == "kb":
             result = run_kb(args)
         elif args.command == "audit-repo":
-            result = audit_repository(args.root)
+            result = audit_repository(args.root, scan_history=args.history)
             if not result["ok"]:
                 print(dumps(result), file=sys.stderr)
                 return 2

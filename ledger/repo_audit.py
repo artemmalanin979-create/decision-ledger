@@ -1,4 +1,4 @@
-"""Repository safety and hygiene checks used by git hooks and CI."""
+"""Repository safety, git-history secret scan, and personal-data hygiene checks."""
 
 from __future__ import annotations
 
@@ -11,12 +11,82 @@ SECRET_PATTERNS = [
     ("openai_key", re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b")),
     ("github_pat", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b")),
     ("aws_access_key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
+    ("yandex_iam_or_oauth", re.compile(r"\by0_[A-Za-z0-9_-]{25,}\b")),
     ("private_key_pem", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
 ]
 
+# Detect raw Russian mobile phone numbers (+7 9XX XXX-XX-XX) that could represent personal data (excludes 8-800 hotlines).
+PERSONAL_PHONE_PATTERN = re.compile(r"(?<!\d)(?:\+7|8)[\s(-]*9\d{2}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}(?!\d)")
 
-def audit_repository(root: Path) -> dict:
-    """Scan tracked or candidate project files for secrets, stray databases, and broken configs."""
+BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".pdf", ".zip"}
+
+
+def _scan_text_blob(rel: str, text: str, issues: list[dict], *, check_json: bool = True) -> None:
+    for label, pattern in SECRET_PATTERNS:
+        if pattern.search(text):
+            issues.append({"file": rel, "kind": "secret_leak", "detail": f"Подозрение на секрет ({label})"})
+
+    if PERSONAL_PHONE_PATTERN.search(text):
+        issues.append({"file": rel, "kind": "personal_data_phone", "detail": "Обнаружен мобильный номер формата +7/8-9XX (риск ПДн)"})
+
+    if check_json and rel.lower().endswith(".json"):
+        try:
+            json.loads(text)
+        except ValueError as err:
+            issues.append({"file": rel, "kind": "invalid_json", "detail": str(err)})
+
+
+def _scan_git_history(root: Path, issues: list[dict]) -> int:
+    rev_res = subprocess.run(
+        ["git", "-C", str(root), "rev-list", "--all"],
+        capture_output=True, text=True, check=False,
+    )
+    commits = [c.strip() for c in rev_res.stdout.splitlines() if c.strip()]
+    seen_blobs: set[str] = set()
+    scanned_blobs = 0
+
+    for commit in commits:
+        tree_res = subprocess.run(
+            ["git", "-C", str(root), "ls-tree", "-r", commit],
+            capture_output=True, text=True, check=False,
+        )
+        for line in tree_res.stdout.splitlines():
+            parts = line.split(None, 3)
+            if len(parts) < 4:
+                continue
+            _, obj_type, blob_sha, rel_path = parts
+            if obj_type != "blob" or blob_sha in seen_blobs:
+                continue
+            seen_blobs.add(blob_sha)
+
+            fname = Path(rel_path).name
+            suffix = Path(rel_path).suffix.lower()
+            if fname.endswith((".sqlite3", ".sqlite3-wal", ".sqlite3-shm")) or fname.startswith(".env"):
+                issues.append({
+                    "file": f"{commit[:7]}:{rel_path}",
+                    "kind": "forbidden_history_artifact",
+                    "detail": "В истории git найден запрещённый артефакт (.sqlite3 или .env)",
+                })
+                continue
+            if suffix in BINARY_SUFFIXES:
+                continue
+
+            cat_res = subprocess.run(
+                ["git", "-C", str(root), "cat-file", "-p", blob_sha],
+                capture_output=True, check=False,
+            )
+            try:
+                text = cat_res.stdout.decode("utf-8")
+            except UnicodeDecodeError:
+                continue
+            scanned_blobs += 1
+            _scan_text_blob(f"history:{commit[:7]}:{rel_path}", text, issues, check_json=False)
+
+    return scanned_blobs
+
+
+def audit_repository(root: Path, *, scan_history: bool = False) -> dict:
+    """Scan tracked project files (and optionally full git history) for secrets, PII phones, stray DBs, and invalid JSON."""
     root = root.resolve()
     issues: list[dict] = []
 
@@ -45,7 +115,7 @@ def audit_repository(root: Path) -> dict:
             issues.append({"file": rel, "kind": "forbidden_artifact", "detail": "Базы состояния и .env не должны попадать в git"})
             continue
 
-        if path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".pdf", ".zip"}:
+        if path.suffix.lower() in BINARY_SUFFIXES:
             continue
 
         try:
@@ -53,18 +123,15 @@ def audit_repository(root: Path) -> dict:
         except UnicodeDecodeError:
             continue
 
-        for label, pattern in SECRET_PATTERNS:
-            if pattern.search(text):
-                issues.append({"file": rel, "kind": "secret_leak", "detail": f"Подозрение на секрет ({label})"})
+        _scan_text_blob(rel, text, issues, check_json=True)
 
-        if path.suffix.lower() == ".json":
-            try:
-                json.loads(text)
-            except ValueError as err:
-                issues.append({"file": rel, "kind": "invalid_json", "detail": str(err)})
+    history_blobs = 0
+    if scan_history and git_dir.exists():
+        history_blobs = _scan_git_history(root, issues)
 
     return {
         "ok": len(issues) == 0,
         "checked_files": checked,
+        "scanned_history_blobs": history_blobs,
         "issues": issues,
     }

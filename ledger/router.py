@@ -24,7 +24,11 @@ def inspect_workspace_inputs(case: Path, registered_paths: set[str]) -> dict:
             if not item.is_file() or item.name.startswith("case.sqlite3"):
                 continue
             rel = item.relative_to(case).as_posix()
-            if rel in {"proposal.json", "recommendation.json"} or rel.endswith(".html"):
+            if (
+                rel in {"proposal.json", "recommendation.json", "cost.jsonl"}
+                or rel.startswith("proposal-")
+                or rel.endswith(".html")
+            ):
                 continue
             ext = item.suffix.lower()
             size = item.stat().st_size
@@ -173,12 +177,12 @@ def route_next_step(
         steps.append({
             "step": "strategy_and_skeptic_gate",
             "process": "strategy_synthesis",
-            "tool": "ledger propose + ledger audit-claims + ledger dashboard",
-            "skill": "strategy-and-claims",
+            "tool": "ledger propose --strict-claims + ledger audit-claims + ledger dashboard",
+            "skill": "product-frameworks + strategy-and-claims",
             "subagent": "skeptic-reviewer" if budget != "lean" else None,
             "model_tier": "deep_reasoning",
             "estimated_cost_tier": "medium",
-            "why": "Сборка минимум 3 вариантов (keep/change/close), согласование продукта и обещаний коммуникации, проверка стоп-правил.",
+            "why": "Сборка JTBD, дерева OST, Pre-mortem, матрицы обещаний и >=3 вариантов (keep/change/close) перед гейтом человека.",
             "stop_condition": "propose и audit-claims проходят без high-severity предупреждений; ждём подтверждения человека.",
         })
     elif draft:

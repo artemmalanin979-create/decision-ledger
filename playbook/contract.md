@@ -13,6 +13,8 @@ python3 -m ledger source .cases/demo pilot synthetic input/pilot.csv
 python3 -m ledger source .cases/demo interview_1 interview input/store_owner.md
 python3 -m ledger source .cases/demo checkout_ui ux input/pos_screen.md
 python3 -m ledger source .cases/demo vendor web input/vendor.md --url https://example.org/page
+python3 -m ledger fetch .cases/demo cbr_2025 https://cbr.ru/analytics/ib/operations_survey/2025/ --out input/cbr_2025.md
+python3 -m ledger cost .cases/demo --session session-1 --step intake --model gpt-5 --input-tokens 25000 --cached-tokens 18000 --output-tokens 1200 --seconds 24.5 --human-minutes 2.0
 python3 -m ledger status .cases/demo
 python3 -m ledger checkpoint .cases/demo research "Сравнить сегменты и экономику"
 

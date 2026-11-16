@@ -1,0 +1,8 @@
+operator,product_name,tier,price_rub_30d,free_in_bundle,voice_antispam,in_call_ai_interrupt,messenger_deepfake_or_link_check,family_slots,fraud_insurance_max_rub,public_source_url
+MegaFon,Ева (базовый помощник),base_free,0,yes,1,0,0,1,0,https://spb.megafon.ru/services/security/eva/
+MegaFon,Моя безопасность +,individual_paid,149,no,1,1,1,1,0,https://spb.megafon.ru/services/security/eva/
+MegaFon,Семейная безопасность +,family_paid,249,no,1,1,1,6,0,https://moscow.megafon.ru/lp/protection_cls/
+MTS,Защитник (базовый),individual_paid,99,mts_premium_and_junior,1,0,0,1,0,https://www.cnews.ru/news/line/2025-03-03_mts_predstavila_zashchitnik
+MTS,Защитник+,premium_with_insurance,199,selected_tariffs_discount,1,1,0,1,1500000,https://www.cnews.ru/news/line/2025-03-03_mts_predstavila_zashchitnik
+Beeline,Моя безопасность (базовая),base_free,0,yes,1,0,1,1,0,https://safe.cnews.ru/news/line/2025-11-17_bilajn_nazval_tri_shemy_telefonnogo
+T2,Защита от скрытых подписок и антиспам,base_free,0,yes,1,0,0,1,0,https://t2.ru/
