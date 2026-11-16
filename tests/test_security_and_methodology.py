@@ -281,6 +281,15 @@ class SecurityCostMethodologyTest(unittest.TestCase):
         err = self.run_cli("propose", str(self.case), "bad.json", "--strict-claims", ok=False)
         self.assertIn("promise_matrix", err)
 
+        # Verify pre-accept hook blocks approval even if staged without --strict-claims
+        staged_bad = json.loads(self.run_cli("propose", str(self.case), "bad.json"))
+        hook_err = self.run_cli(
+            "accept", str(self.case), "family_shield",
+            "--expect", staged_bad["sha"], "--by", "Комитет", "--reason", "Попытка обхода",
+            ok=False,
+        )
+        self.assertIn("Pre-accept hook blocked approval", hook_err)
+
         # Valid proposal stages, accepts, renders Markdown and HTML dashboard with cost & methodology
         (self.case / "good.json").write_text(json.dumps(proposal, ensure_ascii=False), encoding="utf-8")
         staged = json.loads(self.run_cli("propose", str(self.case), "good.json", "--strict-claims"))

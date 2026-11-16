@@ -174,6 +174,7 @@ def parse_args():
     accept.add_argument("--expect", required=True)
     accept.add_argument("--by", required=True)
     accept.add_argument("--reason", required=True)
+    accept.add_argument("--allow-claim-warnings", action="store_true", help="Explicitly override pre-accept claim warnings")
 
     status = command("status", "Show what to resume, review, and follow up")
     status.add_argument("--today", type=date.fromisoformat, default=date.today())
@@ -471,6 +472,10 @@ def run_case(args):
             raise ValueError("Draft differs from the recommendation that was reviewed")
         if outstanding(draft, sources):
             raise ValueError("Evidence changed. Review the case status before accepting.")
+        pre_accept_claims = audit_claims(draft, sources)
+        if not pre_accept_claims["passed"] and not args.allow_claim_warnings:
+            msgs = "; ".join(w["message"] for w in pre_accept_claims["warnings"] if w["severity"] == "high")
+            raise ValueError(f"Pre-accept hook blocked approval due to claim warnings: {msgs}")
         if not args.by.strip() or not args.reason.strip():
             raise ValueError("Approver and reason are required")
         decision = {
