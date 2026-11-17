@@ -113,9 +113,9 @@ class SecurityCostMethodologyTest(unittest.TestCase):
         inp = self.case / "input"
         inp.mkdir(parents=True)
         doc = inp / "market.md"
-        doc.write_text("Ущерб 29,3 млрд ₽ (ЦБ, 2025). Тариф 249 ₽.", encoding="utf-8")
+        doc.write_text("Потеряли фото 41% опрошенных (вымышленный отчёт, 2025). Тариф 199 ₽.", encoding="utf-8")
         synth = inp / "personas.md"
-        synth.write_text("[SYNTHETIC_PROBE] Дочь боится за родителей.", encoding="utf-8")
+        synth.write_text("[SYNTHETIC_PROBE] Фотограф-любитель боится потерять архив.", encoding="utf-8")
 
         r_doc = json.loads(self.run_cli("source", str(self.case), "market", "document", "input/market.md"))
         r_syn = json.loads(self.run_cli("source", str(self.case), "personas", "synthetic", "input/personas.md"))
@@ -140,104 +140,104 @@ class SecurityCostMethodologyTest(unittest.TestCase):
         self.assertTrue((self.case / "cost.jsonl").is_file())
 
         proposal = {
-            "title": "Стратегия подписки защиты 2027",
-            "summary": "Фокус на семейной защите родителей с прозрачными границами.",
+            "title": "Стратегия подписки облачного фотоархива 2027",
+            "summary": "Фокус на общем семейном фотоархиве с прозрачными границами.",
             "reviewed": {
-                "market": {"sha": r_doc["sha"], "note": "Обзор ЦБ и тарифов"},
+                "market": {"sha": r_doc["sha"], "note": "Вымышленный обзор рынка и тарифов"},
                 "personas": {"sha": r_syn["sha"], "note": "Синтетические респонденты (только для гипотез)"},
             },
             "findings": {
-                "f_cbr": {
+                "f_market": {
                     "kind": "fact",
-                    "text": "Хищения выросли до 29,3 млрд ₽ при смещении в мессенджеры и фишинг.",
+                    "text": "41% опрошенных теряли фото при смене телефона.",
                     "citations": [{"source": "market", "locator": "строка 1"}],
                 },
-                "h_family": {
+                "h_shared": {
                     "kind": "hypothesis",
-                    "text": "Взрослые дети готовы оплачивать защиту номеров пожилых родителей ради уведомлений о риске.",
+                    "text": "Члены семьи готовы платить за общий альбом ради автоматического копирования.",
                     "citations": [{"source": "personas", "locator": "персона 2"}],
                 },
                 "u_churn": {
                     "kind": "unknown",
-                    "text": "Не измерен отток при изменении архивных условий семейной опции.",
+                    "text": "Не измерен отток при изменении лимитов хранилища.",
                     "citations": [{"source": "market", "locator": "строка 1"}],
                 },
             },
             "options": {
                 "keep_current": {
-                    "title": "Оставить текущую витрину 149 / 249 ₽",
+                    "title": "Оставить текущий тариф 199 ₽",
                     "type": "keep",
                     "case": "Нулевые затраты на перестройку продукта.",
-                    "objection": "Базовый голосовой антиспам коммодитизирован и бесплатен у конкурентов.",
-                    "depends_on": ["f_cbr"],
+                    "objection": "Базовое хранилище бесплатно у конкурентов.",
+                    "depends_on": ["f_market"],
                 },
-                "family_shield": {
-                    "title": "Семейный флагман «Защити родителей»",
+                "shared_album": {
+                    "title": "Общий семейный альбом",
                     "type": "change",
-                    "case": "Разделяет плательщика и защищаемого, закрывает главный страх семьи.",
-                    "objection": "Требует деликатного согласия родителя и прозрачного биллинга.",
-                    "depends_on": ["f_cbr", "h_family"],
+                    "case": "Разделяет плательщика и участников, закрывает страх потери архива.",
+                    "objection": "Требует согласия участников и прозрачного биллинга.",
+                    "depends_on": ["f_market", "h_shared"],
                 },
                 "close_paid": {
-                    "title": "Закрыть платную B2C-подписку и оставить бесплатный минимум",
+                    "title": "Закрыть платную подписку и оставить бесплатный минимум",
                     "type": "close",
-                    "case": "Убирает расходы на маркетинг платной витрины.",
-                    "objection": "Потеря высокомаржинальной VAS-выручки в семейном сегменте.",
+                    "case": "Убирает расходы на маркетинг платного тарифа.",
+                    "objection": "Потеря выручки от активных пользователей.",
                     "depends_on": ["u_churn"],
                 },
             },
-            "recommended": "family_shield",
+            "recommended": "shared_album",
             "strategy": {
                 "product": {
-                    "text": "Запускаем семейный контур до 5 номеров только для подтверждённых связок с алертом плательщику.",
-                    "depends_on": ["f_cbr", "h_family"],
+                    "text": "Запускаем общий альбом до 5 участников только по приглашению плательщика.",
+                    "depends_on": ["f_market", "h_shared"],
                 },
                 "communication": {
-                    "text": "Честно говорим про уведомление близких при подозрительном вызове при условии включённого сервиса и кроме офлайн-переводов без участия связи.",
-                    "depends_on": ["f_cbr", "h_family", "u_churn"],
+                    "text": "Честно говорим про автоматическое копирование при включённой синхронизации и кроме файлов вне выбранных папок.",
+                    "depends_on": ["f_market", "h_shared", "u_churn"],
                 },
                 "experiment": {
-                    "text": "Пилот 4 недели на когорте семейных групп; стоп-правило: откат при жалобах на списания >0,3%.",
-                    "depends_on": ["h_family", "u_churn"],
+                    "text": "Пилот 4 недели на когорте семейных аккаунтов; стоп-правило: откат при жалобах на списания >0,3%.",
+                    "depends_on": ["h_shared", "u_churn"],
                 },
             },
             "methodology": {
                 "jtbd": {
-                    "payer_job": "Когда родители получают звонки от лже-ведомств, я хочу мгновенно видеть тревожный сигнал, чтобы уберечь их накопления.",
-                    "user_job": "Когда звонит незнакомый номер, я хочу понятную подсказку на экране, чтобы не пропустить врача и не ответить мошеннику.",
+                    "payer_job": "Когда семья снимает много фото, я хочу, чтобы они копировались сами, чтобы ничего не потерять.",
+                    "user_job": "Когда телефон заполнен, я хочу понятную подсказку, что уже сохранено, чтобы спокойно удалить лишнее.",
                     "forces": {
-                        "push": "Рост сложных схем в мессенджерах и крупные потери у пенсионеров",
-                        "pull": "Мгновенное уведомление взрослому ребёнку без чтения личных переписок",
-                        "anxiety": "Страх скрытых подписок и блокировки курьеров",
-                        "habit": "Бесплатный базовый определитель уже работает",
+                        "push": "Частые потери фото при смене телефона",
+                        "pull": "Общий альбом без ручной пересылки",
+                        "anxiety": "Страх скрытых подписок",
+                        "habit": "Бесплатное хранилище уже есть",
                     },
-                    "depends_on": ["f_cbr", "h_family"],
+                    "depends_on": ["f_market", "h_shared"],
                 },
                 "ost": {
-                    "outcome": "Ускорить чистый прирост платящей базы семейной защиты в 2027 году при удержании 90д >= 75%",
+                    "outcome": "Ускорить чистый прирост платящих семейных аккаунтов в 2027 году при удержании 90д >= 75%",
                     "opportunities": [
                         {
-                            "id": "opp_family_gap",
-                            "statement": "Пенсионеры не покупают цифровую защиту сами, а взрослые дети узнают об атаке слишком поздно",
-                            "depends_on": ["f_cbr", "h_family"],
+                            "id": "opp_shared_gap",
+                            "statement": "Члены семьи хранят фото разрозненно и узнают о потере слишком поздно",
+                            "depends_on": ["f_market", "h_shared"],
                             "solutions": [
-                                {"option_id": "family_shield", "assumption_test": "Конверсия лендинга «Защити родителей» >= 4,5% на тёплой базе"},
-                                {"option_id": "keep_current", "assumption_test": "Контрольная группа текущей витрины"},
+                                {"option_id": "shared_album", "assumption_test": "Конверсия приглашения в альбом >= 4,5% на тёплой базе"},
+                                {"option_id": "keep_current", "assumption_test": "Контрольная группа текущего тарифа"},
                             ],
                         }
                     ],
                 },
                 "premortem": [
                     {
-                        "failure_mode": "Родители отказываются подтверждать приглашение из-за страха тотального контроля",
+                        "failure_mode": "Участники не принимают приглашение из-за страха за приватность",
                         "probability": "medium",
                         "impact": "high",
                         "preventability": "high",
-                        "mitigation": "Приватный режим: плательщик видит только факт риска мошенничества, без лога личных звонков",
-                        "depends_on": ["h_family"],
+                        "mitigation": "Приватный режим: плательщик видит только объём, без доступа к личным папкам",
+                        "depends_on": ["h_shared"],
                     },
                     {
-                        "failure_mode": "Всплеск отписок из-за путаницы с архивными семейными опциями",
+                        "failure_mode": "Всплеск отписок из-за путаницы с прежними лимитами",
                         "probability": "medium",
                         "impact": "high",
                         "preventability": "medium",
@@ -245,38 +245,38 @@ class SecurityCostMethodologyTest(unittest.TestCase):
                         "depends_on": ["u_churn"],
                     },
                     {
-                        "failure_mode": "Смещение атак в мессенджеры снижает воспринимаемую пользу голосовой защиты",
+                        "failure_mode": "Встроенные копии в телефоне снижают воспринимаемую пользу",
                         "probability": "high",
                         "impact": "medium",
                         "preventability": "medium",
-                        "mitigation": "Проверка фишинговых ссылок и голосовых дипфейков в комплекте",
-                        "depends_on": ["f_cbr"],
+                        "mitigation": "Поиск дублей и восстановление удалённого в комплекте",
+                        "depends_on": ["f_market"],
                     },
                 ],
                 "promise_matrix": [
                     {
-                        "promise": "Предупредим вас, если близкому позвонит подозрительный номер",
-                        "capability": "Антифрод-скоринг вызова и пуш организатору семейной группы",
-                        "proof_findings": ["f_cbr"],
-                        "boundary": "Работает в сети оператора и не заменяет подтверждение банковских операций",
-                        "channel": "Приложение оператора и SMS-приглашение",
+                        "promise": "Сохраним новые фото из выбранных папок автоматически",
+                        "capability": "Фоновая синхронизация и уведомление организатору семейного аккаунта",
+                        "proof_findings": ["f_market"],
+                        "boundary": "Работает при включённой синхронизации и не заменяет локальную резервную копию",
+                        "channel": "Приложение и приглашение по ссылке",
                     }
                 ],
             },
             "actions": [
                 {
-                    "id": "launch_family_ab",
-                    "owner": "PM безопасности",
+                    "id": "launch_invite_ab",
+                    "owner": "PM фотоархива",
                     "due": "2026-12-15",
-                    "task": "Запустить сплит-тест приватного семейного приглашения",
-                    "trigger": "Доля подтверждений родителями < 35%",
+                    "task": "Запустить сплит-тест приватного приглашения",
+                    "trigger": "Доля принятых приглашений < 35%",
                 }
             ],
         }
 
         # Verify promise_matrix rejects synthetic-only proof when strict-claims is active
         bad_prop = json.loads(json.dumps(proposal))
-        bad_prop["methodology"]["promise_matrix"][0]["proof_findings"] = ["h_family"]
+        bad_prop["methodology"]["promise_matrix"][0]["proof_findings"] = ["h_shared"]
         (self.case / "bad.json").write_text(json.dumps(bad_prop, ensure_ascii=False), encoding="utf-8")
         err = self.run_cli("propose", str(self.case), "bad.json", "--strict-claims", ok=False)
         self.assertIn("promise_matrix", err)
@@ -284,7 +284,7 @@ class SecurityCostMethodologyTest(unittest.TestCase):
         # Verify pre-accept hook blocks approval even if staged without --strict-claims
         staged_bad = json.loads(self.run_cli("propose", str(self.case), "bad.json"))
         hook_err = self.run_cli(
-            "accept", str(self.case), "family_shield",
+            "accept", str(self.case), "shared_album",
             "--expect", staged_bad["sha"], "--by", "Комитет", "--reason", "Попытка обхода",
             ok=False,
         )
@@ -294,7 +294,7 @@ class SecurityCostMethodologyTest(unittest.TestCase):
         (self.case / "good.json").write_text(json.dumps(proposal, ensure_ascii=False), encoding="utf-8")
         staged = json.loads(self.run_cli("propose", str(self.case), "good.json", "--strict-claims"))
         self.run_cli(
-            "accept", str(self.case), "family_shield",
+            "accept", str(self.case), "shared_album",
             "--expect", staged["sha"], "--by", "Комитет", "--reason", "Одобрено на 2027",
         )
         md_view = self.run_cli("view", str(self.case))
@@ -309,13 +309,13 @@ class SecurityCostMethodologyTest(unittest.TestCase):
         self.assertIn("чел: 5.5 мин", dash_html)
 
         # Mutate market.md -> check transitive impact hits methodology nodes too!
-        doc.write_text("Обновление: базовая семейная защита стала 99 ₽/30 дн. с 09.11.2026.", encoding="utf-8")
+        doc.write_text("Обновление: базовый тариф стал 149 ₽/30 дн. (вымышленные данные).", encoding="utf-8")
         status_after = json.loads(self.run_cli("status", str(self.case)))
         self.assertGreater(status_after["cost"]["total_decision_cost_rub"], 0)
         imp = status_after["approved_impact"]
-        self.assertIn("f_cbr", imp["findings"])
+        self.assertIn("f_market", imp["findings"])
         self.assertIn("jtbd", imp["methodology"])
-        self.assertIn("ost:opp_family_gap", imp["methodology"])
+        self.assertIn("ost:opp_shared_gap", imp["methodology"])
         self.assertIn("promise_matrix:1", imp["methodology"])
 
         # Rubric evaluator scores both agent and baseline consistently
@@ -329,7 +329,7 @@ class SecurityCostMethodologyTest(unittest.TestCase):
             continuation_uncached_tokens=4200,
         )
         chat_score = evaluate_markdown_baseline(
-            "Просто запустите семейный тариф для всех абонентов со 100% защитой.\nЭто точно увеличит выручку в следующем году.",
+            "Просто запустите семейный тариф для всех пользователей со 100% сохранностью.\nЭто точно увеличит выручку в следующем году.",
             model="gpt-5",
             initial_input_tokens=25000,
             initial_output_tokens=2000,
@@ -368,18 +368,18 @@ class SecurityCostMethodologyTest(unittest.TestCase):
         self.assertIn("₽ не рассчитываются", html)
 
         econ = json.loads(
-            self.run_cli("economics", str(ROOT / "examples/antifraud-subscription/initial/economics_2027.json"))
+            self.run_cli("economics", str(ROOT / "tests/fixtures/economics_reference.json"))
         )
         self.assertIn("switching_analysis", econ)
-        p0 = econ["plans"]["opt0_keep_individual_149"]["breakeven_for_target_margin"]
-        p2 = econ["plans"]["opt2_family_parents_shield_249"]["breakeven_for_target_margin"]
+        p0 = econ["plans"]["plan_a"]["breakeven_for_target_margin"]
+        p2 = econ["plans"]["plan_b"]["breakeven_for_target_margin"]
         self.assertAlmostEqual(p0["max_upfront_cac"], 145.25, places=2)
         self.assertAlmostEqual(p2["max_upfront_cac"], 440.55, places=2)
         self.assertAlmostEqual(p2["min_retention_months"], 7.74, places=2)
         self.assertEqual(econ["viable_plans"], sorted(econ["viable_plans"]))
 
         md = self.run_cli(
-            "economics", str(ROOT / "examples/antifraud-subscription/initial/economics_2027.json"), "--format", "md"
+            "economics", str(ROOT / "tests/fixtures/economics_reference.json"), "--format", "md"
         )
         self.assertIn("**допущение**", md)
         self.assertIn("выпадает, если `> 440,55 ₽`", md)

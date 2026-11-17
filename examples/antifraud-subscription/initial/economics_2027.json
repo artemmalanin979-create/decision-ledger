@@ -1,98 +1,68 @@
 {
+  "kind": "economics_inputs",
   "currency": "RUB",
-  "min_margin_rate": 0.55,
-  "note": "Сценарная постатейная модель юнит-экономики на 1 платящую подписку (30 дней). Разделяет публичные цены с открытых витрин операторов (факты) и модельные параметры затрат/CAC/удержания (допущения сценария, не данные закрытой управленческой отчётности).",
-  "facts_vs_assumptions": {
-    "public_facts": [
-      "Цена «Моя безопасность +» = 149 ₽ / 30 дней (spb.megafon.ru/services/security/eva/)",
-      "Цена «Семейная безопасность +» = 249 ₽ / 30 дней до 5 номеров близких (moscow.megafon.ru/lp/protection_cls/)",
-      "Цена базовой «Семейной безопасности» с 09.11.2026 = 99 ₽ / 30 дней вне «Дели Тариф» и 0 ₽ в «Дели Тариф» (moscow.megafon.ru/help/info/popular/information/20261029-0928.html)",
-      "Ориентир рынка по подписке со страхованием до 1,5 млн ₽: МТС «Защитник+» 199–299 ₽/мес (cnews.ru, 03.03.2025)"
-    ],
-    "model_assumptions": [
-      "Прямые ежемесячные технологические и партнёрские затраты (инференс речевых/мессенджер-моделей, маршрутизация уведомлений, андеррайтинг страховки, поддержка) — экспертные сценарные допущения аналитика для стресс-теста",
-      "Разовые затраты привлечения и активации (CAC = 190..420 ₽) и средний срок жизни подписки (amortize_months = 5..14 мес.) — модельные допущения, проверяемые анализом чувствительности breakeven_for_target_margin и полевым пилотом Q1 2027"
-    ]
-  },
-  "plans": {
-    "opt0_keep_individual_149": {
-      "title": "(0) Текущая индивидуальная «Моя безопасность +» (149 ₽ / 30 дн.)",
-      "epistemic_basis": "public_price_plus_model_assumptions",
-      "monthly_revenue": 149,
-      "recurring_costs": {
+  "as_of": "2026-11-16",
+  "note": "Только входные данные для юнит-экономики на 1 платящую подписку (30 дней): публичные цены из открытых снимков (факты) и модельные допущения затрат, привлечения и удержания (не данные управленческой отчётности МегаФона). Готовых вариантов решения здесь нет: агент сам формулирует варианты, собирает для них спецификацию `plans` в папке кейса (`.cases/<case>/input/*.json`, формат `ledger economics`: monthly_revenue, recurring_costs, upfront_costs, amortize_months) и явно помечает каждое новое допущение. Порог маржинального вклада задаёт комитет, в этом файле его нет.",
+  "public_facts": [
+    {
+      "id": "megafon_my_security_plus_price",
+      "text": "«Моя безопасность +» стоит 149 ₽ за 30 дней; на некоторых тарифах списывается по 5 ₽ в сутки; абонемент 1 499 ₽ на 12 месяцев или 1 999 ₽ навсегда.",
+      "monthly_price_rub": 149,
+      "source_url": "https://spb.megafon.ru/services/security/eva/",
+      "snapshot": "examples/antifraud-subscription/initial/web/megafon_eva_spb.md",
+      "snapshot_utc": "2026-11-16T23:19:15+00:00"
+    },
+    {
+      "id": "megafon_family_security_plus_price",
+      "text": "«Семейная безопасность +» стоит 249 ₽ за 30 дней за защиту всех номеров: подключивший и до 5 номеров МегаФона близких; абонемент 2 499 ₽ на 12 месяцев.",
+      "monthly_price_rub": 249,
+      "source_url": "https://moscow.megafon.ru/lp/protection_cls/",
+      "snapshot": "examples/antifraud-subscription/initial/web/megafon_family_plus.md",
+      "snapshot_utc": "2026-11-16T23:19:15+00:00"
+    },
+    {
+      "id": "megafon_eva_free_tier",
+      "text": "У «Евы» есть бесплатные функции в разделах «Моя безопасность» и «Секретарь»; Ева доступна на любом тарифе.",
+      "monthly_price_rub": 0,
+      "source_url": "https://spb.megafon.ru/services/security/eva/",
+      "snapshot": "examples/antifraud-subscription/initial/web/megafon_eva_spb.md",
+      "snapshot_utc": "2026-11-16T23:19:15+00:00"
+    },
+    {
+      "id": "mts_zashchitnik_plus_price",
+      "text": "МТС «Защитник+» (с услугой «Страхование от мошенников» до 1,5 млн ₽): 7 дней бесплатно, далее 149 ₽ в месяц на актуальных тарифах и 199 ₽ на архивных (CNews, 03.03.2025).",
+      "monthly_price_rub": [149, 199],
+      "source_url": "https://www.cnews.ru/news/line/2025-03-03_mts_predstavila_zashchitnik",
+      "snapshot": "examples/antifraud-subscription/initial/web/mts_zashchitnik_cnews.md",
+      "snapshot_utc": "2026-11-16T23:19:15+00:00"
+    }
+  ],
+  "model_assumptions": {
+    "status": "assumption",
+    "basis": "Экспертные сценарные допущения аналитика для стресс-теста; не измерены, не взяты из отчётности; проверяются анализом чувствительности и полевым пилотом.",
+    "recurring_costs_rub_per_month": {
+      "individual_paid_subscription": {
         "ai_voice_and_deepfake_inference": 22,
         "sms_and_push_notifications": 6,
         "support_and_billing_ops": 10
       },
-      "upfront_costs": {
-        "digital_cac_and_promo_trial": 260
-      },
-      "amortize_months": 5,
-      "assumptions": {
-        "monthly_revenue": "Публичный факт витрины МегаФона (149 ₽ / 30 дн.)",
-        "recurring_costs": "Допущение модели (38 ₽/мес суммарно на инференс, пуши и поддержку)",
-        "upfront_cac": "Допущение модели (260 ₽ на платное привлечение индивидуального VAS на коммодитизированном рынке)",
-        "amortize_months": "Допущение модели (5 мес. среднего удержания из-за конкуренции с бесплатной базовой «Евой»)"
-      }
-    },
-    "opt1_bundle_heavy_premium_299": {
-      "title": "(1) База бесплатно во всех тарифах + индивидуальный премиум со страховкой до 1,5 млн ₽ (299 ₽ / 30 дн.)",
-      "epistemic_basis": "benchmark_price_plus_model_assumptions",
-      "monthly_revenue": 299,
-      "recurring_costs": {
-        "ai_voice_and_messenger_shield": 34,
-        "fraud_insurance_underwriting_fee": 92,
-        "claims_and_vip_support": 18
-      },
-      "upfront_costs": {
-        "campaign_and_onboarding_cac": 420
-      },
-      "amortize_months": 6,
-      "assumptions": {
-        "monthly_revenue": "Рыночный ориентир верхнего тира с финансовой защитой (299 ₽/мес по аналогии с Защитник+)",
-        "recurring_costs": "Допущение модели (144 ₽/мес, где ключевой драйвер — оптовая страховая премия 92 ₽/мес за лимит 1,5 млн ₽)",
-        "upfront_cac": "Допущение модели (420 ₽ CAC холодного привлечения дорогого индивидуального тира)",
-        "amortize_months": "Допущение модели (6 мес. среднего удержания)"
-      }
-    },
-    "opt2_family_parents_shield_249": {
-      "title": "(2) Семейный флагман «Защити родителей» (до 5 номеров + приватный алерт + антифишинг мессенджеров, 249 ₽ / 30 дн.)",
-      "epistemic_basis": "public_price_plus_model_assumptions",
-      "monthly_revenue": 249,
-      "recurring_costs": {
+      "family_paid_subscription_per_group": {
         "multi_number_ai_scoring_and_deepfake": 42,
         "realtime_family_alert_routing": 14,
         "support_and_family_onboarding": 16
-      },
-      "upfront_costs": {
-        "family_base_activation_and_cac": 310
-      },
-      "amortize_months": 11,
-      "assumptions": {
-        "monthly_revenue": "Публичный факт витрины МегаФона «Семейная безопасность +» (249 ₽ / 30 дн.)",
-        "recurring_costs": "Допущение модели (72 ₽/мес на семейную группу из 2–4 активных номеров)",
-        "upfront_cac": "Допущение модели (310 ₽ CAC при таргетинге на тёплую базу семейных групп и плательщиков за близких)",
-        "amortize_months": "Допущение модели (11 мес. удержания за счёт высокой инерции семейной связки «взрослые дети — родители»)"
       }
     },
-    "opt3_b2b2c_bank_coantifraud_180": {
-      "title": "(3) B2B2C совместный антифрод-контур с банками (оптовый revenue-share за защищённого клиента, 180 ₽ / 30 дн.)",
-      "epistemic_basis": "scenario_hypothesis_assumptions",
-      "monthly_revenue": 180,
-      "recurring_costs": {
-        "telco_risk_signal_api_and_scoring": 36,
-        "sla_monitoring_and_compliance": 18
-      },
-      "upfront_costs": {
-        "partner_integration_per_active_user": 190
-      },
-      "amortize_months": 14,
-      "assumptions": {
-        "monthly_revenue": "Допущение модели (180 ₽/мес оптовой выручки на защищённого банковского клиента в модели B2B2C)",
-        "recurring_costs": "Допущение модели (54 ₽/мес на API риск-сигналов и SLA)",
-        "upfront_cac": "Допущение модели (190 ₽ удельных затрат на интеграцию/активацию в канале банка)",
-        "amortize_months": "Допущение модели (14 мес. удержания внутри банковского пакета)"
-      }
+    "upfront_acquisition_cost_rub": {
+      "individual_paid_digital_acquisition": 260,
+      "family_warm_base_activation": 310
+    },
+    "average_retention_months": {
+      "individual_paid_subscription": 5,
+      "family_paid_subscription": 11
+    },
+    "sensitivity_ranges": {
+      "upfront_acquisition_cost_rub": [190, 420],
+      "average_retention_months": [5, 14]
     }
   }
 }

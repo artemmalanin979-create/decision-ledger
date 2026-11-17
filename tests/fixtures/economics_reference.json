@@ -1,0 +1,31 @@
+{
+  "currency": "RUB",
+  "min_margin_rate": 0.55,
+  "note": "Тестовая фикстура калькулятора ledger economics: абстрактные планы без привязки к реальному кейсу. Все числа вымышлены.",
+  "plans": {
+    "plan_a": {
+      "title": "Тестовый план A",
+      "epistemic_basis": "public_price_plus_model_assumptions",
+      "monthly_revenue": 149,
+      "recurring_costs": {"variable_cost_1": 22, "variable_cost_2": 6, "variable_cost_3": 10},
+      "upfront_costs": {"acquisition": 260},
+      "amortize_months": 5
+    },
+    "plan_b": {
+      "title": "Тестовый план B",
+      "epistemic_basis": "public_price_plus_model_assumptions",
+      "monthly_revenue": 249,
+      "recurring_costs": {"variable_cost_1": 42, "variable_cost_2": 14, "variable_cost_3": 16},
+      "upfront_costs": {"acquisition": 310},
+      "amortize_months": 11
+    },
+    "plan_c": {
+      "title": "Тестовый план C",
+      "epistemic_basis": "scenario_hypothesis_assumptions",
+      "monthly_revenue": 180,
+      "recurring_costs": {"variable_cost_1": 36, "variable_cost_2": 18},
+      "upfront_costs": {"acquisition": 190},
+      "amortize_months": 14
+    }
+  }
+}

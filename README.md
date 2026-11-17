@@ -90,8 +90,8 @@ make check
 python3 -W error::ResourceWarning -m unittest discover -s tests -v
 python3 -m ledger audit-repo . --history
 
-# Детерминированный расчёт юнит-экономики 4 платных конфигураций на 2027 год
-python3 -m ledger economics examples/antifraud-subscription/initial/economics_2027.json
+# Детерминированный расчёт юнит-экономики и порогов смены решения (тестовая фикстура; планы кейса агент собирает сам)
+python3 -m ledger economics tests/fixtures/economics_reference.json
 
 # Когортный расчёт с 95% ДИ Вильсона и проверкой защитных порогов на CSV
 python3 -m ledger rates examples/retail-backup/later/recount.csv \
@@ -110,13 +110,13 @@ python3 -m ledger rates examples/retail-backup/later/recount.csv \
    Возьми запрос из examples/antifraud-subscription/brief.md, сохрани кейс в .cases/antifraud.
    Сначала задай только те вопросы, которые меняют рекомендацию.
    ```
-   Передайте ответы из [examples/antifraud-subscription/manager.md](examples/antifraud-subscription/manager.md) — там только рамки и ограничения (минимум 3 разных направления, включая «оставить как есть» и «закрыть»), готового списка вариантов нет. Агент соберёт открытые источники из `examples/antifraud-subscription/initial/`, сам предложит варианты, посчитает экономику, построит OST/JTBD/Pre-mortem и остановится перед гейтом выбора человека.
+   Передайте ответы из [examples/antifraud-subscription/manager.md](examples/antifraud-subscription/manager.md) — там только рамки и ограничения (минимум 3 разных направления, включая «оставить как есть» и «закрыть»), готового списка вариантов нет. Агент соберёт открытые источники из `examples/antifraud-subscription/initial/` (в `economics_2027.json` — только цены и допущения затрат, без готовых планов), сам предложит варианты, посчитает экономику, построит OST/JTBD/Pre-mortem и остановится перед гейтом выбора человека.
 
    > **Честно о собранном демо**: в `demo/antifraud-subscription/` использована прежняя версия `manager.md` (коммит `9aab602`), где **все 5 стратегических направлений перечислил руководитель**. Агент их конкретизировал (цены `299 ₽` со страховкой и `180 ₽` опт для B2B2C, возражения, тесты OST) и после новости от 29.10.2026 перестроил вариант (2) в лестницу `0 / 99 / 249 ₽` с доплатой `+150 ₽`. Самостоятельный поиск вариантов агентом проверяется живым прогоном по [docs/live-run.md](docs/live-run.md).
 2. **Сеанс 2 (новый чат — утверждение выбора и выпуск стратегий)**:
    ```text
-   Открой сохранённый кейс .cases/antifraud. Комитет утверждает рекомендуемый семейный вариант
-   opt2_family_parents_shield — зафиксируй Решение №1, проиндексируй в базу знаний и собери паспорт.
+   Открой сохранённый кейс .cases/antifraud. Комитет утверждает рекомендованный тобой вариант —
+   зафиксируй Решение №1, проиндексируй в базу знаний и собери паспорт.
    ```
 3. **Сеанс 3 (новый чат — пересмотр при поступлении новых данных)**:
    ```text
