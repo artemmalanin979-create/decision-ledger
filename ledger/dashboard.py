@@ -240,9 +240,10 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
                 opp_cards.append(
                     f'<div class="node-card{ost_stale}">'
                     f'<div class="node-head"><span class="mono">{escape(opp["id"])}</span>'
-                    f'<span class="tag">{escape(", ".join(opp["depends_on"]))}</span></div>'
+                    f'<span class="tag">{_plural_ru(len(opp["depends_on"]), "основание", "основания", "оснований")}</span></div>'
                     f'<div class="node-body"><strong>{escape(opp["statement"])}</strong></div>'
-                    f'<ul style="margin:6px 0 0 18px;padding:0;font-size:12px;color:var(--muted);">{sol_items}</ul></div>'
+                    f'<ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);">{sol_items}</ul>'
+                    f'<div class="node-meta">Опора: {escape(", ".join(opp["depends_on"]))}</div></div>'
                 )
             meth_blocks.append(
                 f'<div style="margin-bottom:14px;">'

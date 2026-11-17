@@ -1,0 +1,157 @@
+{
+  "stage": "intake",
+  "budget": "balanced",
+  "workspace_scan": {
+    "unregistered_files": [
+      {
+        "path": "00-intake-questions.md",
+        "bytes": 4717,
+        "ext": ".md"
+      },
+      {
+        "path": "input/brief.md",
+        "bytes": 1004,
+        "ext": ".md"
+      },
+      {
+        "path": "input/economics_2027.json",
+        "bytes": 2541,
+        "ext": ".json"
+      },
+      {
+        "path": "input/interviews/interview_guide.md",
+        "bytes": 3682,
+        "ext": ".md"
+      },
+      {
+        "path": "input/interviews/synthetic_personas.json",
+        "bytes": 8325,
+        "ext": ".json"
+      },
+      {
+        "path": "input/interviews/synthetic_personas.md",
+        "bytes": 4518,
+        "ext": ".md"
+      },
+      {
+        "path": "input/manager.md",
+        "bytes": 2783,
+        "ext": ".md"
+      },
+      {
+        "path": "input/operator_tariffs_2026.csv",
+        "bytes": 1145,
+        "ext": ".csv"
+      },
+      {
+        "path": "input/ux/eva_landing_live.png",
+        "bytes": 618939,
+        "ext": ".png"
+      },
+      {
+        "path": "input/ux/family_plus_landing_live.png",
+        "bytes": 216120,
+        "ext": ".png"
+      },
+      {
+        "path": "input/ux/ux_observations.md",
+        "bytes": 5041,
+        "ext": ".md"
+      },
+      {
+        "path": "input/web/beeline_safety_cnews.md",
+        "bytes": 18308,
+        "ext": ".md"
+      },
+      {
+        "path": "input/web/cbr_operations_2025.md",
+        "bytes": 25696,
+        "ext": ".md"
+      },
+      {
+        "path": "input/web/megafon_annual_2025.md",
+        "bytes": 46036,
+        "ext": ".md"
+      },
+      {
+        "path": "input/web/megafon_eva_spb.md",
+        "bytes": 23172,
+        "ext": ".md"
+      },
+      {
+        "path": "input/web/megafon_family_plus.md",
+        "bytes": 12285,
+        "ext": ".md"
+      },
+      {
+        "path": "input/web/megafon_h1_2026.md",
+        "bytes": 17146,
+        "ext": ".md"
+      },
+      {
+        "path": "input/web/mts_zashchitnik_cnews.md",
+        "bytes": 16552,
+        "ext": ".md"
+      },
+      {
+        "path": "input/web/vedomosti_seniors_2026.md",
+        "bytes": 23002,
+        "ext": ".md"
+      }
+    ],
+    "modalities": {
+      "table": 1,
+      "document": 16,
+      "image_ux": 2,
+      "audio_video": 0
+    },
+    "total_bytes": 1051012
+  },
+  "recovery": null,
+  "primary_route": {
+    "step": "triage_new_inputs",
+    "process": "intake_or_followup",
+    "tool": "ledger source",
+    "skill": "problem-framing",
+    "subagent": "evidence-extractor",
+    "model_tier": "fast",
+    "estimated_cost_tier": "low",
+    "why": "Найдено 19 незарегистрированных файлов (1051012 байт).",
+    "stop_condition": "Все разрешённые входные файлы зарегистрированы с SHA-256."
+  },
+  "pipeline": [
+    {
+      "step": "triage_new_inputs",
+      "process": "intake_or_followup",
+      "tool": "ledger source",
+      "skill": "problem-framing",
+      "subagent": "evidence-extractor",
+      "model_tier": "fast",
+      "estimated_cost_tier": "low",
+      "why": "Найдено 19 незарегистрированных файлов (1051012 байт).",
+      "stop_condition": "Все разрешённые входные файлы зарегистрированы с SHA-256."
+    },
+    {
+      "step": "ux_and_interview_synthesis",
+      "process": "qualitative_analysis",
+      "tool": "read_file (image/transcript) + ledger kb",
+      "skill": "synthetic-interviews-ux",
+      "subagent": "evidence-extractor",
+      "model_tier": "fast_multimodal",
+      "estimated_cost_tier": "low",
+      "why": "Разбор видимых элементов интерфейса и кодирование интервью/синтетических респондентов без смешения с рыночными фактами.",
+      "stop_condition": "Зафиксированы барьеры восприятия и проверяемые гипотезы для коммуникации."
+    },
+    {
+      "step": "strategy_and_skeptic_gate",
+      "process": "strategy_synthesis",
+      "tool": "ledger propose --strict-claims + ledger audit-claims + ledger dashboard",
+      "skill": "product-frameworks + strategy-and-claims",
+      "subagent": "skeptic-reviewer",
+      "model_tier": "deep_reasoning",
+      "estimated_cost_tier": "medium",
+      "why": "Сборка JTBD, дерева OST, Pre-mortem, матрицы обещаний и >=3 вариантов (keep/change/close) перед гейтом человека.",
+      "stop_condition": "propose и audit-claims проходят без high-severity предупреждений; ждём подтверждения человека."
+    }
+  ]
+}

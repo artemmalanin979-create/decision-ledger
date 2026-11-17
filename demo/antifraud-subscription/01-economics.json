@@ -1,0 +1,175 @@
+{
+  "currency": "RUB",
+  "unit": "paying_unit_month",
+  "min_margin_rate": 0.55,
+  "viable_plans": [
+    "opt2_family_parents_shield_249",
+    "opt3_b2b2c_bank_coantifraud_180"
+  ],
+  "plans": {
+    "opt0_keep_individual_149": {
+      "title": "(0) Текущая индивидуальная «Моя безопасность +» (149 ₽ / 30 дн.)",
+      "monthly_revenue": 149.0,
+      "recurring_cost": 38.0,
+      "upfront_total": 260.0,
+      "amortize_months": 5,
+      "amortized_upfront": 52.0,
+      "direct_cost": 90.0,
+      "contribution": 59.0,
+      "contribution_rate": 0.395973,
+      "min_margin_rate": 0.55,
+      "meets_target": false,
+      "max_allowable_cost": 67.05,
+      "cost_headroom": -22.95,
+      "max_cost_increase_pct": -25.5,
+      "operational_payback_months": 2.34,
+      "sensitivity": {
+        "cost_plus_15pct": {
+          "monthly_revenue": 149.0,
+          "direct_cost": 103.5,
+          "contribution": 45.5,
+          "contribution_rate": 0.305369,
+          "meets_target": false
+        },
+        "cost_plus_25pct": {
+          "monthly_revenue": 149.0,
+          "direct_cost": 112.5,
+          "contribution": 36.5,
+          "contribution_rate": 0.244966,
+          "meets_target": false
+        },
+        "price_minus_10pct": {
+          "monthly_revenue": 134.1,
+          "direct_cost": 90.0,
+          "contribution": 44.1,
+          "contribution_rate": 0.328859,
+          "meets_target": false
+        }
+      },
+      "unknowns": []
+    },
+    "opt1_bundle_heavy_premium_299": {
+      "title": "(1) База бесплатно во всех тарифах + индивидуальный премиум со страховкой до 1,5 млн ₽ (299 ₽ / 30 дн.)",
+      "monthly_revenue": 299.0,
+      "recurring_cost": 144.0,
+      "upfront_total": 420.0,
+      "amortize_months": 6,
+      "amortized_upfront": 70.0,
+      "direct_cost": 214.0,
+      "contribution": 85.0,
+      "contribution_rate": 0.284281,
+      "min_margin_rate": 0.55,
+      "meets_target": false,
+      "max_allowable_cost": 134.55,
+      "cost_headroom": -79.45,
+      "max_cost_increase_pct": -37.13,
+      "operational_payback_months": 2.71,
+      "sensitivity": {
+        "cost_plus_15pct": {
+          "monthly_revenue": 299.0,
+          "direct_cost": 246.1,
+          "contribution": 52.9,
+          "contribution_rate": 0.176923,
+          "meets_target": false
+        },
+        "cost_plus_25pct": {
+          "monthly_revenue": 299.0,
+          "direct_cost": 267.5,
+          "contribution": 31.5,
+          "contribution_rate": 0.105351,
+          "meets_target": false
+        },
+        "price_minus_10pct": {
+          "monthly_revenue": 269.1,
+          "direct_cost": 214.0,
+          "contribution": 55.1,
+          "contribution_rate": 0.204757,
+          "meets_target": false
+        }
+      },
+      "unknowns": []
+    },
+    "opt2_family_parents_shield_249": {
+      "title": "(2) Семейный флагман «Защити родителей» (до 5 номеров + приватный алерт + антифишинг мессенджеров, 249 ₽ / 30 дн.)",
+      "monthly_revenue": 249.0,
+      "recurring_cost": 72.0,
+      "upfront_total": 310.0,
+      "amortize_months": 11,
+      "amortized_upfront": 28.18,
+      "direct_cost": 100.18,
+      "contribution": 148.82,
+      "contribution_rate": 0.597663,
+      "min_margin_rate": 0.55,
+      "meets_target": true,
+      "max_allowable_cost": 112.05,
+      "cost_headroom": 11.87,
+      "max_cost_increase_pct": 11.85,
+      "operational_payback_months": 1.75,
+      "sensitivity": {
+        "cost_plus_15pct": {
+          "monthly_revenue": 249.0,
+          "direct_cost": 115.21,
+          "contribution": 133.79,
+          "contribution_rate": 0.537313,
+          "meets_target": false
+        },
+        "cost_plus_25pct": {
+          "monthly_revenue": 249.0,
+          "direct_cost": 125.23,
+          "contribution": 123.77,
+          "contribution_rate": 0.497079,
+          "meets_target": false
+        },
+        "price_minus_10pct": {
+          "monthly_revenue": 224.1,
+          "direct_cost": 100.18,
+          "contribution": 123.92,
+          "contribution_rate": 0.552959,
+          "meets_target": true
+        }
+      },
+      "unknowns": []
+    },
+    "opt3_b2b2c_bank_coantifraud_180": {
+      "title": "(3) B2B2C совместный антифрод-контур с банками (revenue-share за защищённого клиента, 180 ₽ / 30 дн.)",
+      "monthly_revenue": 180.0,
+      "recurring_cost": 54.0,
+      "upfront_total": 190.0,
+      "amortize_months": 14,
+      "amortized_upfront": 13.57,
+      "direct_cost": 67.57,
+      "contribution": 112.43,
+      "contribution_rate": 0.624603,
+      "min_margin_rate": 0.55,
+      "meets_target": true,
+      "max_allowable_cost": 81.0,
+      "cost_headroom": 13.43,
+      "max_cost_increase_pct": 19.87,
+      "operational_payback_months": 1.51,
+      "sensitivity": {
+        "cost_plus_15pct": {
+          "monthly_revenue": 180.0,
+          "direct_cost": 77.71,
+          "contribution": 102.29,
+          "contribution_rate": 0.568294,
+          "meets_target": true
+        },
+        "cost_plus_25pct": {
+          "monthly_revenue": 180.0,
+          "direct_cost": 84.46,
+          "contribution": 95.54,
+          "contribution_rate": 0.530754,
+          "meets_target": false
+        },
+        "price_minus_10pct": {
+          "monthly_revenue": 162.0,
+          "direct_cost": 67.57,
+          "contribution": 94.43,
+          "contribution_rate": 0.582892,
+          "meets_target": true
+        }
+      },
+      "unknowns": []
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "sources": [
+    "megafon_family"
+  ],
+  "unreviewed": [
+    "megafon_change_20261029"
+  ],
+  "findings": [
+    "f06_megafon_family_terms",
+    "f10_ux_family_landing_and_onboarding",
+    "f12_econ_family_shield_margin_and_headroom",
+    "f14_hyp_cross_operator_and_messenger_gap",
+    "f15_forecast_q1_2027_family_pilot",
+    "f16_unknown_price_elasticity_and_mixed_sim"
+  ],
+  "options": [
+    "opt0_keep_status_quo",
+    "opt2_family_parents_shield"
+  ],
+  "strategy": [
+    "communication",
+    "experiment",
+    "product"
+  ],
+  "methodology": [
+    "jtbd",
+    "ost:opp2_seniors_high_severity_and_privacy",
+    "ost:opp3_messenger_phishing_and_mixed_sim",
+    "premortem:1",
+    "premortem:2",
+    "premortem:3",
+    "promise_matrix:1",
+    "promise_matrix:2"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "case": "antifraud-subscription (MegaFon open data 2026-2027)",
+  "evaluated_at": "2026-11-17",
+  "agent_3_sessions": {
+    "mode": "decision_ledger_agent",
+    "citation_coverage_ratio": 1.0,
+    "cited_statements": 17,
+    "total_statements": 17,
+    "facts_separated_from_hypotheses": true,
+    "epistemic_kinds": [
+      "fact",
+      "forecast",
+      "hypothesis",
+      "inference",
+      "observation",
+      "unknown"
+    ],
+    "claims_audit_passed": true,
+    "automated_hazards_caught": 4,
+    "stale_impact_recall": 1.0,
+    "continuation_uncached_tokens": 10300,
+    "wall_seconds": 181.8,
+    "api_cost_usd": 0.184476,
+    "api_cost_rub": 18.17,
+    "human_minutes": 7.5,
+    "human_cost_rub": 375.0,
+    "total_cost_of_decision_rub": 393.17
+  },
+  "plain_chat_2_sessions": {
+    "mode": "plain_chat",
+    "citation_coverage_ratio": 0.0978,
+    "cited_statements": 18,
+    "total_statements": 184,
+    "facts_separated_from_hypotheses": false,
+    "epistemic_markers_count": 4,
+    "automated_hazards_caught": 0,
+    "stale_impact_recall": 0.6667,
+    "continuation_uncached_tokens": 10525,
+    "wall_seconds": 118.4,
+    "api_cost_usd": 0.181468,
+    "api_cost_rub": 17.88,
+    "human_minutes": 28.0,
+    "human_cost_rub": 1400.0,
+    "total_cost_of_decision_rub": 1417.88
+  }
+}

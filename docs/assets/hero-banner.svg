@@ -56,7 +56,7 @@
 
     <circle cx="802" cy="53" r="4" fill="#2DD4BF"/>
     <text x="814" y="57" fill="#94A3B8" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="11.5" font-weight="600" letter-spacing="0.5">КОНТУР ВЕРИФИКАЦИИ</text>
-    <text x="1212" y="57" text-anchor="end" fill="#5EEAD4" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="11.5" font-weight="600">26 ТЕСТОВ · OK</text>
+    <text x="1212" y="57" text-anchor="end" fill="#5EEAD4" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="11.5" font-weight="600">30 ТЕСТОВ · OK</text>
 
     <!-- Vertical connector -->
     <line x1="813" y1="108" x2="813" y2="286" stroke="#26354D" stroke-width="1.5"/>
