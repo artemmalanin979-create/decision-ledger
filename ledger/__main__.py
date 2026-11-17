@@ -15,7 +15,7 @@ from urllib.parse import urlsplit
 from .claims import audit_claims, scan_untrusted_text
 from .cost import append_cost_entry, summarize_case_cost
 from .dashboard import write_dashboard
-from .economics import evaluate_economics_file
+from .economics import evaluate_economics_file, render_assumptions_markdown
 from .kb import ingest_case_into_kb, link_entries, retract_entry, search_kb, upsert_entry
 from .mcp_server import serve_mcp
 from .repo_audit import audit_repository
@@ -208,7 +208,9 @@ def parse_args():
     telemetry.add_argument("--output-tokens", type=int, default=0)
     telemetry.add_argument("--tool-calls", type=int, default=1)
     telemetry.add_argument("--retries", type=int, default=0)
-    telemetry.add_argument("--human-minutes", type=float, default=0.0)
+    telemetry.add_argument("--human-minutes", type=float, default=None)
+    telemetry.add_argument("--estimated", action="store_true")
+    telemetry.add_argument("--method", default="")
     telemetry.add_argument("--human", default="")
     telemetry.add_argument("--note", default="")
 
@@ -222,7 +224,9 @@ def parse_args():
     cost_cmd.add_argument("--output-tokens", type=int, default=0)
     cost_cmd.add_argument("--tool-calls", type=int, default=1)
     cost_cmd.add_argument("--retries", type=int, default=0)
-    cost_cmd.add_argument("--human-minutes", type=float, default=0.0)
+    cost_cmd.add_argument("--human-minutes", type=float, default=None)
+    cost_cmd.add_argument("--estimated", action="store_true", help="Mark cost/token figures as estimated")
+    cost_cmd.add_argument("--method", default="", help="Measurement or estimation methodology note")
     cost_cmd.add_argument("--human", default="")
     cost_cmd.add_argument("--note", default="")
 
@@ -242,6 +246,10 @@ def parse_args():
 
     econ = sub.add_parser("economics", help="Compute unit economics, cost headroom, and stress bounds")
     econ.add_argument("file", type=Path)
+    econ.add_argument(
+        "--format", choices=["json", "md"], default="json",
+        help="md: таблица «факты vs допущения» и пороги смены решения для стратегии/паспорта",
+    )
 
     kb = sub.add_parser("kb", help="Manage and search the cross-session knowledge base")
     kb.add_argument("--kb-dir", type=Path, default=Path(".kb"))
@@ -395,6 +403,8 @@ def run_case(args):
                 retries=args.retries,
                 human_minutes=args.human_minutes,
                 human_intervention=args.human,
+                estimated=args.estimated,
+                method=args.method,
                 note=args.note,
             )
             return cost_rec if cmd == "cost" else tel
@@ -513,6 +523,8 @@ def main():
             )
         elif args.command == "economics":
             result = evaluate_economics_file(args.file)
+            if args.format == "md":
+                result = render_assumptions_markdown(result)
         elif args.command == "kb":
             result = run_kb(args)
         elif args.command == "audit-repo":

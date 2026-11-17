@@ -1,4 +1,4 @@
-"""Per-step cost ledger (.cases/<case>/cost.jsonl) with cited public model pricing."""
+"""Per-step cost ledger (.cases/<case>/cost.jsonl) with explicit estimated/method provenance."""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from .store import now
 
 COST_LOG_FILE = "cost.jsonl"
 
-# Verified public API pricing per 1,000,000 tokens as of 2026-11-17.
+# Verified public API pricing per 1,000,000 tokens as of 2026-11-17 (used for measured API runs or explicit estimates).
 USD_TO_RUB_RATE = 98.50
-FX_SOURCE = "Банк России (официальные курсы валют, ориентир расчёта): https://cbr.ru/currency_base/daily/"
+FX_SOURCE = "Банк России (ориентир расчёта курса): https://cbr.ru/currency_base/daily/"
 FX_DATE = "2026-11-17"
-DEFAULT_PM_HOURLY_RUB = 3000.0  # 50 RUB / min for Total Cost of Decision evaluation
+DEFAULT_PM_HOURLY_RUB = 3000.0  # Used ONLY when human_minutes is actually measured (not None)
 
 MODEL_PRICING: dict[str, dict] = {
     "zero_llm": {
@@ -23,6 +23,17 @@ MODEL_PRICING: dict[str, dict] = {
         "source_url": "local://python3-stdlib-cli",
         "verified_at": "2026-11-17",
         "label": "Локальный детерминированный CLI (0 токенов LLM)",
+    },
+    "antigravity-subscription": {
+        # Модель хоста не раскрыта в журнале Antigravity, работа идёт в квоте подписки IDE:
+        # токены и время берутся из лога как замер, а рубли не рассчитываются вовсе.
+        "input_per_1m": None,
+        "cached_input_per_1m": None,
+        "output_per_1m": None,
+        "source_url": "subscription://antigravity (квота подписки IDE; модель в журнале не указана; денежная оценка не производится)",
+        "verified_at": "2026-11-17",
+        "label": "Модель хоста Antigravity (не раскрыта в журнале; квота подписки, ₽ не рассчитываются)",
+        "billing": "subscription_quota",
     },
     "gpt-5": {
         "input_per_1m": 1.25,
@@ -52,9 +63,10 @@ MODEL_PRICING: dict[str, dict] = {
         "input_per_1m": 1.25,
         "cached_input_per_1m": 0.125,
         "output_per_1m": 10.00,
-        "source_url": "https://openai.com/api/pricing",
+        "source_url": "https://openai.com/api/pricing (эквивалент frontier-mid; фактическое списание в подписке Codex = 0 ₽)",
         "verified_at": "2026-11-17",
-        "label": "Codex CLI (эквивалент публичного тарифа frontier-mid)",
+        "label": "Codex CLI (квота подписки IDE, денежный эквивалент оценочный)",
+        "default_estimated": True,
     },
     "gemini-2.5-pro": {
         "input_per_1m": 1.25,
@@ -82,7 +94,6 @@ MODEL_PRICING: dict[str, dict] = {
     },
 }
 
-# Map symbolic routing tiers to concrete reference pricing models when a symbolic name is logged.
 TIER_ALIASES = {
     "zero_llm+fast_scout": "gemini-2.5-flash",
     "fast": "gemini-2.5-flash",
@@ -92,25 +103,34 @@ TIER_ALIASES = {
 }
 
 
-def resolve_pricing(model: str) -> dict:
+def resolve_pricing(model: str) -> tuple[dict, bool]:
+    """Return (pricing_spec, is_alias_or_subscription_estimate)."""
     key = (model or "zero_llm").strip()
     if key in MODEL_PRICING:
-        return MODEL_PRICING[key]
+        spec = MODEL_PRICING[key]
+        return spec, bool(spec.get("default_estimated", False))
     alias = TIER_ALIASES.get(key)
     if alias and alias in MODEL_PRICING:
-        return MODEL_PRICING[alias]
+        return MODEL_PRICING[alias], True
     lower = key.lower()
+    if "antigravity" in lower:
+        return MODEL_PRICING["antigravity-subscription"], False
     if "flash" in lower or "mini" in lower:
-        return MODEL_PRICING["gemini-2.5-flash"]
+        return MODEL_PRICING["gemini-2.5-flash"], True
     if "claude" in lower:
-        return MODEL_PRICING["claude-sonnet-4"]
+        return MODEL_PRICING["claude-sonnet-4"], True
     if "zero" in lower or "cli" in lower:
-        return MODEL_PRICING["zero_llm"]
-    return MODEL_PRICING["gpt-5"]
+        return MODEL_PRICING["zero_llm"], False
+    return MODEL_PRICING["gpt-5"], True
 
 
-def compute_token_cost(model: str, input_tokens: int, cached_tokens: int, output_tokens: int) -> tuple[float, float, dict]:
-    spec = resolve_pricing(model)
+def compute_token_cost(
+    model: str, input_tokens: int, cached_tokens: int, output_tokens: int
+) -> tuple[float | None, float | None, dict, bool]:
+    """Return (usd, rub, spec, auto_estimated); usd/rub are None for subscription quotas without a price."""
+    spec, auto_estimated = resolve_pricing(model)
+    if spec.get("input_per_1m") is None:
+        return None, None, spec, auto_estimated
     cached = min(max(cached_tokens, 0), max(input_tokens, 0))
     uncached = max(input_tokens - cached, 0)
     usd = (
@@ -119,7 +139,7 @@ def compute_token_cost(model: str, input_tokens: int, cached_tokens: int, output
         + (max(output_tokens, 0) / 1_000_000.0) * spec["output_per_1m"]
     )
     rub = usd * USD_TO_RUB_RATE
-    return round(usd, 6), round(rub, 2), spec
+    return round(usd, 6), round(rub, 2), spec, auto_estimated
 
 
 def _cost_file(case: Path) -> Path:
@@ -141,22 +161,38 @@ def append_cost_entry(
     wall_seconds: float = 0.0,
     tool_calls: int = 1,
     retries: int = 0,
-    human_minutes: float = 0.0,
+    human_minutes: float | None = None,
     human_intervention: str = "",
+    estimated: bool = False,
+    method: str = "",
     note: str = "",
 ) -> dict:
-    if any(v < 0 for v in (input_tokens, cached_tokens, output_tokens, wall_seconds, tool_calls, retries, human_minutes)):
+    if any(v < 0 for v in (input_tokens, cached_tokens, output_tokens, wall_seconds, tool_calls, retries)):
         raise ValueError("Cost counters must be non-negative")
+    if human_minutes is not None and human_minutes < 0:
+        raise ValueError("human_minutes must be non-negative when provided")
     if not step or not step.strip():
         raise ValueError("Step name is required for cost.jsonl")
 
-    usd, rub, spec = compute_token_cost(model, input_tokens, cached_tokens, output_tokens)
-    human_rub = round((human_minutes / 60.0) * DEFAULT_PM_HOURLY_RUB, 2)
+    usd, rub, spec, auto_estimated = compute_token_cost(model, input_tokens, cached_tokens, output_tokens)
+    is_est = bool(estimated or auto_estimated)
+    if usd is None and not method.strip():
+        method_str = f"Токены и время — из журнала хоста; {spec['label']}"
+    elif is_est and not method.strip():
+        method_str = f"Оценка эквивалента токенов по публичному прайсу ({spec['label']}, {spec['source_url']})"
+    else:
+        method_str = method.strip() or ("Прямой замер локального CLI (0 токенов)" if model == "zero_llm" else "Прямой замер счётчиков рантайма")
+
+    human_rub = round((human_minutes / 60.0) * DEFAULT_PM_HOURLY_RUB, 2) if human_minutes is not None else None
+    total_rub = round(rub + human_rub, 2) if (human_rub is not None and rub is not None) else None
+
     entry = {
         "at": now(),
         "session": session.strip() or "session-1",
         "step": step.strip(),
         "model": model.strip() or "zero_llm",
+        "estimated": is_est,
+        "method": method_str,
         "input_tokens": int(input_tokens),
         "cached_tokens": int(min(cached_tokens, input_tokens)),
         "output_tokens": int(output_tokens),
@@ -165,10 +201,11 @@ def append_cost_entry(
         "wall_seconds": round(float(wall_seconds), 2),
         "tool_calls": int(tool_calls),
         "retries": int(retries),
-        "human_minutes": round(float(human_minutes), 2),
+        "human_minutes": round(float(human_minutes), 2) if human_minutes is not None else None,
         "human_cost_rub": human_rub,
-        "total_step_rub": round(rub + human_rub, 2),
+        "total_step_rub": total_rub,
         "human_intervention": human_intervention.strip(),
+        "billing": spec.get("billing", "api_price_list"),
         "pricing_source": spec["source_url"],
         "pricing_date": spec["verified_at"],
         "note": note.strip(),
@@ -190,19 +227,20 @@ def read_cost_entries(case: Path, fallback_telemetry: list[dict] | None = None) 
                 entries.append(json.loads(raw))
         return entries
 
-    # Graceful fallback for older cases that only stored in-SQLite telemetry
     synthesized = []
     for item in fallback_telemetry or []:
         inp = int(item.get("input_tokens", 0))
         cac = int(item.get("cached_tokens", 0))
         out = int(item.get("output_tokens", 0))
         mdl = item.get("model", "zero_llm")
-        usd, rub, spec = compute_token_cost(mdl, inp, cac, out)
+        usd, rub, spec, auto_est = compute_token_cost(mdl, inp, cac, out)
         synthesized.append({
             "at": item.get("at", ""),
             "session": "legacy",
             "step": item.get("step", ""),
             "model": mdl,
+            "estimated": True if inp or out else auto_est,
+            "method": "Ретроспективная сводка из legacy telemetry SQLite",
             "input_tokens": inp,
             "cached_tokens": cac,
             "output_tokens": out,
@@ -211,9 +249,9 @@ def read_cost_entries(case: Path, fallback_telemetry: list[dict] | None = None) 
             "wall_seconds": float(item.get("seconds", 0.0)),
             "tool_calls": int(item.get("tool_calls", 0)),
             "retries": int(item.get("retries", 0)),
-            "human_minutes": 0.0,
-            "human_cost_rub": 0.0,
-            "total_step_rub": rub,
+            "human_minutes": None,
+            "human_cost_rub": None,
+            "total_step_rub": None,
             "human_intervention": item.get("human_intervention", ""),
             "pricing_source": spec["source_url"],
             "pricing_date": spec["verified_at"],
@@ -227,13 +265,27 @@ def summarize_case_cost(case: Path, fallback_telemetry: list[dict] | None = None
     total_in = sum(int(e.get("input_tokens", 0)) for e in entries)
     total_cached = sum(int(e.get("cached_tokens", 0)) for e in entries)
     total_out = sum(int(e.get("output_tokens", 0)) for e in entries)
-    api_usd = round(sum(float(e.get("cost_usd", 0.0)) for e in entries), 6)
-    api_rub = round(sum(float(e.get("cost_rub", 0.0)) for e in entries), 2)
+    priced = [e for e in entries if e.get("cost_usd") is not None]
+    api_cost_computed = len(priced) == len(entries)
+    api_usd = round(sum(float(e["cost_usd"]) for e in priced), 6) if api_cost_computed else None
+    api_rub = round(sum(float(e.get("cost_rub") or 0.0) for e in priced), 2) if api_cost_computed else None
     wall_s = round(sum(float(e.get("wall_seconds", 0.0)) for e in entries), 2)
     retries = sum(int(e.get("retries", 0)) for e in entries)
     tool_calls = sum(int(e.get("tool_calls", 0)) for e in entries)
-    human_min = round(sum(float(e.get("human_minutes", 0.0)) for e in entries), 2)
-    human_rub = round((human_min / 60.0) * DEFAULT_PM_HOURLY_RUB, 2)
+
+    has_estimated = any(bool(e.get("estimated", False)) for e in entries)
+    methods = []
+    for e in entries:
+        m = (e.get("method") or "").strip()
+        if m and m not in methods:
+            methods.append(m)
+
+    measured_human = [float(e["human_minutes"]) for e in entries if e.get("human_minutes") is not None]
+    human_measured = bool(entries) and len(measured_human) == len(entries)
+    human_min = round(sum(measured_human), 2) if measured_human else None
+    human_rub = round((human_min / 60.0) * DEFAULT_PM_HOURLY_RUB, 2) if human_min is not None else None
+    total_dec_rub = round(api_rub + human_rub, 2) if (human_rub is not None and api_rub is not None) else None
+
     sources = sorted({
         f"{e.get('model')} -> {e.get('pricing_source')} ({e.get('pricing_date')})"
         for e in entries if e.get("pricing_source")
@@ -244,21 +296,26 @@ def summarize_case_cost(case: Path, fallback_telemetry: list[dict] | None = None
         "has_jsonl_file": (case / COST_LOG_FILE).is_file(),
         "steps": len(entries),
         "sessions": sessions,
+        "estimated": has_estimated,
+        "methods": methods,
         "input_tokens": total_in,
         "cached_tokens": total_cached,
         "uncached_input_tokens": max(total_in - total_cached, 0),
         "cache_hit_ratio": round(total_cached / total_in, 4) if total_in else 0.0,
         "output_tokens": total_out,
+        "api_cost_computed": api_cost_computed,
+        "billing": sorted({e.get("billing", "api_price_list") for e in entries}),
         "api_cost_usd": api_usd,
         "api_cost_rub": api_rub,
         "wall_seconds": wall_s,
         "tool_calls": tool_calls,
         "retries": retries,
+        "human_minutes_measured": human_measured,
         "human_minutes": human_min,
         "human_cost_rub": human_rub,
-        "total_decision_cost_rub": round(api_rub + human_rub, 2),
+        "total_decision_cost_rub": total_dec_rub,
         "fx_rate_usd_rub": USD_TO_RUB_RATE,
         "fx_source": f"{FX_SOURCE} ({FX_DATE})",
-        "pm_hourly_rate_rub": DEFAULT_PM_HOURLY_RUB,
+        "pm_hourly_rate_rub": DEFAULT_PM_HOURLY_RUB if human_min is not None else None,
         "pricing_sources": sources,
     }

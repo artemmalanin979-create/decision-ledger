@@ -132,7 +132,9 @@ TOOLS = [
                 "output_tokens": {"type": "integer", "default": 0},
                 "wall_seconds": {"type": "number", "default": 0.0},
                 "retries": {"type": "integer", "default": 0},
-                "human_minutes": {"type": "number", "default": 0.0},
+                "human_minutes": {"type": "number"},
+                "estimated": {"type": "boolean", "default": False},
+                "method": {"type": "string", "default": ""},
                 "note": {"type": "string", "default": ""},
             },
             "required": ["case"],
@@ -177,7 +179,9 @@ def _dispatch_tool(name: str, arguments: dict, *, source_health_fn, decision_sta
                 output_tokens=int(arguments.get("output_tokens", 0)),
                 wall_seconds=float(arguments.get("wall_seconds", 0.0)),
                 retries=int(arguments.get("retries", 0)),
-                human_minutes=float(arguments.get("human_minutes", 0.0)),
+                human_minutes=(float(arguments["human_minutes"]) if arguments.get("human_minutes") is not None else None),
+                estimated=bool(arguments.get("estimated", False)),
+                method=arguments.get("method", ""),
                 note=arguments.get("note", ""),
             )
         with load(case, write=False) as (state, _):

@@ -305,12 +305,29 @@ def render(proposal, source_records, decision=None, cost_summary=None):
                      f"{action['task']} Условие пересмотра — {action['trigger']}.")
 
     if cost_summary and cost_summary.get("steps", 0) > 0:
+        est_tag = "оценка по публичному тарифу (`estimated: true`)" if cost_summary.get("estimated") else "прямой замер"
+        if cost_summary.get("human_minutes") is None:
+            human_str = "`не измерялось`"
+        elif cost_summary.get("total_decision_cost_rub") is None:
+            human_str = f"`{cost_summary['human_minutes']} мин` (`{cost_summary['human_cost_rub']:.2f} ₽`)"
+        else:
+            human_str = (
+                f"`{cost_summary['human_minutes']} мин` (`{cost_summary['human_cost_rub']:.2f} ₽`) · "
+                f"полная стоимость решения: **`{cost_summary['total_decision_cost_rub']:.2f} ₽`**"
+            )
+        methods_str = "; ".join(cost_summary.get("methods") or [])
         lines += [
             "",
             "## Прозрачность затрат и участие человека",
             "",
-            f"- Шагов в журнале `{cost_summary['log_file']}`: `{cost_summary['steps']}` · время прогонов: `{cost_summary['wall_seconds']} с` · повторов: `{cost_summary['retries']}`.",
-            f"- Токены: вход `{cost_summary['input_tokens']}` (из кэша `{cost_summary['cached_tokens']}`, hit `{round(cost_summary['cache_hit_ratio']*100, 1)}%`), выход `{cost_summary['output_tokens']}`.",
-            f"- Расчётная стоимость API: `${cost_summary['api_cost_usd']:.4f}` (`{cost_summary['api_cost_rub']:.2f} ₽`) · участие человека: `{cost_summary['human_minutes']} мин` (`{cost_summary['human_cost_rub']:.2f} ₽`) · полная стоимость решения: **`{cost_summary['total_decision_cost_rub']:.2f} ₽`**.",
+            f"- Шагов в журнале `{cost_summary['log_file']}`: `{cost_summary['steps']}` · время прогонов: `{cost_summary['wall_seconds']} с` · вызовы инструментов: `{cost_summary.get('tool_calls', 0)}` · повторов: `{cost_summary['retries']}`.",
+            f"- Токены: полный вход `{cost_summary['input_tokens']}` (из кэша `{cost_summary['cached_tokens']}`, hit `{round(cost_summary['cache_hit_ratio']*100, 1)}%`), выход `{cost_summary['output_tokens']}`.",
+            (
+                f"- Стоимость в ₽: `не рассчитывается` (квота подписки IDE, модель в журнале хоста не указана) · участие человека: {human_str}."
+                if cost_summary.get("api_cost_rub") is None
+                else f"- Эквивалент API ({est_tag}): `${cost_summary['api_cost_usd']:.4f}` (`{cost_summary['api_cost_rub']:.2f} ₽`) · участие человека: {human_str}."
+            ),
         ]
+        if methods_str:
+            lines.append(f"- Методика учёта: {methods_str}")
     return "\n".join(lines) + "\n"

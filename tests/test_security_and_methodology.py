@@ -333,14 +333,57 @@ class SecurityCostMethodologyTest(unittest.TestCase):
             model="gpt-5",
             initial_input_tokens=25000,
             initial_output_tokens=2000,
-            followup_refeed_tokens=32000,
+            followup_input_tokens=32000,
             followup_output_tokens=1800,
             wall_seconds=95.0,
-            human_verification_minutes=35.0,
+            human_verification_minutes=None,
         )
         self.assertEqual(agent_score["citation_coverage_ratio"], 1.0)
         self.assertLess(chat_score["citation_coverage_ratio"], agent_score["citation_coverage_ratio"])
-        self.assertLess(agent_score["total_cost_of_decision_rub"], chat_score["total_cost_of_decision_rub"])
+        self.assertIsNone(chat_score["total_cost_of_decision_rub"])
+
+    def test_estimated_cost_method_and_economics_switching_thresholds(self) -> None:
+        self.run_cli(
+            "cost", str(self.case),
+            "--session", "subagent-1", "--step", "orchestrated_prep",
+            "--model", "antigravity-subscription",
+            "--input-tokens", "1985344", "--cached-tokens", "1610839", "--output-tokens", "47327",
+            "--seconds", "782.0", "--tool-calls", "40",
+            "--estimated", "--method", "Токены из transcript_full.jsonl; платёж 0 ₽ (подписка IDE)",
+        )
+        summary = json.loads(self.run_cli("cost", str(self.case)))
+        self.assertTrue(summary["estimated"])
+        self.assertFalse(summary["human_minutes_measured"])
+        self.assertIsNone(summary["human_minutes"])
+        self.assertIsNone(summary["total_decision_cost_rub"])
+        self.assertIsNone(summary["api_cost_rub"])
+        self.assertFalse(summary["api_cost_computed"])
+        self.assertEqual(summary["billing"], ["subscription_quota"])
+        self.assertIn("transcript_full.jsonl", summary["methods"][0])
+
+        self.run_cli("dashboard", str(self.case))
+        html = (self.case / "dashboard.html").read_text(encoding="utf-8")
+        self.assertIn("ОЦЕНКА (ESTIMATED)", html)
+        self.assertIn("чел: не измерялось", html)
+        self.assertIn("₽ не рассчитываются", html)
+
+        econ = json.loads(
+            self.run_cli("economics", str(ROOT / "examples/antifraud-subscription/initial/economics_2027.json"))
+        )
+        self.assertIn("switching_analysis", econ)
+        p0 = econ["plans"]["opt0_keep_individual_149"]["breakeven_for_target_margin"]
+        p2 = econ["plans"]["opt2_family_parents_shield_249"]["breakeven_for_target_margin"]
+        self.assertAlmostEqual(p0["max_upfront_cac"], 145.25, places=2)
+        self.assertAlmostEqual(p2["max_upfront_cac"], 440.55, places=2)
+        self.assertAlmostEqual(p2["min_retention_months"], 7.74, places=2)
+        self.assertEqual(econ["viable_plans"], sorted(econ["viable_plans"]))
+
+        md = self.run_cli(
+            "economics", str(ROOT / "examples/antifraud-subscription/initial/economics_2027.json"), "--format", "md"
+        )
+        self.assertIn("**допущение**", md)
+        self.assertIn("выпадает, если `> 440,55 ₽`", md)
+        self.assertIn("проходит, если `<= 145,25 ₽`", md)
 
     def test_repo_audit_detects_personal_phone_numbers_and_clean_repo_passes(self) -> None:
         dirty = self.base / "dirty_repo"

@@ -286,12 +286,29 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
             )
         methodology_html = f'<h2>Продуктовая методология и контроль рисков</h2>{"".join(meth_blocks)}'
 
-    cost_card_val = (
-        f'{cost_summary["api_cost_rub"]:.2f} ₽ (${cost_summary["api_cost_usd"]:.3f}) · '
-        f'{cost_summary["wall_seconds"]} с · чел: {cost_summary["human_minutes"]} мин'
-        if cost_summary["steps"] > 0
-        else f'{_plural_ru(telemetry["events"], "шаг", "шага", "шагов")} · {telemetry["total_seconds"]} с · {_plural_ru(telemetry["tool_calls"], "вызов", "вызова", "вызовов")} CLI'
-    )
+    if cost_summary["steps"] > 0:
+        est_prefix = "Оценка API: " if cost_summary.get("estimated") else "API: "
+        human_part = (
+            f'чел: {cost_summary["human_minutes"]} мин'
+            if cost_summary.get("human_minutes") is not None
+            else "чел: не измерялось"
+        )
+        if cost_summary.get("api_cost_rub") is None:
+            money_part = "₽ не рассчитываются (квота подписки)"
+        else:
+            money_part = f'{est_prefix}{cost_summary["api_cost_rub"]:.2f} ₽ (${cost_summary["api_cost_usd"]:.3f})'
+        tokens_part = (
+            f'{cost_summary["input_tokens"]:,} вх. / {cost_summary["output_tokens"]:,} вых. токенов'.replace(",", " ")
+            if cost_summary.get("input_tokens") else ""
+        )
+        cost_card_val = " · ".join(
+            part for part in (tokens_part, f'{cost_summary["wall_seconds"]} с', money_part, human_part) if part
+        )
+        method_note = "; ".join(cost_summary.get("methods") or [])
+        cost_method_html = f'<div class="node-meta" style="margin-top:4px;">{escape(method_note[:160])}</div>' if method_note else ""
+    else:
+        cost_card_val = f'{_plural_ru(telemetry["events"], "шаг", "шага", "шагов")} · {telemetry["total_seconds"]} с · {_plural_ru(telemetry["tool_calls"], "вызов", "вызова", "вызовов")} CLI'
+        cost_method_html = ""
 
     impact_banner = ""
     if approved_impact and (approved_impact["sources"] or approved_impact["unreviewed"]):
@@ -446,8 +463,9 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
       <div class="metric-value">{_plural_ru(len(sources_health), "источник", "источника", "источников")} · {_plural_ru(len(decisions), "утверждённое решение", "утверждённых решения", "утверждённых решений")}</div>
     </div>
     <div class="metric-card">
-      <div class="metric-label">Затраты и участие человека</div>
+      <div class="metric-label">Затраты и участие человека{" · ОЦЕНКА (ESTIMATED)" if cost_summary.get("estimated") else ""}</div>
       <div class="metric-value">{escape(cost_card_val)}</div>
+      {cost_method_html}
     </div>
   </section>
 
