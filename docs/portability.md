@@ -20,14 +20,21 @@
 
 ## 2. Матрица совместимости и задокументированные различия сред
 
-Проект прошёл реальный перенос в ходе разработки и контрольных прогонов: старт и базовый замер выполнены в **Codex CLI (`0.166.0`)**, а при исчерпании лимита аккаунта Codex разработка и трёхсессионный прогон открытого кейса МегаФона продолжены в **Antigravity** и проверены по протоколу MCP для **Cursor / Claude Code**.
+Что реально запускалось: старт и замер учебного кейса `retail-backup` — в **Codex CLI (`0.166.0`)**; после исчерпания лимита Codex разработка и трёхшаговый прогон открытого кейса МегаФона продолжены в **Antigravity** (субагентами одной сессии). Протокол `stdio MCP` проверен вызовом `python3 -m ledger mcp` из терминала ([02-mcp-portability-check.json](../demo/antifraud-subscription/02-mcp-portability-check.json)) и автотестом `test_mcp_server_handles_ndjson_and_framed_requests`. **В Cursor и Claude Code прогона пока не было**: конфиги `.cursor/` и `.mcp.json`/`CLAUDE.md` лежат в репозитории, проверка в этих IDE — по [docs/live-run.md](live-run.md), раздел 5.
+
+| Среда | Статус проверки |
+| --- | --- |
+| Codex CLI `0.166.0` | запускался (учебный кейс `retail-backup`, сырые счётчики в [measurements.json](demo/measurements.json)) |
+| Antigravity | запускался (3 шага открытого кейса субагентами одной сессии; [measured-telemetry.json](../demo/antifraud-subscription/runs/2026-11-17-antigravity-subagents/measured-telemetry.json)) |
+| Cursor | конфиги есть, прогона не было — по [live-run.md](live-run.md) |
+| Claude Code | конфиги есть, прогона не было — по [live-run.md](live-run.md) |
 
 | Среда | Что подхватывается автоматически из корня | Канал вызова `ledger` | Практические различия при переносе `.cases/<кейс>` |
 | --- | --- | --- | --- |
 | **Codex CLI** | `AGENTS.md`, навыки `.agents/skills/*/SKILL.md` | Терминальный CLI (`python3 -m ledger ...`) | Высокий hit префиксного кэша (`~83,8%`) внутри серии вызовов; при исчерпании квоты аккаунта срабатывает сценарий `ledger route --failed-tool model_call` |
-| **Antigravity** | `AGENTS.md`, навыки `.agents/skills/*/SKILL.md`, изолированные субагенты (`invoke_subagent`) | Терминальный CLI + мультимодальное чтение `.png` лендингов | Позволяет запускать каждый сеанс и ролевых субагентов (`evidence-extractor`, `synthetic-respondent`, `skeptic-reviewer`) в гарантированно отдельных контекстах без общей истории чата |
-| **Cursor** | `.cursor/rules/decision-ledger.mdc` (`alwaysApply: true`), `.cursor/mcp.json` | Нативные MCP-тулы `ledger_status`, `ledger_route`, `ledger_rates`, `ledger_economics`, `ledger_audit_claims`, `ledger_kb_*`, `ledger_view`, `ledger_cost` | Инструменты видны модели в списке нативных функций без формирования shell-команд; исключает ошибки экранирования кавычек в терминале |
-| **Claude Code** | `CLAUDE.md`, `.mcp.json`, субагенты `agents/*.md`, хуки `.claude/settings.json` | Нативный MCP + CLI + проектные хуки | Поддерживает декларативные описания ролевых субагентов из папки `agents/` с фронтматтером `name / description` |
+| **Antigravity** | `AGENTS.md`, навыки `.agents/skills/*/SKILL.md`, субагенты (`invoke_subagent`) | Терминальный CLI + мультимодальное чтение `.png` лендингов | Субагенты получают отдельный контекст без истории родительского чата (так собрано демо), но команды им формулирует оркестратор той же сессии — это не равно новым пользовательским чатам |
+| **Cursor** | `.cursor/rules/decision-ledger.mdc` (`alwaysApply: true`), `.cursor/mcp.json` | Нативные MCP-тулы `ledger_status`, `ledger_route`, `ledger_rates`, `ledger_economics`, `ledger_audit_claims`, `ledger_kb_*`, `ledger_view`, `ledger_cost` | Ожидаемо: инструменты видны модели как нативные функции без shell-команд. **В Cursor не запускалось** — проверка по [live-run.md](live-run.md) |
+| **Claude Code** | `CLAUDE.md`, `.mcp.json`, субагенты `agents/*.md`, хуки `.claude/settings.json` | Нативный MCP + CLI + проектные хуки | Ожидаемо: декларативные субагенты из `agents/` с фронтматтером `name / description`. **В Claude Code не запускалось** — проверка по [live-run.md](live-run.md) |
 
 ---
 
@@ -46,7 +53,7 @@ cp examples/antifraud-subscription/brief.md .cases/port-check/brief.md
 python3 -m ledger source .cases/port-check brief document brief.md
 python3 -m ledger checkpoint .cases/port-check research "Продолжить исследование в другой IDE"
 
-# 3. Среда Б (Cursor / Claude Code по протоколу stdio MCP JSON-RPC 2.0): прочитать то же состояние
+# 3. Среда Б (тот же stdio MCP JSON-RPC 2.0, которым пользуются Cursor / Claude Code): прочитать то же состояние
 printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"ledger_status","arguments":{"case":".cases/port-check"}}}' \

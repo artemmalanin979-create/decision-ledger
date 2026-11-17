@@ -15,7 +15,7 @@ flowchart TB
     subgraph L1["1. Постоянные правила и ролевая специализация"]
         A1["AGENTS.md / CLAUDE.md / .cursor/rules"]
         A2[".agents/skills/* (5 процедур по этапам)"]
-        A3["agents/* (3 изолированных субагента)"]
+        A3["agents/* (3 ролевых субагента)"]
     end
 
     subgraph L2["2. Методический контур (playbook/)"]

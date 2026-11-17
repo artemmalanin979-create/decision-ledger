@@ -1,46 +1,93 @@
 {
-  "case": "antifraud-subscription (MegaFon open data 2026-2027)",
+  "case": "antifraud-subscription (открытые данные МегаФона, 2026–2027)",
   "evaluated_at": "2026-11-17",
-  "agent_3_sessions": {
-    "mode": "decision_ledger_agent",
-    "citation_coverage_ratio": 1.0,
-    "cited_statements": 17,
-    "total_statements": 17,
-    "facts_separated_from_hypotheses": true,
-    "epistemic_kinds": [
-      "fact",
-      "forecast",
-      "hypothesis",
-      "inference",
-      "observation",
-      "unknown"
+  "disclosure": "Обе стороны — субагенты одной родительской сессии Antigravity; команды и рамки передавал оркестратор в промпте. Это не независимые пользовательские чаты. Модель хоста в журнале не указана; работа шла в квоте подписки, поэтому стоимость в ₽ не рассчитывается. Время человека не измерялось. Объёмы задач разные (ledger-сторона дополнительно проверяла MCP, писала паспорт, базу знаний и стратегии), поэтому сравнение времени и токенов не используется для вывода «дешевле/быстрее в N раз». Живой замер — по docs/live-run.md.",
+  "replaced_20261117": "Удалены прежние неизмеренные значения: токены, секунды и название модели в cost.jsonl, вписанные оркестратором заранее; минуты человека и полная стоимость решения в ₽ для обеих сторон; коэффициент «во сколько раз дешевле»; recall устаревших выводов обычного чата (ручная разметка без воспроизводимой методики).",
+  "telemetry_source": "runs/2026-11-17-antigravity-subagents/measured-telemetry.json",
+  "decision_ledger_3_steps": {
+    "mode": "decision_ledger_agent (antigravity subagents)",
+    "verifiable_text_properties": {
+      "findings_with_source_links": 17,
+      "findings_total": 17,
+      "citation_coverage_ratio": 1.0,
+      "method": "05-decision-v2.md, раздел «Основания»: у каждого узла есть строка «Основания — …» со ссылкой на зарегистрированный снимок",
+      "sha256_snapshots": 18,
+      "epistemic_kinds": [
+        "fact",
+        "forecast",
+        "hypothesis",
+        "inference",
+        "observation",
+        "unknown"
+      ],
+      "facts_separated_from_hypotheses": true,
+      "claims_audit_passed": true
+    },
+    "automated_checks_in_pipeline": [
+      "propose --strict-claims",
+      "pre-accept claim hook",
+      "ledger economics (порог маржи)",
+      "стресс-сценарии economics"
     ],
-    "claims_audit_passed": true,
-    "automated_hazards_caught": 4,
-    "stale_impact_recall": 1.0,
-    "continuation_uncached_tokens": 10300,
-    "wall_seconds": 181.8,
-    "api_cost_usd": 0.184476,
-    "api_cost_rub": 18.17,
-    "human_minutes": 7.5,
-    "human_cost_rub": 375.0,
-    "total_cost_of_decision_rub": 393.17
+    "impact_after_20261029": {
+      "findings_marked_stale": 6,
+      "findings_total_in_decision_1": 16,
+      "options_marked_stale": 2,
+      "note": "Множество устаревших узлов вычислено графом зависимостей; независимая экспертная проверка его полноты не проводилась, поэтому recall не указывается."
+    },
+    "measured_telemetry": {
+      "runs": [
+        "subagent_step_1",
+        "subagent_step_2",
+        "subagent_step_3"
+      ],
+      "wall_seconds_measured": 2470.0,
+      "planner_turns_measured": 57,
+      "tool_calls_measured": 89,
+      "error_steps_measured": 0,
+      "total_input_tokens_measured": 5136186,
+      "cache_read_tokens_measured": 3343209,
+      "uncached_input_tokens_measured": 1792977,
+      "output_tokens_measured": 119357
+    },
+    "model": "не указана в журнале хоста",
+    "api_cost_rub": null,
+    "human_minutes": null,
+    "total_cost_of_decision_rub": null
   },
-  "plain_chat_2_sessions": {
-    "mode": "plain_chat",
-    "citation_coverage_ratio": 0.0978,
-    "cited_statements": 18,
-    "total_statements": 184,
-    "facts_separated_from_hypotheses": false,
-    "epistemic_markers_count": 4,
-    "automated_hazards_caught": 0,
-    "stale_impact_recall": 0.6667,
-    "continuation_uncached_tokens": 10525,
-    "wall_seconds": 118.4,
-    "api_cost_usd": 0.181468,
-    "api_cost_rub": 17.88,
-    "human_minutes": 28.0,
-    "human_cost_rub": 1400.0,
-    "total_cost_of_decision_rub": 1417.88
+  "plain_chat_2_steps": {
+    "mode": "plain_chat_without_ledger (antigravity subagents)",
+    "verifiable_text_properties": {
+      "paragraphs_with_locator": 18,
+      "paragraphs_total": 184,
+      "citation_coverage_ratio": 0.0978,
+      "method": "ledger.benchmark_eval.evaluate_markdown_baseline по baseline/chat-session-1.md + chat-session-2.md (абзацы >= 45 символов; локатор = markdown-ссылка https, `файл:строка` или домен первоисточника)",
+      "sha256_snapshots": 0,
+      "epistemic_markers_count": 5,
+      "facts_separated_from_hypotheses": false
+    },
+    "automated_checks_in_pipeline": [],
+    "impact_after_20261029": {
+      "stale_impact_recall": null,
+      "note": "Машинного графа зависимостей нет; полнота пересмотра не измерялась."
+    },
+    "measured_telemetry": {
+      "runs": [
+        "baseline_step_1",
+        "baseline_step_2"
+      ],
+      "wall_seconds_measured": 666.0,
+      "planner_turns_measured": 12,
+      "tool_calls_measured": 26,
+      "error_steps_measured": 0,
+      "total_input_tokens_measured": 754706,
+      "cache_read_tokens_measured": 350923,
+      "uncached_input_tokens_measured": 403783,
+      "output_tokens_measured": 46401
+    },
+    "model": "не указана в журнале хоста",
+    "api_cost_rub": null,
+    "human_minutes": null,
+    "total_cost_of_decision_rub": null
   }
 }
