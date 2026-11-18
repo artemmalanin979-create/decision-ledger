@@ -20,21 +20,28 @@
 
 ## 2. Матрица совместимости и задокументированные различия сред
 
-Что реально запускалось: старт и замер учебного кейса `retail-backup` — в **Codex CLI (`0.166.0`)**; после исчерпания лимита Codex разработка и трёхшаговый прогон открытого кейса МегаФона продолжены в **Antigravity** (субагентами одной сессии). Протокол `stdio MCP` проверен вызовом `python3 -m ledger mcp` из терминала ([02-mcp-portability-check.json](../demo/antifraud-subscription/02-mcp-portability-check.json)) и автотестом `test_mcp_server_handles_ndjson_and_framed_requests`. **В Cursor и Claude Code прогона пока не было**: конфиги `.cursor/` и `.mcp.json`/`CLAUDE.md` лежат в репозитории, проверка в этих IDE — по [docs/live-run.md](live-run.md), раздел 5.
+Что реально запускалось:
+1. **Codex CLI (`0.166.0`, `gpt-6.1-sol`)** — старт и замер учебного кейса `retail-backup`.
+2. **Antigravity** — разработка и трёхшаговый витринный прогон открытого кейса МегаФона (субагентами одной сессии поверх общего `case.sqlite3`).
+3. **Grok Build CLI (`v1.0.77`, `grok-4.7`)** — чистый 3-сессионный прогон открытого кейса от `18.11.2026` с новыми сеансами и `--resume` поверх `case.sqlite3` ([HONESTY.md](../demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/HONESTY.md)).
+
+Протокол `stdio MCP` (9 инструментов чтения, расчёта, аудита обещаний, БЗ и выпуска паспорта) проверен вызовом `python3 -m ledger mcp` из терминала ([02-mcp-portability-check.json](../demo/antifraud-subscription/02-mcp-portability-check.json)) и автотестом `test_mcp_server_handles_ndjson_and_framed_requests`. **В графических окнах Cursor и Claude Code ручного запуска пока не проводилось**: конфиги `.cursor/` и `.mcp.json`/`CLAUDE.md` лежат в репозитории, регламент проверки — в [docs/live-run.md](live-run.md), раздел 5.
 
 | Среда | Статус проверки |
 | --- | --- |
-| Codex CLI `0.166.0` | запускался (учебный кейс `retail-backup`, сырые счётчики в [measurements.json](demo/measurements.json)) |
-| Antigravity | запускался (3 шага открытого кейса субагентами одной сессии; [measured-telemetry.json](../demo/antifraud-subscription/runs/2026-11-17-antigravity-subagents/measured-telemetry.json)) |
-| Cursor | конфиги есть, прогона не было — по [live-run.md](live-run.md) |
-| Claude Code | конфиги есть, прогона не было — по [live-run.md](live-run.md) |
+| **Grok Build CLI `v1.0.77` (`grok-4.7`)** | запускался (3 независимых сеанса открытого кейса с записью `asciinema`, сырые логи в [runs/2026-11-18-live-grok-cli/](../demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/)) |
+| **Antigravity** | запускался (3 шага открытого кейса субагентами одной сессии; [measured-telemetry.json](../demo/antifraud-subscription/runs/2026-11-17-antigravity-subagents/measured-telemetry.json)) |
+| **Codex CLI `0.166.0`** | запускался (учебный кейс `retail-backup`, сырые счётчики в [measurements.json](demo/measurements.json)) |
+| **Cursor** | конфиги есть, MCP проверен из терминала; ручного запуска в GUI не было ([live-run.md](live-run.md)) |
+| **Claude Code** | конфиги и субагенты есть, MCP проверен из терминала; ручного запуска не было ([live-run.md](live-run.md)) |
 
 | Среда | Что подхватывается автоматически из корня | Канал вызова `ledger` | Практические различия при переносе `.cases/<кейс>` |
 | --- | --- | --- | --- |
+| **Grok Build CLI** | `AGENTS.md`, навыки `.agents/skills/*/SKILL.md`, субагенты | Терминальный CLI (`python3 -m ledger ...`) | Полный перенос состояния между новыми сеансами через `case.sqlite3` (Чат №2 восстановил контекст и выпустил Решение №1 за `144 с`) |
 | **Codex CLI** | `AGENTS.md`, навыки `.agents/skills/*/SKILL.md` | Терминальный CLI (`python3 -m ledger ...`) | Высокий hit префиксного кэша (`~83,8%`) внутри серии вызовов; при исчерпании квоты аккаунта срабатывает сценарий `ledger route --failed-tool model_call` |
-| **Antigravity** | `AGENTS.md`, навыки `.agents/skills/*/SKILL.md`, субагенты (`invoke_subagent`) | Терминальный CLI + мультимодальное чтение `.png` лендингов | Субагенты получают отдельный контекст без истории родительского чата (так собрано демо), но команды им формулирует оркестратор той же сессии — это не равно новым пользовательским чатам |
-| **Cursor** | `.cursor/rules/decision-ledger.mdc` (`alwaysApply: true`), `.cursor/mcp.json` | Нативные MCP-тулы `ledger_status`, `ledger_route`, `ledger_rates`, `ledger_economics`, `ledger_audit_claims`, `ledger_kb_*`, `ledger_view`, `ledger_cost` | Ожидаемо: инструменты видны модели как нативные функции без shell-команд. **В Cursor не запускалось** — проверка по [live-run.md](live-run.md) |
-| **Claude Code** | `CLAUDE.md`, `.mcp.json`, субагенты `agents/*.md`, хуки `.claude/settings.json` | Нативный MCP + CLI + проектные хуки | Ожидаемо: декларативные субагенты из `agents/` с фронтматтером `name / description`. **В Claude Code не запускалось** — проверка по [live-run.md](live-run.md) |
+| **Antigravity** | `AGENTS.md`, навыки `.agents/skills/*/SKILL.md`, субагенты (`invoke_subagent`) | Терминальный CLI + мультимодальное чтение `.png` лендингов | Субагенты получают отдельный контекст без истории родительского чата (так собрана витрина стратегий), но команды им формулирует оркестратор той же сессии |
+| **Cursor** | `.cursor/rules/decision-ledger.mdc` (`alwaysApply: true`), `.cursor/mcp.json` | 9 нативных MCP-тулов чтения/расчёта/БЗ + CLI для транзакционных мутаций (`init`, `source`, `propose`, `accept`) | Чтение статуса, экономика, интервалы Вильсона и аудит обещаний идут через `stdio MCP`, а явный гейт `accept --expect <sha>` вызывается через CLI. В GUI Cursor пока не запускалось ([live-run.md](live-run.md)) |
+| **Claude Code** | `CLAUDE.md`, `.mcp.json`, субагенты `agents/*.md`, хуки `.claude/settings.json` | Нативный MCP (9 тулов) + CLI + проектные хуки | Декларативные субагенты из `agents/` с фронтматтером `name / description`. В Claude Code пока не запускалось ([live-run.md](live-run.md)) |
 
 ---
 
