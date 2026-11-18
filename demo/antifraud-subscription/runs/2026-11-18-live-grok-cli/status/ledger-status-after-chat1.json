@@ -1,0 +1,312 @@
+{
+  "request": "Решение для продуктового комитета на 2027 год: что делать с продуктом и монетизацией линейки «Моя безопасность +» (149 ₽ / 30 дней) и «Семейная безопасность +» (249 ₽ / 30 дней) поверх бесплатной «Евы», и что говорить аудитории, чтобы ценность платной версии была понятна и не смешивалась с базовой защитой, без невыполнимых обещаний. Подписка растёт медленнее, чем ждёт команда.",
+  "checkpoint": {
+    "stage": "review",
+    "next": "Черновик обновлён снимком CNews о спросе на Еву. Выбор не утверждён: ждём человека и сверку SHA.",
+    "at": "2026-11-17T23:23:08+00:00"
+  },
+  "sources": {
+    "brief": {
+      "sha": "f1ea7bf3d645ddc2ed0f3690080023902024c4b321772197a3200a0c6b674cd9",
+      "path": "input/brief.md",
+      "at": "2026-11-17T22:42:18+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "manager": {
+      "sha": "3ba89567834289328d8345fc9ce89c3b6a790c9a1f485d67842327762e7b81cd",
+      "path": "input/manager.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "economics_inputs": {
+      "sha": "199979669d59bd5e33c1a4790e8031ef6e1092de7c36158d876c96c1a9c1131e",
+      "path": "input/economics_2027.json",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "operator_tariffs": {
+      "sha": "8a78a580dd7c033ec06bcc8adf077567357d0c070360a11d90e87bc30aafb2f5",
+      "path": "input/operator_tariffs_2026.csv",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "table",
+      "url": null,
+      "health": "ok"
+    },
+    "ux_observations": {
+      "sha": "7fe9ab7ddde989e65689e80d5582de3142d66047cb62234c6022c2689d384132",
+      "path": "input/ux/ux_observations.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "ux",
+      "url": null,
+      "health": "ok"
+    },
+    "eva_landing": {
+      "sha": "04ebfb9e8c3a7f3d3ac1acf749ae989eb338d6711c518f0bf885e507a18924f9",
+      "path": "input/ux/eva_landing_live.png",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "ux",
+      "url": null,
+      "health": "ok"
+    },
+    "family_landing": {
+      "sha": "d212821b9db5551c1be31e76ed10fa6aa5d32e5f37ee2de2d07ca1d1dbee0f87",
+      "path": "input/ux/family_plus_landing_live.png",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "ux",
+      "url": null,
+      "health": "ok"
+    },
+    "interview_guide": {
+      "sha": "c59c87b6d0a31707834eff9d120d76b8c751b171c67963327fcfd68db992a287",
+      "path": "input/interviews/interview_guide.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "synthetic_personas": {
+      "sha": "a8b5fde9688f2706a7263608f8fffd9bab259ff481093ad1ffc63a78a0ca5cc9",
+      "path": "input/interviews/synthetic_personas.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "synthetic",
+      "url": null,
+      "health": "ok"
+    },
+    "synthetic_personas_json": {
+      "sha": "3f61e655ddcfdcfc4577c2506542a9197c33e7fdf91c1bd00554012117b08a96",
+      "path": "input/interviews/synthetic_personas.json",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "synthetic",
+      "url": null,
+      "health": "ok"
+    },
+    "web_cbr": {
+      "sha": "15887d01dbb3e473723fccfdc92c63341b7aea469aae36812ca94860a3d4566f",
+      "path": "input/web/cbr_operations_2025.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "web",
+      "url": "https://cbr.ru/analytics/ib/operations_survey/2025/",
+      "health": "ok"
+    },
+    "web_eva": {
+      "sha": "bfeeaebfcefab41eae4a0ba688cc348eed2736e40b6d62796d0f06792fd1b173",
+      "path": "input/web/megafon_eva_spb.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "web",
+      "url": "https://spb.megafon.ru/services/security/eva/",
+      "health": "ok"
+    },
+    "web_family": {
+      "sha": "d88ef355d75f0be4abdc5903e0d01ee2187326335020a0f769e033412604a03b",
+      "path": "input/web/megafon_family_plus.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "web",
+      "url": "https://moscow.megafon.ru/lp/protection_cls/",
+      "health": "ok"
+    },
+    "web_mts": {
+      "sha": "3c134a3078ab3366e5a3ae13c4581b2582bac8fe0e679c5eec4ecf7b10088581",
+      "path": "input/web/mts_zashchitnik_cnews.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "web",
+      "url": "https://www.cnews.ru/news/line/2025-03-03_mts_predstavila_zashchitnik",
+      "health": "ok"
+    },
+    "web_beeline": {
+      "sha": "4cdc214ad13ad2f1f7bd9399789d8f1a3cf72dbf4fcbb4d872b2e4c141114d5d",
+      "path": "input/web/beeline_safety_cnews.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "web",
+      "url": "https://safe.cnews.ru/news/line/2025-11-17_bilajn_nazval_tri_shemy_telefonnogo",
+      "health": "ok"
+    },
+    "web_vedomosti": {
+      "sha": "0ab22c6e4c76be8a2fe26c76ca4784cddc4771ebd6727aba0c47703c4a779c98",
+      "path": "input/web/vedomosti_seniors_2026.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "web",
+      "url": "https://www.vedomosti.ru/finance/articles/2026/02/16/1176754-pensioneri-chasche-drugih-teryali-iz-za-moshennikov-1-mln-rublei",
+      "health": "ok"
+    },
+    "web_annual": {
+      "sha": "39fbb4ec9671a7b0a4f3e78d58fa96150b85aceb590feb94813e48f06dd4c986",
+      "path": "input/web/megafon_annual_2025.md",
+      "at": "2026-11-17T22:42:19+00:00",
+      "kind": "web",
+      "url": "https://corp.megafon.ru/download/~federal/corp/investoram/report/year_reports/godovoj_otchet_2025.pdf",
+      "health": "ok"
+    },
+    "web_h1": {
+      "sha": "61fe40644fcfd27abc35336a8a6fa9177aac37172f5cd2bf16aa3bae751411d3",
+      "path": "input/web/megafon_h1_2026.md",
+      "at": "2026-11-17T22:42:20+00:00",
+      "kind": "web",
+      "url": "https://corp.megafon.ru/press/news/federalnye_novosti/federal/20260821-1500.html",
+      "health": "ok"
+    },
+    "economics_plans": {
+      "sha": "9847701e3772140d578755a7edded78dedb510077d7558ba068864a66774f9fd",
+      "path": "input/economics_plans_2027.json",
+      "at": "2026-11-17T22:53:22+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "economics_report": {
+      "sha": "f1267d2313bc4a41aa12748a59fabdae6c0806f691037d6e8e059188ffe27d3d",
+      "path": "input/economics_report.md",
+      "at": "2026-11-17T22:55:39+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "wilson_design": {
+      "sha": "232c42a988d77247c8046330b7cf4fd5c7ebac13354075ec3d34ac656d98f3c6",
+      "path": "input/wilson_complaint_design.md",
+      "at": "2026-11-17T22:55:39+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "synthetic_probe": {
+      "sha": "46d22bc99ee89995c727b3c645a7bac0be4d0ea4719df6964d46933fb7eebf12",
+      "path": "input/interviews/synthetic_probe.md",
+      "at": "2026-11-17T23:03:28+00:00",
+      "kind": "synthetic",
+      "url": null,
+      "health": "ok"
+    },
+    "rates_skipped": {
+      "sha": "0b436878b1ff051326a6ed2dddb574c8a7fd52b99c0c65d7ea5546c53ad2b86d",
+      "path": "input/rates_skipped.md",
+      "at": "2026-11-17T23:03:28+00:00",
+      "kind": "document",
+      "url": null,
+      "health": "ok"
+    },
+    "web_eva_demand_2026": {
+      "sha": "d7f237c675d7366bd369049d32645193b93ae9a644d37373dc327e829656209b",
+      "path": "input/web/megafon_eva_demand_2026.md",
+      "at": "2026-11-17T23:22:01+00:00",
+      "kind": "web",
+      "url": "https://telecom.cnews.ru/news/line/2026-09-30_megafon_rossiyane_stali",
+      "health": "ok"
+    }
+  },
+  "draft": {
+    "title": "Платная защита 2027: явное согласие и потолок закупки, без масштаба до замера",
+    "option": "explicit_consent",
+    "sha": "dd944b1e80ac9ea659a3d87969413d57e8da66f4ad6a59a4c434d7e6db5aa8f4"
+  },
+  "draft_impact": {
+    "sources": [],
+    "unreviewed": [],
+    "findings": [],
+    "options": [],
+    "strategy": [],
+    "methodology": []
+  },
+  "approved": null,
+  "approved_impact": null,
+  "history": [],
+  "telemetry": {
+    "events": 3,
+    "total_seconds": 640.0,
+    "input_tokens": 130000,
+    "cached_tokens": 0,
+    "output_tokens": 12200,
+    "tool_calls": 41,
+    "retries": 0,
+    "human_interventions": [
+      "Ожидание ответов руководителя на 3 развилки"
+    ],
+    "models_used": [
+      "grok-4.7"
+    ],
+    "recent": [
+      {
+        "at": "2026-11-17T22:35:06+00:00",
+        "step": "intake",
+        "model": "grok-4.7",
+        "seconds": 70.0,
+        "input_tokens": 18000,
+        "cached_tokens": 0,
+        "output_tokens": 1400,
+        "tool_calls": 5,
+        "retries": 0,
+        "human_intervention": "Ожидание ответов руководителя на 3 развилки",
+        "note": "Кейс создан. База знаний по теме пуста. Источники ещё не зарегистрированы. Стратегия не начата."
+      },
+      {
+        "at": "2026-11-17T23:20:19+00:00",
+        "step": "research",
+        "model": "grok-4.7",
+        "seconds": 480.0,
+        "input_tokens": 90000,
+        "cached_tokens": 0,
+        "output_tokens": 9000,
+        "tool_calls": 28,
+        "retries": 0,
+        "human_intervention": null,
+        "note": "Источники зарегистрированы, economics и wilson посчитаны CLI, rates на матрице тарифов неприменим, черновик прошёл strict-claims. Accept не вызывался."
+      },
+      {
+        "at": "2026-11-17T23:23:08+00:00",
+        "step": "review",
+        "model": "grok-4.7",
+        "seconds": 90.0,
+        "input_tokens": 22000,
+        "cached_tokens": 0,
+        "output_tokens": 1800,
+        "tool_calls": 8,
+        "retries": 0,
+        "human_intervention": null,
+        "note": "Добавлен снимок CNews 30.09.2026. Он не закрывает Retention 90d и вклад 55%. Accept не вызывался."
+      }
+    ]
+  },
+  "cost": {
+    "log_file": "cost.jsonl",
+    "has_jsonl_file": true,
+    "steps": 3,
+    "sessions": [
+      "session-1"
+    ],
+    "estimated": true,
+    "methods": [
+      "Оценка токенов хода постановки: счётчика API нет. Хост — Grok 4.7; в прайсе CLI этой модели нет, рублёвая сумма считается алиасом публичного прайса gpt-5 и не является счётом xAI.",
+      "Оценка токенов исследовательского хода: счётчика API нет. Хост Grok 4.7; в прайсе CLI модели нет, рублёвая сумма — алиас публичного прайса gpt-5, не счёт xAI.",
+      "Оценка токенов хода сверки: счётчика API нет. Хост Grok 4.7; рублёвая сумма — алиас прайса gpt-5, не счёт xAI."
+    ],
+    "input_tokens": 130000,
+    "cached_tokens": 0,
+    "uncached_input_tokens": 130000,
+    "cache_hit_ratio": 0.0,
+    "output_tokens": 12200,
+    "api_cost_computed": true,
+    "billing": [
+      "api_price_list"
+    ],
+    "api_cost_usd": 0.2845,
+    "api_cost_rub": 28.03,
+    "wall_seconds": 640.0,
+    "tool_calls": 41,
+    "retries": 0,
+    "human_minutes_measured": false,
+    "human_minutes": null,
+    "human_cost_rub": null,
+    "total_decision_cost_rub": null,
+    "fx_rate_usd_rub": 98.5,
+    "fx_source": "Банк России (ориентир расчёта курса): https://cbr.ru/currency_base/daily/ (2026-11-17)",
+    "pm_hourly_rate_rub": null,
+    "pricing_sources": [
+      "grok-4.7 -> https://openai.com/api/pricing (2026-11-17)"
+    ]
+  }
+}
