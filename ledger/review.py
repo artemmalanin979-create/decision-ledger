@@ -168,14 +168,26 @@ def order_findings(findings):
 
 
 def impact(proposal, sources):
+    unreviewed = sorted(
+        key for key, source in sources.items()
+        if source["health"] != "retired" and key not in proposal["reviewed"]
+    )
     changed = {
         key for key, review in proposal["reviewed"].items()
         if key not in sources or sources[key]["health"] != "ok" or sources[key]["sha"] != review["sha"]
     }
-    affected = set()
+    seeded_findings = set()
+    for key in unreviewed:
+        for target in sources[key].get("updates") or []:
+            if target in proposal["reviewed"]:
+                changed.add(target)
+            elif target in proposal["findings"]:
+                seeded_findings.add(target)
+
+    affected = set(seeded_findings)
     for key, finding in order_findings(proposal["findings"]).items():
         cited = {citation["source"] for citation in finding.get("citations", [])}
-        if changed & cited or affected.intersection(finding.get("depends_on", [])):
+        if key in seeded_findings or (changed & cited) or affected.intersection(finding.get("depends_on", [])):
             affected.add(key)
 
     methodology_affected = []
@@ -194,8 +206,7 @@ def impact(proposal, sources):
 
     res = {
         "sources": sorted(changed),
-        "unreviewed": sorted(key for key, source in sources.items()
-                             if source["health"] != "retired" and key not in proposal["reviewed"]),
+        "unreviewed": unreviewed,
         "findings": sorted(affected),
         "options": sorted(key for key, option in proposal["options"].items()
                           if affected.intersection(option["depends_on"])),
@@ -248,7 +259,7 @@ def render(proposal, source_records, decision=None, cost_summary=None):
     meth = proposal.get("methodology") or {}
     if "jtbd" in meth:
         jtbd = meth["jtbd"]
-        forces = jtbd["forces"]
+        forces = {k: str(v).strip().rstrip(". ") for k, v in jtbd["forces"].items()}
         lines += [
             "## Задача аудитории (JTBD)",
             "",

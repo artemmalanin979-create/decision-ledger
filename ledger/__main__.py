@@ -32,7 +32,13 @@ def source_health(case, records):
     health = {}
     for key, record in records.items():
         version = record["versions"][-1]
-        current = {**version, "kind": record["kind"], "url": record["url"], "health": "ok"}
+        current = {
+            **version,
+            "kind": record["kind"],
+            "url": record["url"],
+            "updates": list(record.get("updates") or []),
+            "health": "ok",
+        }
         if record.get("retired"):
             health[key] = {**current, "health": "retired", "retired": record["retired"]}
             continue
@@ -65,6 +71,10 @@ def register(args, case, state, db):
     record = state["sources"].setdefault(args.id, {"kind": args.kind, "url": args.url, "versions": []})
     if (args.kind, args.url) != (record["kind"], record["url"]):
         raise ValueError("Use a new source ID when the type or URL changes")
+    updates = [u.strip() for u in (getattr(args, "updates", None) or []) if u and u.strip()]
+    if updates:
+        merged = sorted(set(record.get("updates") or []) | set(updates))
+        record["updates"] = merged
     relative = Path(args.file).as_posix()
     record.pop("retired", None)
     inj_flags = []
@@ -80,7 +90,10 @@ def register(args, case, state, db):
         if inj_flags:
             ver_entry["injection_flags"] = inj_flags
         versions.append(ver_entry)
-    return {"id": args.id, **versions[-1]}
+    res = {"id": args.id, **versions[-1]}
+    if record.get("updates"):
+        res["updates"] = list(record["updates"])
+    return res
 
 
 def outstanding(proposal, sources):
@@ -152,12 +165,24 @@ def parse_args():
     source.add_argument("kind", choices=SOURCE_KINDS)
     source.add_argument("file")
     source.add_argument("--url")
+    source.add_argument(
+        "--updates",
+        nargs="*",
+        default=[],
+        help="IDs of previously reviewed sources or findings updated/challenged by this new source",
+    )
 
     fetch_cmd = command("fetch", "Fetch an open HTTPS webpage snapshot and register it as a web source")
     fetch_cmd.add_argument("id")
     fetch_cmd.add_argument("url")
     fetch_cmd.add_argument("--out", help="Relative destination inside the case directory")
     fetch_cmd.add_argument("--timeout", type=float, default=12.0)
+    fetch_cmd.add_argument(
+        "--updates",
+        nargs="*",
+        default=[],
+        help="IDs of previously reviewed sources or findings updated/challenged by this fetched source",
+    )
 
     retire = command("retire", "Withdraw a source and preserve its history")
     retire.add_argument("id")
@@ -353,7 +378,13 @@ def run_case(args):
         if cmd == "source":
             return register(args, case, state, db)
         if cmd == "fetch":
-            shim = argparse.Namespace(id=args.id, kind="web", file=fetched_meta["relative_path"], url=fetched_meta["url"])
+            shim = argparse.Namespace(
+                id=args.id,
+                kind="web",
+                file=fetched_meta["relative_path"],
+                url=fetched_meta["url"],
+                updates=args.updates,
+            )
             reg = register(shim, case, state, db)
             return {**reg, **fetched_meta}
         if cmd == "retire":
@@ -499,6 +530,12 @@ def run_case(args):
         }
         decisions.append(decision)
         state["draft"] = None
+        if state.get("checkpoint", {}).get("stage") == "review":
+            state["checkpoint"] = {
+                "stage": "follow-up",
+                "next": f"Сопровождение Решения №{decision['revision']} ({args.option}) и контроль триггеров пересмотра",
+                "at": decision["at"],
+            }
         return {k: v for k, v in decision.items() if k != "proposal"}
 
 

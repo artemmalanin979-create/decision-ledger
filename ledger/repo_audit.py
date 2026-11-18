@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gzip
 import json
 from pathlib import Path
 import re
@@ -9,6 +10,8 @@ import subprocess
 
 SECRET_PATTERNS = [
     ("openai_key", re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b")),
+    ("anthropic_key", re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}\b")),
+    ("xai_api_key", re.compile(r"\bxai-[A-Za-z0-9_-]{20,}\b")),
     ("github_pat", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b")),
     ("aws_access_key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     ("yandex_iam_or_oauth", re.compile(r"\by0_[A-Za-z0-9_-]{25,}\b")),
@@ -19,6 +22,22 @@ SECRET_PATTERNS = [
 PERSONAL_PHONE_PATTERN = re.compile(r"(?<!\d)(?:\+7|8)[\s(-]*9\d{2}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}(?!\d)")
 
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".pdf", ".zip"}
+MAX_GZIP_TEXT_BYTES = 32 * 1024 * 1024
+
+
+def _decode_blob_or_gzip(raw: bytes, *, is_gzip: bool) -> str | None:
+    if is_gzip:
+        try:
+            with gzip.GzipFile(fileobj=__import__("io").BytesIO(raw)) as gz:
+                raw = gz.read(MAX_GZIP_TEXT_BYTES + 1)
+            if len(raw) > MAX_GZIP_TEXT_BYTES:
+                return None
+        except OSError:
+            return None
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return None
 
 
 def _scan_text_blob(rel: str, text: str, issues: list[dict], *, check_json: bool = True) -> None:
@@ -75,9 +94,8 @@ def _scan_git_history(root: Path, issues: list[dict]) -> int:
                 ["git", "-C", str(root), "cat-file", "-p", blob_sha],
                 capture_output=True, check=False,
             )
-            try:
-                text = cat_res.stdout.decode("utf-8")
-            except UnicodeDecodeError:
+            text = _decode_blob_or_gzip(cat_res.stdout, is_gzip=(suffix == ".gz"))
+            if text is None:
                 continue
             scanned_blobs += 1
             _scan_text_blob(f"history:{commit[:7]}:{rel_path}", text, issues, check_json=False)
@@ -118,12 +136,12 @@ def audit_repository(root: Path, *, scan_history: bool = False) -> dict:
         if path.suffix.lower() in BINARY_SUFFIXES:
             continue
 
-        try:
-            text = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
+        is_gzip = path.suffix.lower() == ".gz"
+        text = _decode_blob_or_gzip(path.read_bytes(), is_gzip=is_gzip)
+        if text is None:
             continue
 
-        _scan_text_blob(rel, text, issues, check_json=True)
+        _scan_text_blob(rel, text, issues, check_json=not is_gzip)
 
     history_blobs = 0
     if scan_history and git_dir.exists():

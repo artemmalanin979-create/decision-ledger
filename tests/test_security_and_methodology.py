@@ -393,3 +393,104 @@ class SecurityCostMethodologyTest(unittest.TestCase):
         res_dirty = audit_repository(dirty)
         self.assertFalse(res_dirty["ok"])
         self.assertEqual(res_dirty["issues"][0]["kind"], "personal_data_phone")
+
+        gz_repo = self.base / "gz_dirty_repo"
+        gz_repo.mkdir()
+        sample_xai = "xai-" + ("A9b8C7d6E5" * 3)
+        import gzip
+        (gz_repo / "trace.jsonl.gz").write_bytes(gzip.compress(f'{{"token":"{sample_xai}"}}\n'.encode("utf-8")))
+        res_gz = audit_repository(gz_repo)
+        self.assertFalse(res_gz["ok"])
+        self.assertEqual(res_gz["issues"][0]["kind"], "secret_leak")
+
+    def test_new_source_updates_flag_propagates_transitive_impact_and_accept_updates_checkpoint(self) -> None:
+        doc = self.case / "tariff_v1.md"
+        doc.write_text("Базовый тариф архива 99 ₽/30 дн. (вымышленные данные).", encoding="utf-8")
+        src_v1 = json.loads(self.run_cli("source", str(self.case), "tariff_v1", "document", "tariff_v1.md"))
+        self.run_cli("checkpoint", str(self.case), "review", "Ожидает подтверждения комитета")
+
+        proposal = {
+            "title": "Тариф архива",
+            "summary": "Проверка флага --updates без перезаписи исходного снимка.",
+            "reviewed": {"tariff_v1": {"sha": src_v1["sha"], "note": "Исходная спецификация"}},
+            "findings": {
+                "f_tariff": {
+                    "kind": "fact",
+                    "text": "Базовый тариф 99 ₽.",
+                    "citations": [{"source": "tariff_v1", "locator": "line 1"}],
+                },
+                "i_margin": {
+                    "kind": "inference",
+                    "text": "Вклад покрывает порог.",
+                    "depends_on": ["f_tariff"],
+                },
+            },
+            "options": {
+                "keep_v1": {
+                    "type": "keep",
+                    "title": "Оставить 99 ₽",
+                    "case": "Ничего не менять.",
+                    "objection": "Нет запаса.",
+                    "depends_on": ["i_margin"],
+                },
+                "upgrade_v1": {
+                    "type": "change",
+                    "title": "Добавить семейный уровень",
+                    "case": "Расширить пакет.",
+                    "objection": "Нужен биллинг.",
+                    "depends_on": ["i_margin"],
+                },
+                "close_v1": {
+                    "type": "close",
+                    "title": "Закрыть",
+                    "case": "Снять с полки.",
+                    "objection": "Потеря выручки.",
+                    "depends_on": ["f_tariff"],
+                },
+            },
+            "recommended": "upgrade_v1",
+            "strategy": {
+                "product": {"text": "Семейный уровень.", "depends_on": ["i_margin"]},
+                "communication": {
+                    "text": "Ясная цена при условии согласия, кроме сторонних аккаунтов.",
+                    "depends_on": ["f_tariff"],
+                },
+                "experiment": {
+                    "text": "Пилот 4 недели против контроля, стоп при жалобах > 0,3%.",
+                    "depends_on": ["i_margin"],
+                },
+            },
+            "actions": [
+                {
+                    "id": "check_billing",
+                    "owner": "PM",
+                    "due": "2026-12-10",
+                    "task": "Сверить биллинг",
+                    "trigger": "Расхождение SKU",
+                }
+            ],
+        }
+        (self.case / "prop1.json").write_text(json.dumps(proposal, ensure_ascii=False), encoding="utf-8")
+        staged = json.loads(self.run_cli("propose", str(self.case), "prop1.json", "--strict-claims"))
+        self.run_cli(
+            "accept", str(self.case), "upgrade_v1",
+            "--expect", staged["sha"], "--by", "Комитет", "--reason", "Утверждено Решение №1",
+        )
+
+        st_after_accept = json.loads(self.run_cli("status", str(self.case)))
+        self.assertEqual(st_after_accept["checkpoint"]["stage"], "follow-up")
+        self.assertIn("Решения №1", st_after_accept["checkpoint"]["next"])
+
+        # Add a separate press-release file WITHOUT mutating tariff_v1.md, linked via --updates tariff_v1
+        notice = self.case / "notice_v2.md"
+        notice.write_text("Новое уведомление: базовый уровень пересмотрен (вымышленные данные).", encoding="utf-8")
+        self.run_cli("source", str(self.case), "notice_v2", "document", "notice_v2.md", "--updates", "tariff_v1")
+
+        st_impact = json.loads(self.run_cli("status", str(self.case)))
+        imp = st_impact["approved_impact"]
+        self.assertEqual(st_impact["sources"]["tariff_v1"]["health"], "ok")
+        self.assertIn("notice_v2", imp["unreviewed"])
+        self.assertIn("f_tariff", imp["findings"])
+        self.assertIn("i_margin", imp["findings"])
+        self.assertIn("upgrade_v1", imp["options"])
+        self.assertIn("product", imp["strategy"])

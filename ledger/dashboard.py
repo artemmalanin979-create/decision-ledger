@@ -5,6 +5,7 @@ from __future__ import annotations
 from html import escape
 import json
 from pathlib import Path
+import re
 
 from .claims import audit_claims
 from .cost import summarize_case_cost
@@ -37,6 +38,18 @@ def _plural_ru(n: int, one: str, few: str, many: str) -> str:
     if 2 <= n1 <= 4:
         return f"{n} {few}"
     return f"{n} {many}"
+
+
+def _format_prose_html(text: str) -> str:
+    escaped = escape(text).replace("\n", "<br/>")
+    return re.sub(r"(?<=[.;:])\s+(?=\d+\)\s)", "<br/>", escaped)
+
+
+def _clip_words(text: str, max_chars: int = 240) -> str:
+    if len(text) <= max_chars:
+        return text
+    cut = text[:max_chars].rsplit(" ", 1)[0].rstrip(" ,;:")
+    return f"{cut}…"
 
 
 def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
@@ -169,11 +182,14 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
                 else:
                     msgs = "; ".join(w["message"] for w in claims_report["warnings"])
                     extra = f'<div class="claim-warn">Аудит обещаний: {escape(msgs)}</div>'
+            deps_list = ", ".join(sblock["depends_on"])
+            deps_count = _plural_ru(len(sblock["depends_on"]), "основание", "основания", "оснований")
             strategy_cards.append(
                 f'<div class="strategy-card{stale_cls}" data-node="strategy:{escape(skey)}" onclick="selectNode(\'strategy:{escape(skey)}\')">'
                 f'<div class="node-head"><h3>{escape(slabel)}</h3>'
-                f'<span class="mono">{escape(", ".join(sblock["depends_on"]))}</span></div>'
-                f'<p>{escape(sblock["text"]).replace(chr(10), "<br/>")}</p>'
+                f'<span class="tag" title="{escape(deps_list)}">{deps_count}</span></div>'
+                f'<p>{_format_prose_html(sblock["text"])}</p>'
+                f'<div class="node-meta" style="margin-top:8px;">Основания: {escape(deps_list)}</div>'
                 f'{extra}'
                 f'</div>'
             )
@@ -216,10 +232,12 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
             jtbd = meth["jtbd"]
             forces = jtbd["forces"]
             stale_cls = " stale" if "jtbd" in meth_affected else ""
+            jtbd_deps = ", ".join(jtbd.get("depends_on", []))
+            jtbd_count = _plural_ru(len(jtbd.get("depends_on", [])), "основание", "основания", "оснований")
             meth_blocks.append(
                 f'<div class="strategy-card{stale_cls}" style="margin-bottom:14px;">'
                 f'<div class="node-head"><h3>JTBD: Покупатель vs Пользователь</h3>'
-                f'<span class="mono">{escape(", ".join(jtbd.get("depends_on", [])))}</span></div>'
+                f'<span class="tag" title="{escape(jtbd_deps)}">{jtbd_count}</span></div>'
                 f'<p><strong>Задача плательщика:</strong> {escape(jtbd["payer_job"])}<br/>'
                 f'<strong>Задача пользователя:</strong> {escape(jtbd["user_job"])}</p>'
                 f'<div class="node-meta" style="margin-top:8px;">'
@@ -305,7 +323,7 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
             part for part in (tokens_part, f'{cost_summary["wall_seconds"]} с', money_part, human_part) if part
         )
         method_note = "; ".join(cost_summary.get("methods") or [])
-        cost_method_html = f'<div class="node-meta" style="margin-top:4px;">{escape(method_note[:160])}</div>' if method_note else ""
+        cost_method_html = f'<div class="node-meta" style="margin-top:4px;">{escape(_clip_words(method_note))}</div>' if method_note else ""
     else:
         cost_card_val = f'{_plural_ru(telemetry["events"], "шаг", "шага", "шагов")} · {telemetry["total_seconds"]} с · {_plural_ru(telemetry["tool_calls"], "вызов", "вызова", "вызовов")} CLI'
         cost_method_html = ""
@@ -348,11 +366,12 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
   body {{
     margin: 0;
     padding: 32px 40px 56px;
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--ink);
     line-height: 1.5;
     font-size: 14px;
+    font-variant-numeric: tabular-nums;
   }}
   .container {{ max-width: 1360px; margin: 0 auto; }}
   .topbar {{
@@ -363,8 +382,16 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
     font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--accent); margin-bottom: 6px;
   }}
-  h1 {{ margin: 0 0 8px; font-size: 26px; line-height: 1.2; letter-spacing: -0.02em; }}
-  h2 {{ margin: 28px 0 12px; font-size: 16px; letter-spacing: -0.01em; }}
+  h1 {{
+    margin: 0 0 8px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 26px; line-height: 1.2; letter-spacing: -0.02em;
+  }}
+  h2 {{
+    margin: 28px 0 12px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px; letter-spacing: -0.01em;
+  }}
   h3 {{ margin: 0; font-size: 14px; }}
   .summary {{ margin: 0; color: var(--muted); max-width: 840px; font-size: 14px; }}
   .status-pill {{
@@ -431,7 +458,7 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
     background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px;
     display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; font-size: 13px;
   }}
-  .mono {{ font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; font-size: 12px; }}
+  .mono {{ font-family: "Source Code Pro", "DejaVu Sans Mono", monospace; font-size: 12px; }}
   .reset-btn {{
     border: 1px solid var(--line); background: var(--surface); color: var(--muted);
     border-radius: 5px; padding: 2px 8px; font-size: 11px; cursor: pointer;
@@ -444,7 +471,7 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
     <div>
       <div class="eyebrow">Decision Ledger · Паспорт продуктового решения · {escape(case.name)}</div>
       <h1>{escape(title)}</h1>
-      <p class="summary">{escape(summary)}</p>
+      <p class="summary">{_format_prose_html(summary)}</p>
     </div>
     <div class="status-pill status-{banner_tone}">{escape(banner_state)}</div>
   </header>
