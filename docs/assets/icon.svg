@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80" role="img" aria-label="Decision Ledger icon">
+  <defs>
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1220"/>
+      <stop offset="100%" stop-color="#132238"/>
+    </linearGradient>
+    <linearGradient id="tealStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5EEAD4"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="76" height="76" rx="18" fill="url(#iconBg)" stroke="#26354D" stroke-width="2"/>
+  <!-- Ledger spine -->
+  <path d="M 22 20 L 22 60" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+  <rect x="18" y="25" width="8" height="3.5" rx="1.75" fill="#2DD4BF"/>
+  <rect x="18" y="38.25" width="8" height="3.5" rx="1.75" fill="#2DD4BF"/>
+  <rect x="18" y="51.5" width="8" height="3.5" rx="1.75" fill="#2DD4BF"/>
+  <!-- Directed decision graph -->
+  <path d="M 35 26.75 L 55 40 L 35 53.25" fill="none" stroke="url(#tealStroke)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="35" y1="26.75" x2="35" y2="53.25" stroke="#475569" stroke-width="2" stroke-dasharray="3 3"/>
+  <circle cx="35" cy="26.75" r="5" fill="#0F172A" stroke="#5EEAD4" stroke-width="2.6"/>
+  <circle cx="35" cy="53.25" r="5" fill="#0F172A" stroke="#94A3B8" stroke-width="2.4"/>
+  <circle cx="56" cy="40" r="6.5" fill="#2DD4BF"/>
+  <path d="M 53.2 40.2 L 55.2 42.2 L 59.2 38" fill="none" stroke="#0B1220" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

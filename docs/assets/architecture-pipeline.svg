@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" role="img" aria-label="Сквозная архитектура и поток решения Decision Ledger">
+  <defs>
+    <linearGradient id="panelBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#F1F5F9"/>
+    </linearGradient>
+    <marker id="arrowTeal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#0F766E"/>
+    </marker>
+    <marker id="arrowSlate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#64748B"/>
+    </marker>
+  </defs>
+
+  <rect x="0.75" y="0.75" width="1278.5" height="398.5" rx="12" fill="url(#panelBg)" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- Header bar -->
+  <g font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="28" y="32" fill="#0F766E" font-family="'Source Code Pro', 'DejaVu Sans Mono', monospace" font-size="11.5" font-weight="700">АРХИТЕКТУРА DECISION LEDGER · ЧЕТЫРЕ ИЗОЛИРОВАННЫХ КОНТУРА И ПЕРЕНОС МЕЖДУ СЕАНСАМИ</text>
+    <line x1="28" y1="44" x2="1252" y2="44" stroke="#E2E8F0" stroke-width="1"/>
+
+    <!-- Top Flow: 5 Lifecycle Stages -->
+    <!-- Stage 1 -->
+    <rect x="28" y="60" width="224" height="128" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <rect x="28" y="60" width="224" height="5" rx="2.5" fill="#0F766E"/>
+    <text x="42" y="84" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="11" font-weight="700">ШАГ 1 · ПОСТАНОВКА</text>
+    <text x="42" y="104" fill="#0F172A" font-family="'Inter Display', 'Inter', sans-serif" font-size="14" font-weight="700">Рамки и источники</text>
+    <text x="42" y="124" fill="#475569" font-size="11.5">• init + route (до 3 вопросов)</text>
+    <text x="42" y="142" fill="#475569" font-size="11.5">• fetch / source (SHA-256)</text>
+    <text x="42" y="160" fill="#475569" font-size="11.5">• Карантин prompt injection</text>
+    <text x="42" y="177" fill="#64748B" font-family="'Source Code Pro', monospace" font-size="10.5">web · table · ux · document</text>
+
+    <line x1="252" y1="124" x2="274" y2="124" stroke="#0F766E" stroke-width="1.8" marker-end="url(#arrowTeal)"/>
+
+    <!-- Stage 2 -->
+    <rect x="278" y="60" width="234" height="128" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <rect x="278" y="60" width="234" height="5" rx="2.5" fill="#0F766E"/>
+    <text x="292" y="84" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="11" font-weight="700">ШАГ 2 · ZERO-LLM РАСЧЁТ</text>
+    <text x="292" y="104" fill="#0F172A" font-family="'Inter Display', 'Inter', sans-serif" font-size="14" font-weight="700">Экономика и статистика</text>
+    <text x="292" y="124" fill="#475569" font-size="11.5">• Маржа и пороги переключения</text>
+    <text x="292" y="142" fill="#475569" font-size="11.5">• 95% ДИ Вильсона + Симпсон</text>
+    <text x="292" y="160" fill="#475569" font-size="11.5">• Экраны UX + 6 ИИ-персон</text>
+    <text x="292" y="177" fill="#B45309" font-family="'Source Code Pro', monospace" font-size="10.5">synthetic: can_cite_as_fact=0</text>
+
+    <line x1="512" y1="124" x2="534" y2="124" stroke="#0F766E" stroke-width="1.8" marker-end="url(#arrowTeal)"/>
+
+    <!-- Stage 3 -->
+    <rect x="538" y="60" width="236" height="128" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <rect x="538" y="60" width="236" height="5" rx="2.5" fill="#0F766E"/>
+    <text x="552" y="84" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="11" font-weight="700">ШАГ 3 · ФРЕЙМВОРКИ</text>
+    <text x="552" y="104" fill="#0F172A" font-family="'Inter Display', 'Inter', sans-serif" font-size="14" font-weight="700">Синтез и аудит обещаний</text>
+    <text x="552" y="124" fill="#475569" font-size="11.5">• &gt;=3–5 вариантов (keep/close)</text>
+    <text x="552" y="142" fill="#475569" font-size="11.5">• JTBD · OST · Pre-mortem</text>
+    <text x="552" y="160" fill="#475569" font-size="11.5">• Матрица обещание ↔ продукт</text>
+    <text x="552" y="177" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="10.5">propose --strict-claims</text>
+
+    <line x1="774" y1="124" x2="796" y2="124" stroke="#0F766E" stroke-width="1.8" marker-end="url(#arrowTeal)"/>
+
+    <!-- Stage 4 -->
+    <rect x="800" y="60" width="214" height="128" rx="9" fill="#F0FDFA" stroke="#0D9488" stroke-width="1.5"/>
+    <text x="814" y="84" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="11" font-weight="700">ШАГ 4 · ГЕЙТ ЧЕЛОВЕКА</text>
+    <text x="814" y="104" fill="#0F172A" font-family="'Inter Display', 'Inter', sans-serif" font-size="14" font-weight="700">Выбор комитета</text>
+    <text x="814" y="124" fill="#1E293B" font-size="11.5">• Стоп агента до подтверждения</text>
+    <text x="814" y="142" fill="#1E293B" font-size="11.5">• Pre-accept хук оверклейма</text>
+    <text x="814" y="160" fill="#1E293B" font-size="11.5">• Стратегии MD/PDF + Паспорт</text>
+    <text x="814" y="177" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="10.5">accept --expect &lt;sha256&gt;</text>
+
+    <line x1="1014" y1="124" x2="1036" y2="124" stroke="#0F766E" stroke-width="1.8" marker-end="url(#arrowTeal)"/>
+
+    <!-- Stage 5 -->
+    <rect x="1040" y="60" width="212" height="128" rx="9" fill="#0F172A" stroke="#1E293B" stroke-width="1.2"/>
+    <text x="1054" y="84" fill="#5EEAD4" font-family="'Source Code Pro', monospace" font-size="11" font-weight="700">ШАГ 5 · НОВЫЙ ЧАТ</text>
+    <text x="1054" y="104" fill="#F8FAFC" font-family="'Inter Display', 'Inter', sans-serif" font-size="14" font-weight="700">Пересмотр во времени</text>
+    <text x="1054" y="124" fill="#CBD5E1" font-size="11.5">• Чтение из case.sqlite3</text>
+    <text x="1054" y="142" fill="#CBD5E1" font-size="11.5">• Транзитивный approved_impact</text>
+    <text x="1054" y="160" fill="#CBD5E1" font-size="11.5">• Ревизия №2 (r1 -&gt; superseded)</text>
+    <text x="1054" y="177" fill="#5EEAD4" font-family="'Source Code Pro', monospace" font-size="10.5">source --updates &lt;id&gt;</text>
+
+    <!-- Vertical links to bottom substrate -->
+    <line x1="140" y1="188" x2="140" y2="220" stroke="#64748B" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrowSlate)"/>
+    <line x1="395" y1="188" x2="395" y2="220" stroke="#64748B" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrowSlate)"/>
+    <line x1="656" y1="188" x2="656" y2="220" stroke="#64748B" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrowSlate)"/>
+    <line x1="1146" y1="188" x2="1146" y2="220" stroke="#64748B" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#arrowSlate)"/>
+
+    <!-- Bottom row: 3 Architectural Layers -->
+    <!-- Layer A -->
+    <rect x="28" y="224" width="380" height="148" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="44" y="248" fill="#0F172A" font-family="'Inter Display', 'Inter', sans-serif" font-size="13.5" font-weight="700">1. Инструкции, методики и ролевые агенты</text>
+    <text x="44" y="270" fill="#334155" font-family="'Source Code Pro', monospace" font-size="11">AGENTS.md · CLAUDE.md · .cursor/rules/</text>
+    <text x="44" y="290" fill="#475569" font-size="11.5">• 6 навыков .agents/skills/ (подгрузка по шагу)</text>
+    <text x="44" y="308" fill="#475569" font-size="11.5">• 8 методичек playbook/ (JTBD, OST, Pre-mortem, Claims)</text>
+    <text x="44" y="326" fill="#475569" font-size="11.5">• 3 субагента: extractor · respondent · skeptic</text>
+    <text x="44" y="350" fill="#64748B" font-size="11">Отделены от данных кейса и не затираются промптами из веба</text>
+
+    <!-- Layer B -->
+    <rect x="426" y="224" width="428" height="148" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="442" y="248" fill="#0F172A" font-family="'Inter Display', 'Inter', sans-serif" font-size="13.5" font-weight="700">2. Детерминированное ядро (Python 3.11+ stdlib · 0 pip)</text>
+    <text x="442" y="270" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="11">python3 -m ledger &lt;17 CLI команд&gt;  |  stdio MCP (9 тулов)</text>
+    <text x="442" y="290" fill="#475569" font-size="11.5">• stats.py + table.py · 95% ДИ Вильсона, guardrails, Симпсон</text>
+    <text x="442" y="308" fill="#475569" font-size="11.5">• economics.py + cost.jsonl · маржа, пороги смены выбора, затраты</text>
+    <text x="442" y="326" fill="#475569" font-size="11.5">• claims.py + repo_audit.py · фильтр оверклейма и скан секретов/.gz</text>
+    <text x="442" y="350" fill="#64748B" font-size="11">Единый код для Cursor, Codex CLI, Antigravity, Grok CLI и Claude Code</text>
+
+    <!-- Layer C -->
+    <rect x="872" y="224" width="380" height="148" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="888" y="248" fill="#0F172A" font-family="'Inter Display', 'Inter', sans-serif" font-size="13.5" font-weight="700">3. Хранилища состояния и памяти (SQLite 3)</text>
+    <text x="888" y="270" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="11">.cases/&lt;кейс&gt;/case.sqlite3  +  .kb/knowledge.sqlite3</text>
+    <text x="888" y="290" fill="#475569" font-size="11.5">• Таблица evidence: побайтные блобы всех снимков SHA-256</text>
+    <text x="888" y="308" fill="#475569" font-size="11.5">• История утверждённых ревизий, задачи actions и чекпоинты</text>
+    <text x="888" y="326" fill="#475569" font-size="11.5">• Полнотекстовый индекс FTS5 (русская морфология, supersedes)</text>
+    <text x="888" y="350" fill="#64748B" font-size="10.8">Прежние выводы и синтетика никогда не выдаются за факт</text>
+  </g>
+</svg>
