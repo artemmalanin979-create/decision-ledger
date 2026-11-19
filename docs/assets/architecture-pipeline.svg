@@ -87,15 +87,15 @@
     <rect x="28" y="224" width="380" height="148" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
     <text x="44" y="248" fill="#0F172A" font-family="'Inter Display', 'Inter', sans-serif" font-size="13.5" font-weight="700">1. Инструкции, методики и ролевые агенты</text>
     <text x="44" y="270" fill="#334155" font-family="'Source Code Pro', monospace" font-size="11">AGENTS.md · CLAUDE.md · .cursor/rules/</text>
-    <text x="44" y="290" fill="#475569" font-size="11.5">• 6 навыков .agents/skills/ (подгрузка по шагу)</text>
-    <text x="44" y="308" fill="#475569" font-size="11.5">• 8 методичек playbook/ (JTBD, OST, Pre-mortem, Claims)</text>
+    <text x="44" y="290" fill="#475569" font-size="11.5">• 7 навыков .agents/skills/ (подгрузка по шагу)</text>
+    <text x="44" y="308" fill="#475569" font-size="11.5">• 9 методичек playbook/ (Brief-5p, JTBD, OST, Pre-mortem, Claims)</text>
     <text x="44" y="326" fill="#475569" font-size="11.5">• 3 субагента: extractor · respondent · skeptic</text>
     <text x="44" y="350" fill="#64748B" font-size="11">Отделены от данных кейса и не затираются промптами из веба</text>
 
     <!-- Layer B -->
     <rect x="426" y="224" width="428" height="148" rx="9" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
     <text x="442" y="248" fill="#0F172A" font-family="'Inter Display', 'Inter', sans-serif" font-size="13.5" font-weight="700">2. Детерминированное ядро (Python 3.11+ stdlib · 0 pip)</text>
-    <text x="442" y="270" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="11">python3 -m ledger &lt;17 CLI команд&gt;  |  stdio MCP (9 тулов)</text>
+    <text x="442" y="270" fill="#0F766E" font-family="'Source Code Pro', monospace" font-size="11">python3 -m ledger &lt;22 CLI команды&gt;  |  stdio MCP (14 тулов)</text>
     <text x="442" y="290" fill="#475569" font-size="11.5">• stats.py + table.py · 95% ДИ Вильсона, guardrails, Симпсон</text>
     <text x="442" y="308" fill="#475569" font-size="11.5">• economics.py + cost.jsonl · маржа, пороги смены выбора, затраты</text>
     <text x="442" y="326" fill="#475569" font-size="11.5">• claims.py + repo_audit.py · фильтр оверклейма и скан секретов/.gz</text>

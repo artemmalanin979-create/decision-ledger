@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import subprocess
 
+from .pdf_text import _stdlib_pdf_fallback
 from .xlsx import extract_xlsx_text
 
 SECRET_PATTERNS = [
@@ -23,15 +24,20 @@ SECRET_PATTERNS = [
 # Detect raw Russian mobile phone numbers (+7 9XX XXX-XX-XX) that could represent personal data (excludes 8-800 hotlines).
 PERSONAL_PHONE_PATTERN = re.compile(r"(?<!\d)(?:\+7|8)[\s(-]*9\d{2}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}(?!\d)")
 
-BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".pdf", ".zip"}
+BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".zip"}
 MAX_GZIP_TEXT_BYTES = 32 * 1024 * 1024
 
 
-def _decode_blob_or_gzip(raw: bytes, *, is_gzip: bool, is_xlsx: bool = False) -> str | None:
+def _decode_blob_or_gzip(raw: bytes, *, is_gzip: bool, is_xlsx: bool = False, is_pdf: bool = False) -> str | None:
     if is_xlsx:
         try:
             return extract_xlsx_text(raw)
         except ValueError:
+            return None
+    if is_pdf:
+        try:
+            return "\n".join(_stdlib_pdf_fallback(raw))
+        except Exception:  # noqa: BLE001
             return None
     if is_gzip:
         try:
@@ -105,6 +111,7 @@ def _scan_git_history(root: Path, issues: list[dict]) -> int:
                 cat_res.stdout,
                 is_gzip=(suffix == ".gz"),
                 is_xlsx=(suffix == ".xlsx"),
+                is_pdf=(suffix == ".pdf"),
             )
             if text is None:
                 continue
@@ -150,11 +157,19 @@ def audit_repository(root: Path, *, scan_history: bool = False) -> dict:
 
         is_gzip = suffix == ".gz"
         is_xlsx = suffix == ".xlsx"
-        text = _decode_blob_or_gzip(path.read_bytes(), is_gzip=is_gzip, is_xlsx=is_xlsx)
+        is_pdf = suffix == ".pdf"
+        if is_pdf:
+            from .pdf_text import extract_pdf_pages
+            try:
+                text = "\n".join(extract_pdf_pages(path))
+            except (OSError, ValueError):
+                text = None
+        else:
+            text = _decode_blob_or_gzip(path.read_bytes(), is_gzip=is_gzip, is_xlsx=is_xlsx)
         if text is None:
             continue
 
-        _scan_text_blob(rel, text, issues, check_json=not (is_gzip or is_xlsx))
+        _scan_text_blob(rel, text, issues, check_json=not (is_gzip or is_xlsx or is_pdf))
 
     history_blobs = 0
     if scan_history and git_dir.exists():

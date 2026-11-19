@@ -152,11 +152,14 @@ def _format_cost_lines(cost_summary: dict) -> list[str]:
         if cost_summary.get("model_calls") is not None
         else ""
     )
+    def _sp(val: int) -> str:
+        return f"{int(val):,}".replace(",", " ")
+
     reasoning_part = (
-        f" (в т.ч. рассуждений `{cost_summary['reasoning_tokens']:,}`)"
+        f" (в т.ч. рассуждений `{_sp(cost_summary['reasoning_tokens'])}`)"
         if cost_summary.get("reasoning_tokens")
         else ""
-    ).replace(",", " ")
+    )
 
     lines = [
         f"- **Статус телеметрии**: {prov}.",
@@ -167,11 +170,11 @@ def _format_cost_lines(cost_summary: dict) -> list[str]:
             f"повторов — `{cost_summary.get('retries', 0)}`."
         ),
         (
-            f"- **Токены**: полный вход `{cost_summary['input_tokens']:,}` "
-            f"(новый вход `{cost_summary['uncached_input_tokens']:,}` + чтение кэша `{cost_summary['cached_tokens']:,}`, "
+            f"- **Токены**: полный вход `{_sp(cost_summary['input_tokens'])}` "
+            f"(новый вход `{_sp(cost_summary['uncached_input_tokens'])}` + чтение кэша `{_sp(cost_summary['cached_tokens'])}`, "
             f"доля кэша `{round(cost_summary['cache_hit_ratio'] * 100, 1)}%`), "
-            f"выход `{cost_summary['output_tokens']:,}`{reasoning_part}."
-        ).replace(",", " "),
+            f"выход `{_sp(cost_summary['output_tokens'])}`{reasoning_part}."
+        ),
         f"- **Денежная оценка рантайма**: {money_str}.",
         f"- **Время человека (`human_minutes`)**: {human_str}.",
     ]
@@ -689,10 +692,18 @@ def build_unified_brief_markdown(
 
 def _md_inline_html(text: str) -> str:
     s = escape(text)
-    s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
+    code_spans: list[str] = []
+
+    def _stash_code(m: re.Match[str]) -> str:
+        code_spans.append(f"<code>{m.group(1)}</code>")
+        return f"\x00CODE{len(code_spans) - 1}\x00"
+
+    s = re.sub(r"`([^`]+)`", _stash_code, s)
     s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)
     s = re.sub(r"\*([^*]+)\*", r"<em>\1</em>", s)
     s = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', s)
+    for idx, span_html in enumerate(code_spans):
+        s = s.replace(f"\x00CODE{idx}\x00", span_html)
     return s
 
 
@@ -787,11 +798,20 @@ def markdown_to_styled_html(md_text: str, doc_title: str) -> str:
             out.append("</ul>")
             continue
         elif re.match(r"^\d+\.\s+", s):
-            out.append("<ol>")
+            first_num = int(re.match(r"^(\d+)\.\s+", s).group(1))
+            out.append(f'<ol start="{first_num}">' if first_num != 1 else "<ol>")
             while i < len(lines) and re.match(r"^\s*\d+\.\s+", lines[i]):
                 item = re.sub(r"^\s*\d+\.\s+", "", lines[i])
-                out.append(f"<li>{_md_inline_html(item)}</li>")
                 i += 1
+                sub_items: list[str] = []
+                while i < len(lines) and re.match(r"^\s{2,}[-*]\s+", lines[i]):
+                    sub_txt = re.sub(r"^\s+[-*]\s+", "", lines[i])
+                    sub_items.append(f"<li>{_md_inline_html(sub_txt)}</li>")
+                    i += 1
+                if sub_items:
+                    out.append(f"<li>{_md_inline_html(item)}<ul>{''.join(sub_items)}</ul></li>")
+                else:
+                    out.append(f"<li>{_md_inline_html(item)}</li>")
             out.append("</ol>")
             continue
         else:
