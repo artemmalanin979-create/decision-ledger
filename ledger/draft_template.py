@@ -570,10 +570,30 @@ def compile_draft_template(raw_text: str, sources_health: dict) -> dict:
         if meth_out:
             proposal["methodology"] = meth_out
 
+    raw_brief = doc.get("brief_plan")
+    if isinstance(raw_brief, dict) and raw_brief:
+        raw_lead = raw_brief.get("lead") if isinstance(raw_brief.get("lead"), dict) else {}
+        lead_out = {
+            k: str(raw_lead.get(k) or "").strip()
+            for k in ("first_customers", "problem", "offer", "expected_result", "q1_decision", "q2_decision")
+        }
+        parts_out = []
+        for idx, p in enumerate(raw_brief.get("parts") or [], 1):
+            if not isinstance(p, dict):
+                continue
+            deps = _as_str_list(p.get("depends_on") if "depends_on" in p else p.get("deps"))
+            parts_out.append({
+                "id": str(p.get("id") or f"part_{idx}").strip(),
+                "title": str(p.get("title") or "").strip(),
+                "body": str(p.get("body") or "").strip(),
+                "depends_on": deps,
+            })
+        proposal["brief_plan"] = {"lead": lead_out, "parts": parts_out}
+
     return proposal
 
 
-def generate_draft_template(case: Path, state: dict, sources_health: dict) -> str:
+def generate_draft_template(case: Path, state: dict, sources_health: dict, *, brief: bool = False) -> str:
     """Generate a concise YAML draft template pre-linked to the case's registered sources."""
     active = [
         (sid, info)
@@ -716,5 +736,52 @@ def generate_draft_template(case: Path, state: dict, sources_health: dict) -> st
         "    due: 2027-02-15",
         "    task: Запустить A/B-пилот рекомендуемого пакета и сверить фактический CAC и удержание с моделью.",
         "    trigger: Пересмотреть решение при выходе CAC или оттока за стоп-пороги экономики.",
+        *(
+            [
+                "",
+                "brief_plan:",
+                "  lead:",
+                "    first_customers: Сегмент первых клиентов и доступная база оператора (без двойного счёта).",
+                "    problem: Конкретный сбой/ситуация глазами клиента и момент, когда помощь ещё не запоздала.",
+                "    offer: Суть предложения, тарифные условия и гранулярные согласия участников.",
+                "    expected_result: Целевой клиентский эффект и вклад в валовую прибыль планового года.",
+                "    q1_decision: Решение конца Q1 — выделение людей и средств на пилот после снятия блокеров.",
+                "    q2_decision: Решение конца Q2 (с финансами) — расширение охвата, доработка, наблюдение или стоп.",
+                "  parts:",
+                "    - id: part_1",
+                "      title: 1. Клиент и его проблема",
+                "      deps: [f1_market, f3_gap]",
+                "      body: |",
+                "        Восстановление конкретного случая (сигнал vs причина), обоснование первого приоритета,",
+                "        сравнение с альтернативной проблемой и проверяемое допущение с порогом смены приоритета.",
+                "    - id: part_2",
+                "      title: 2. Предложение и путь к клиенту",
+                "      deps: [f1_market, f2_economics]",
+                "      body: |",
+                "        Путь организатора и участника (согласия, отзыв, идемпотентность операций), состав MVP,",
+                "        воронка привлечения без двойного счёта и декомпозиция активных групп.",
+                "    - id: part_3",
+                "      title: 3. Польза для клиента и прибыль оператора",
+                "      deps: [f2_economics, f3_gap]",
+                "      body: |",
+                "        Дизайн кластерного пилота (ITT, п.п. vs %, сравнение с простым способом), темп набора",
+                "        и мост валовой прибыли от базы без изменений с отдельным расчётом порога CAPEX.",
+                "    - id: part_4",
+                "      title: 4. Стратегический выбор и план по кварталам",
+                "      deps: [f1_market, f2_economics, f3_gap]",
+                "      body: |",
+                "        Сравнение 3 вариантов, план Q1–Q4, сводная таблица 5 показателей (основной и неблагоприятный",
+                "        сценарии с ценой закрытия разрыва) и измеримый ориентир конца 3-го года.",
+                "        {{BRIEF_SCORECARD_TABLE}}",
+                "    - id: part_5",
+                "      title: 5. Ресурсы, риски и решение руководителя",
+                "      deps: [f2_economics, f3_gap]",
+                "      body: |",
+                "        Матрица ролей и дефицитов (дизайн, аналитика, разработка Q2, неподтверждённый QA),",
+                "        предстартовые зависимости, стоп-правила пилота и конкретный запрос на конец Q1 и Q2.",
+            ]
+            if brief
+            else []
+        ),
         "",
     ])

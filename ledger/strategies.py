@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import tempfile
 
+from .brief_calc import evaluate_brief_model, render_brief_calc_markdown
 from .claims import audit_claims
 from .cost import summarize_case_cost
 from .economics import evaluate_economics, render_assumptions_markdown
@@ -74,6 +75,40 @@ def _extract_economics_blocks(case: Path, state: dict, db) -> list[tuple[str, di
         if isinstance(doc, dict) and isinstance(doc.get("plans"), dict) and doc["plans"]:
             try:
                 ev = evaluate_economics(doc)
+                results.append((sid, doc, ev))
+            except (KeyError, TypeError, ValueError):
+                continue
+    return results
+
+
+def _extract_brief_calc_blocks(case: Path, state: dict, db) -> list[tuple[str, dict, dict]]:
+    """Find any registered JSON source in case.sqlite3 (or case dir) that represents a valid brief-calc spec."""
+    results: list[tuple[str, dict, dict]] = []
+    for sid, rec in (state.get("sources") or {}).items():
+        if rec.get("retired") or not rec.get("versions"):
+            continue
+        ver = rec["versions"][-1]
+        rel_path = str(ver.get("path") or "")
+        if not rel_path.lower().endswith(".json"):
+            continue
+        raw_bytes: bytes | None = None
+        if db is not None:
+            row = db.execute("SELECT content FROM evidence WHERE sha = ?", (ver["sha"],)).fetchone()
+            if row and row[0]:
+                raw_bytes = bytes(row[0])
+        if raw_bytes is None:
+            disk_p = case / rel_path
+            if disk_p.is_file():
+                raw_bytes = disk_p.read_bytes()
+        if not raw_bytes:
+            continue
+        try:
+            doc = json.loads(raw_bytes.decode("utf-8-sig"))
+        except (UnicodeDecodeError, ValueError):
+            continue
+        if isinstance(doc, dict) and isinstance(doc.get("scenarios"), dict) and doc["scenarios"]:
+            try:
+                ev = evaluate_brief_model(doc)
                 results.append((sid, doc, ev))
             except (KeyError, TypeError, ValueError):
                 continue
@@ -511,6 +546,147 @@ def build_comms_strategy_markdown(
     return "\n".join(lines)
 
 
+def build_unified_brief_markdown(
+    *,
+    case: Path,
+    state: dict,
+    sources_health: dict,
+    proposal: dict,
+    decision: dict | None,
+    active_impact: dict,
+    claims_report: dict,
+    cost_summary: dict,
+    econ_blocks: list[tuple[str, dict, dict]],
+    brief_calc_blocks: list[tuple[str, dict, dict]],
+) -> str:
+    """Render ONE unified 5-part executive strategy brief matching MegaFon brief format."""
+    if decision:
+        status_badge = (
+            f"Решение №{decision['revision']} · Утвердил: {decision['by']} · "
+            f"{decision['at']} · снимок `{decision['sha'][:16]}…`"
+        )
+    else:
+        status_badge = "Черновик на рассмотрении руководителя (гейт `accept` ещё не пройден)"
+
+    lines: list[str] = [
+        f"# {proposal['title']}",
+        "",
+        f"*{status_badge}*",
+        "",
+    ]
+    if active_impact["sources"] or active_impact["unreviewed"]:
+        lines += [
+            f"> **Внимание — обнаружены обновлённые вводные:** изменившиеся источники "
+            f"`{', '.join(active_impact['sources']) or 'нет'}`, новые непроверенные источники "
+            f"`{', '.join(active_impact['unreviewed']) or 'нет'}` (затронуто оснований: "
+            f"`{len(active_impact['findings'])}`).",
+            "",
+        ]
+
+    scorecard_md = ""
+    if brief_calc_blocks:
+        scorecard_md = render_brief_calc_markdown(brief_calc_blocks[0][2]).strip()
+
+    brief_plan = proposal.get("brief_plan")
+    if isinstance(brief_plan, dict) and "lead" in brief_plan and "parts" in brief_plan:
+        lead = brief_plan["lead"]
+        lines += [
+            "### Вводное резюме и развилки решений руководителя",
+            "",
+            f"- **Первые клиенты**: {lead['first_customers']}",
+            f"- **Выбранная проблема**: {lead['problem']}",
+            f"- **Наше предложение**: {lead['offer']}",
+            f"- **Ожидаемый результат**: {lead['expected_result']}",
+            f"- **Решение к концу 1-го квартала (пилот)**: {lead['q1_decision']}",
+            f"- **Решение к концу 2-го квартала (с финансовой командой)**: {lead['q2_decision']}",
+            "",
+            "---",
+            "",
+        ]
+        affected_parts = set(active_impact.get("brief_parts") or [])
+        for part in brief_plan["parts"]:
+            stale_note = " *(требует пересмотра после новых данных)*" if part["id"] in affected_parts else ""
+            body_txt = part["body"]
+            if "{{BRIEF_SCORECARD_TABLE}}" in body_txt:
+                body_txt = body_txt.replace("{{BRIEF_SCORECARD_TABLE}}", scorecard_md or "*(таблица brief-calc не подключена)*")
+            deps_str = ", ".join(f"`{d}`" for d in part.get("depends_on", []))
+            lines += [
+                f"## {part['title']}{stale_note}",
+                "",
+                body_txt,
+                "",
+                f"*Трассировка оснований в реестре `case.sqlite3`: {deps_str}.*",
+                "",
+                "---",
+                "",
+            ]
+    else:
+        # Automatic 5-part synthesis fallback for standard proposals without explicit brief_plan
+        rec_id = proposal["recommended"]
+        rec_opt = proposal["options"][rec_id]
+        meth = proposal.get("methodology") or {}
+        jtbd = meth.get("jtbd") or {}
+        lines += [
+            "### Вводное резюме",
+            "",
+            f"- **Запрос и целевой сегмент**: {jtbd.get('payer_job') or state['request']}",
+            f"- **Рекомендуемый вариант (`{rec_id}`)**: **{rec_opt['title']}** — {proposal['summary']}",
+            f"- **План проверки и стоп-правило**: {proposal['strategy']['experiment']['text']}",
+            "",
+            "---",
+            "",
+            "## 1. Клиент и его проблема",
+            "",
+        ]
+        for fid, fdata in order_findings(proposal["findings"]).items():
+            lines.append(f"- `{fid}` (**{KIND_LABELS_RU.get(fdata['kind'], fdata['kind'])}**): {fdata['text']}")
+        lines += [
+            "",
+            "## 2. Предложение и путь к клиенту",
+            "",
+            proposal["strategy"]["product"]["text"],
+            "",
+            proposal["strategy"]["communication"]["text"],
+            "",
+            "## 3. Польза для клиента и прибыль оператора",
+            "",
+            proposal["strategy"]["experiment"]["text"],
+            "",
+        ]
+        for sid, _doc, ev in econ_blocks:
+            lines += [f"### Расчёт юнит-экономики (`{sid}`)", "", render_assumptions_markdown(ev).strip(), ""]
+        lines += ["## 4. Стратегический выбор и план работ", ""]
+        for oid, odata in proposal["options"].items():
+            mark = "**ВЫБРАН**" if oid == rec_id else "Альтернатива"
+            lines.append(f"- `{oid}` ({mark}) — **{odata['title']}**: {odata['case']} *(Возражение: {odata['objection']})*")
+        if scorecard_md:
+            lines += ["", scorecard_md, ""]
+        lines += ["", "## 5. Ресурсы, риски и решение руководителя", ""]
+        for act in proposal["actions"]:
+            lines.append(f"- `{act['id']}` · **{act['owner']}** (до `{act['due']}`): {act['task']} *(Триггер: {act['trigger']})*")
+        lines += ["", "---", ""]
+
+    claims_badge = (
+        "ПРОЙДЕН (`0` high-severity предупреждений)"
+        if claims_report["passed"]
+        else f"ПРЕДУПРЕЖДЕНИЙ: `{claims_report['total_warnings']}`"
+    )
+    lines += [
+        "### Справка о верификации расчётов, источников и затрат Decision Ledger",
+        "",
+        f"- **Аудит обещаний (`ledger audit-claims`)**: {claims_badge}.",
+        "- **Проверенные источники (`SHA-256`)**: "
+        + "; ".join(
+            f"`{sid}` (`{str(meta.get('sha', ''))[:12]}…`, {meta.get('note', '')})"
+            for sid, meta in proposal["reviewed"].items()
+        )
+        + ".",
+        *_format_cost_lines(cost_summary),
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def _md_inline_html(text: str) -> str:
     s = escape(text)
     s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
@@ -792,8 +968,10 @@ def export_strategies(
     use_draft: bool = False,
     prefix: str = "strategy",
     include_pdf: bool = True,
+    include_brief: bool = False,
+    only_brief: bool = False,
 ) -> dict:
-    """Export product & communication strategies (MD + PDF) from case.sqlite3 for any case."""
+    """Export product & communication strategies and/or unified 5-part brief (MD + PDF) from case.sqlite3."""
     decisions = state.get("decisions") or []
     draft = state.get("draft")
 
@@ -816,54 +994,85 @@ def export_strategies(
     claims_report = audit_claims(proposal, sources_health)
     cost_summary = summarize_case_cost(case, state.get("telemetry", []))
     econ_blocks = _extract_economics_blocks(case, state, db)
-
-    prod_md = build_product_strategy_markdown(
-        case=case,
-        state=state,
-        sources_health=sources_health,
-        proposal=proposal,
-        decision=selected_decision,
-        active_impact=active_impact,
-        cost_summary=cost_summary,
-        econ_blocks=econ_blocks,
-    )
-    comms_md = build_comms_strategy_markdown(
-        state=state,
-        proposal=proposal,
-        decision=selected_decision,
-        claims_report=claims_report,
-        cost_summary=cost_summary,
-    )
+    brief_calc_blocks = _extract_brief_calc_blocks(case, state, db)
 
     clean_prefix = re.sub(r"[^A-Za-z0-9_-]+", "-", prefix.strip()).strip("-") or "strategy"
-    prod_md_path = dest_dir / f"{clean_prefix}-product.md"
-    comms_md_path = dest_dir / f"{clean_prefix}-comms.md"
-    prod_md_path.write_text(prod_md, encoding="utf-8")
-    comms_md_path.write_text(comms_md, encoding="utf-8")
+    want_brief = bool(include_brief or only_brief or ("brief_plan" in proposal))
 
     result = {
         "case": str(case),
         "status": f"decision_r{selected_decision['revision']}" if selected_decision else "draft",
         "recommended": proposal["recommended"],
-        "product_md": str(prod_md_path),
-        "comms_md": str(comms_md_path),
+        "product_md": None,
+        "comms_md": None,
         "product_pdf": None,
         "comms_pdf": None,
+        "brief_md": None,
+        "brief_pdf": None,
         "pdf_renderer": None,
         "claims_passed": claims_report["passed"],
     }
 
-    if include_pdf:
-        prod_pdf_path = dest_dir / f"{clean_prefix}-product.pdf"
-        comms_pdf_path = dest_dir / f"{clean_prefix}-comms.pdf"
-        renderer = render_markdown_to_pdf(
-            prod_md, prod_pdf_path, title=f"Продуктовая стратегия — {proposal['title']}"
+    renderer = None
+    if not only_brief:
+        prod_md = build_product_strategy_markdown(
+            case=case,
+            state=state,
+            sources_health=sources_health,
+            proposal=proposal,
+            decision=selected_decision,
+            active_impact=active_impact,
+            cost_summary=cost_summary,
+            econ_blocks=econ_blocks,
         )
-        render_markdown_to_pdf(
-            comms_md, comms_pdf_path, title=f"Коммуникационная стратегия — {proposal['title']}"
+        comms_md = build_comms_strategy_markdown(
+            state=state,
+            proposal=proposal,
+            decision=selected_decision,
+            claims_report=claims_report,
+            cost_summary=cost_summary,
         )
-        result["product_pdf"] = str(prod_pdf_path)
-        result["comms_pdf"] = str(comms_pdf_path)
-        result["pdf_renderer"] = renderer
+        prod_md_path = dest_dir / f"{clean_prefix}-product.md"
+        comms_md_path = dest_dir / f"{clean_prefix}-comms.md"
+        prod_md_path.write_text(prod_md, encoding="utf-8")
+        comms_md_path.write_text(comms_md, encoding="utf-8")
+        result["product_md"] = str(prod_md_path)
+        result["comms_md"] = str(comms_md_path)
 
+        if include_pdf:
+            prod_pdf_path = dest_dir / f"{clean_prefix}-product.pdf"
+            comms_pdf_path = dest_dir / f"{clean_prefix}-comms.pdf"
+            renderer = render_markdown_to_pdf(
+                prod_md, prod_pdf_path, title=f"Продуктовая стратегия — {proposal['title']}"
+            )
+            render_markdown_to_pdf(
+                comms_md, comms_pdf_path, title=f"Коммуникационная стратегия — {proposal['title']}"
+            )
+            result["product_pdf"] = str(prod_pdf_path)
+            result["comms_pdf"] = str(comms_pdf_path)
+
+    if want_brief:
+        brief_md = build_unified_brief_markdown(
+            case=case,
+            state=state,
+            sources_health=sources_health,
+            proposal=proposal,
+            decision=selected_decision,
+            active_impact=active_impact,
+            claims_report=claims_report,
+            cost_summary=cost_summary,
+            econ_blocks=econ_blocks,
+            brief_calc_blocks=brief_calc_blocks,
+        )
+        brief_md_path = dest_dir / f"{clean_prefix}-brief.md"
+        brief_md_path.write_text(brief_md, encoding="utf-8")
+        result["brief_md"] = str(brief_md_path)
+        if include_pdf:
+            brief_pdf_path = dest_dir / f"{clean_prefix}-brief.pdf"
+            renderer = render_markdown_to_pdf(
+                brief_md, brief_pdf_path, title=proposal["title"]
+            )
+            result["brief_pdf"] = str(brief_pdf_path)
+
+    result["pdf_renderer"] = renderer
     return result

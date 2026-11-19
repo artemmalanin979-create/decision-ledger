@@ -2,9 +2,17 @@
 
 from datetime import date
 
-KINDS = {"fact", "observation", "inference", "hypothesis", "forecast", "unknown"}
+KINDS = {"fact", "observation", "inference", "hypothesis", "forecast", "assumption", "unknown"}
 BLOCKS = {"product", "communication", "experiment"}
 LEVELS = {"low", "medium", "high"}
+BRIEF_LEAD_FIELDS = (
+    "first_customers",
+    "problem",
+    "offer",
+    "expected_result",
+    "q1_decision",
+    "q2_decision",
+)
 
 
 def required_text(record, *fields):
@@ -87,6 +95,28 @@ def validate_methodology(methodology, findings, options):
                 raise ValueError("promise_matrix.proof_findings must reference existing finding IDs")
 
 
+def validate_brief_plan(brief_plan, findings):
+    if brief_plan is None:
+        return
+    if not isinstance(brief_plan, dict):
+        raise ValueError("brief_plan must be an object")
+    lead = require_map(brief_plan, "lead")
+    required_text(lead, *BRIEF_LEAD_FIELDS)
+    parts = brief_plan.get("parts")
+    if not isinstance(parts, list) or len(parts) != 5:
+        raise ValueError("brief_plan.parts must contain exactly 5 ordered parts")
+    seen_ids = set()
+    for idx, part in enumerate(parts, 1):
+        required_text(part, "id", "title", "body")
+        if part["id"] in seen_ids:
+            raise ValueError(f"Duplicate brief_plan part ID: {part['id']}")
+        seen_ids.add(part["id"])
+        dependencies(part, findings, required=True)
+        expected_prefix = f"{idx}."
+        if not part["title"].strip().startswith(expected_prefix):
+            raise ValueError(f"brief_plan part {idx} title must start with '{expected_prefix}' (got {part['title']!r})")
+
+
 def validate(proposal, sources):
     required_text(proposal, "title", "summary", "recommended")
     reviewed = require_map(proposal, "reviewed")
@@ -141,6 +171,7 @@ def validate(proposal, sources):
         dependencies(block, findings, required=True)
 
     validate_methodology(proposal.get("methodology"), findings, options)
+    validate_brief_plan(proposal.get("brief_plan"), findings)
 
     actions = proposal.get("actions")
     if not isinstance(actions, list) or not actions:
@@ -215,6 +246,13 @@ def impact(proposal, sources):
     }
     if meth:
         res["methodology"] = methodology_affected
+    brief_plan = proposal.get("brief_plan")
+    if isinstance(brief_plan, dict):
+        res["brief_parts"] = [
+            part["id"]
+            for part in (brief_plan.get("parts") or [])
+            if affected.intersection(part.get("depends_on", []))
+        ]
     return res
 
 
@@ -354,7 +392,7 @@ def render(proposal, source_records, decision=None, cost_summary=None):
 
     labels = {
         "fact": "факт", "observation": "наблюдение в данных", "inference": "вывод",
-        "hypothesis": "гипотеза", "forecast": "прогноз", "unknown": "неизвестно",
+        "hypothesis": "гипотеза", "forecast": "прогноз", "assumption": "допущение", "unknown": "неизвестно",
     }
     lines += ["## Основания", ""]
     for key, finding in proposal["findings"].items():

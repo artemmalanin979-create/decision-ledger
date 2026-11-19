@@ -91,14 +91,22 @@ def audit_claims(proposal: dict, sources: dict) -> dict:
     promise_matrix = (proposal.get("methodology") or {}).get("promise_matrix") or []
 
     has_uncertainties = any(
-        f.get("kind") in {"unknown", "hypothesis", "forecast"} for f in findings.values()
+        f.get("kind") in {"unknown", "hypothesis", "forecast", "assumption"} for f in findings.values()
     )
 
-    # 1. Check unconditional marketing claims vs uncertainties (both communication text and promise_matrix).
+    # 1. Check unconditional marketing claims vs uncertainties (communication text, promise_matrix, and brief_plan).
     overclaims = _find_overclaims(comm_text)
     for idx, row in enumerate(promise_matrix, 1):
         for oc in _find_overclaims(row.get("promise", "")):
             overclaims.append({"match": f"promise_matrix[{idx}]: {oc['match']}", "reason": oc["reason"]})
+    brief_plan = proposal.get("brief_plan") or {}
+    if isinstance(brief_plan, dict):
+        lead_offer = (brief_plan.get("lead") or {}).get("offer", "")
+        for oc in _find_overclaims(lead_offer):
+            overclaims.append({"match": f"brief_plan.lead.offer: {oc['match']}", "reason": oc["reason"]})
+        for p in brief_plan.get("parts") or []:
+            for oc in _find_overclaims(p.get("body", "")):
+                overclaims.append({"match": f"brief_plan.{p.get('id', 'part')}: {oc['match']}", "reason": oc["reason"]})
 
     if overclaims:
         for item in overclaims:

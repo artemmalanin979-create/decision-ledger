@@ -296,7 +296,7 @@ class XlsxWhatIfAndDraftTemplateTest(unittest.TestCase):
         tool_names = {t["name"] for t in lines[0]["result"]["tools"]}
         self.assertIn("ledger_xlsx", tool_names)
         self.assertIn("ledger_draft_template", tool_names)
-        self.assertEqual(len(tool_names), 12)
+        self.assertEqual(len(tool_names), 14)
         self.assertIn("399", lines[1]["result"]["content"][0]["text"])
         self.assertIn("reviewed: auto", lines[2]["result"]["content"][0]["text"])
 

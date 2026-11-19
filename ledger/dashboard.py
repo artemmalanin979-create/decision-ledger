@@ -24,6 +24,7 @@ KIND_LABELS = {
     "inference": "Вывод",
     "hypothesis": "Гипотеза",
     "forecast": "Прогноз",
+    "assumption": "Допущение",
     "unknown": "Неизвестно",
 }
 
@@ -382,7 +383,7 @@ def render_dashboard_html(
             stale_cls = " stale" if fid in affected_findings else ""
             kind = fdata["kind"]
             kind_cls = "tag-ok" if kind in {"fact", "observation"} else (
-                "tag-warn" if kind in {"hypothesis", "forecast", "unknown"} else ""
+                "tag-warn" if kind in {"hypothesis", "forecast", "assumption", "unknown"} else ""
             )
             refs = [f'{c["source"]}:{c["locator"]}' for c in fdata.get("citations", [])] + list(fdata.get("depends_on", []))
             ref_line = ", ".join(refs) if refs else "без ссылок"

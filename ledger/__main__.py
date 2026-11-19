@@ -12,6 +12,7 @@ import sqlite3
 import sys
 from urllib.parse import urlsplit
 
+from .brief_calc import evaluate_brief_file, render_brief_calc_markdown
 from .claims import audit_claims, scan_untrusted_text
 from .cost import append_cost_entry, import_cost_from_logs, summarize_case_cost
 from .dashboard import serve_dashboard, write_dashboard
@@ -19,6 +20,7 @@ from .draft_template import compile_draft_template, generate_draft_template
 from .economics import evaluate_economics_file, render_assumptions_markdown
 from .kb import ingest_case_into_kb, link_entries, retract_entry, search_kb, upsert_entry
 from .mcp_server import serve_mcp
+from .pdf_text import extract_pdf_pages, extract_pdf_text
 from .repo_audit import audit_repository
 from .review import impact, render, validate
 from .router import record_telemetry, route_next_step, summarize_telemetry
@@ -87,7 +89,12 @@ def register(args, case, state, db):
             inj_flags = scan_untrusted_text(extract_xlsx_text(content))
         except ValueError:
             inj_flags = []
-    elif suffix_lower not in {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".pdf", ".zip"}:
+    elif suffix_lower == ".pdf":
+        try:
+            inj_flags = scan_untrusted_text("\n".join(extract_pdf_pages(path)))
+        except (OSError, ValueError):
+            inj_flags = []
+    elif suffix_lower not in {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".zip"}:
         try:
             inj_flags = scan_untrusted_text(content.decode("utf-8", errors="ignore"))
         except OSError:
@@ -205,6 +212,7 @@ def parse_args():
 
     draft_cmd = command("draft", "Generate a concise YAML draft template or compile a YAML draft to JSON")
     draft_cmd.add_argument("--template", action="store_true", help="Emit pre-populated YAML draft template")
+    draft_cmd.add_argument("--brief", action="store_true", help="Include 5-part unified product brief structure in template")
     draft_cmd.add_argument("--compile", type=Path, help="Compile a YAML draft file into canonical proposal JSON")
     draft_cmd.add_argument("-o", "--output", type=Path, help="Write generated template or compiled JSON to file")
 
@@ -289,6 +297,8 @@ def parse_args():
     exp_choice.add_argument("--decision", type=int, help="Decision revision number (defaults to latest approved)")
     exp_choice.add_argument("--draft", action="store_true", help="Export staged draft instead of approved decision")
     exp_strat.add_argument("--prefix", default="strategy", help="Filename prefix (default: strategy -> strategy-product.md/.pdf)")
+    exp_strat.add_argument("--brief", action="store_true", help="Also export unified 5-part strategy-brief.md/.pdf")
+    exp_strat.add_argument("--only-brief", action="store_true", help="Export ONLY the unified 5-part strategy-brief.md/.pdf")
     exp_strat.add_argument("--no-pdf", action="store_true", help="Write Markdown files only without rendering PDFs")
 
     rates = sub.add_parser("rates", help="Compute auditable weighted rates and Wilson CIs from CSV/TSV/XLSX")
@@ -312,6 +322,18 @@ def parse_args():
         "--format", choices=["json", "md"], default="json",
         help="md: таблица «факты vs допущения» и пороги смены решения для стратегии/паспорта",
     )
+
+    pdf_cmd = sub.add_parser("pdf", help="Extract layout-preserving text from a PDF document")
+    pdf_cmd.add_argument("file", type=Path)
+    pdf_cmd.add_argument("--max-pages", type=int, help="Optional maximum number of pages to return")
+    pdf_cmd.add_argument("--format", choices=["text", "json"], default="text")
+
+    bcalc = sub.add_parser(
+        "brief-calc",
+        help="Compute 5-row brief scorecard, 14d activation (incl. unanswered invites), and 500 RUB gross-profit bridge",
+    )
+    bcalc.add_argument("file", type=Path)
+    bcalc.add_argument("--format", choices=["json", "md"], default="json")
 
     kb = sub.add_parser("kb", help="Manage and search the cross-session knowledge base")
     kb.add_argument("--kb-dir", type=Path, default=Path(".kb"))
@@ -549,7 +571,7 @@ def run_case(args):
                     out_p.write_text(dumps(compiled) + "\n", encoding="utf-8")
                     return {"compiled": str(out_p), "findings": len(compiled["findings"]), "options": len(compiled["options"])}
                 return compiled
-            tpl_text = generate_draft_template(case, state, sources)
+            tpl_text = generate_draft_template(case, state, sources, brief=args.brief)
             if args.output:
                 out_p = args.output if args.output.is_absolute() else (case / args.output)
                 out_p = out_p.resolve()
@@ -568,6 +590,8 @@ def run_case(args):
                 use_draft=args.draft,
                 prefix=args.prefix,
                 include_pdf=not args.no_pdf,
+                include_brief=args.brief,
+                only_brief=args.only_brief,
             )
         if cmd == "propose":
             path = case_file(case, args.file)
@@ -691,6 +715,13 @@ def main():
             result = evaluate_economics_file(args.file)
             if args.format == "md":
                 result = render_assumptions_markdown(result)
+        elif args.command == "pdf":
+            pdf_rep = extract_pdf_text(args.file, max_pages=args.max_pages)
+            result = pdf_rep["text"] if args.format == "text" else pdf_rep
+        elif args.command == "brief-calc":
+            result = evaluate_brief_file(args.file)
+            if args.format == "md":
+                result = render_brief_calc_markdown(result)
         elif args.command == "kb":
             result = run_kb(args)
         elif args.command == "audit-repo":

@@ -25,8 +25,8 @@ def inspect_workspace_inputs(case: Path, registered_paths: set[str]) -> dict:
                 continue
             rel = item.relative_to(case).as_posix()
             if (
-                rel in {"proposal.json", "recommendation.json", "cost.jsonl"}
-                or rel.startswith("proposal-")
+                rel in {"proposal.json", "recommendation.json", "cost.jsonl", "draft.yaml", "draft.yml"}
+                or rel.startswith(("proposal-", "draft-"))
                 or rel.endswith(".html")
             ):
                 continue
@@ -155,6 +155,28 @@ def route_next_step(
             "estimated_cost_tier": "zero_llm",
             "why": "Точный расчёт долей, 95% ДИ Вильсона, проверка парадокса Симпсона и юнит-экономики без траты токенов LLM.",
             "stop_condition": "Получены общие и когортные доли, интервалы и запас маржинальности.",
+        })
+
+    # 3b. PDF brief or multi-part executive brief request -> route to zero-LLM PDF reader + brief-calc!
+    has_pdf_or_brief = (
+        any(s["path"].lower().endswith(".pdf") for s in sources_health.values())
+        or any(tok in (state.get("request") or "").lower() for tok in ("бриф", "пяти частей", "5 частей", "квартал"))
+    )
+    if has_pdf_or_brief and stage in {"intake", "research", "review"} and not draft:
+        steps.append({
+            "step": "brief_pdf_and_scorecard_audit",
+            "process": "brief_structuring",
+            "tool": "ledger pdf + ledger brief-calc + ledger draft --template --brief",
+            "skill": "strategic-brief-5part",
+            "subagent": None,
+            "model_tier": "zero_llm_then_reasoning",
+            "estimated_cost_tier": "zero_llm",
+            "why": (
+                "Извлечение таблиц PDF-брифа без потерь и детерминированная сверка 5 показателей "
+                "(14-дневная активация со всеми созданными группами в знаменателе, мост валовой прибыли по 500 руб./мес., "
+                "лимит месяцев планового года и единый документ из 5 частей)."
+            ),
+            "stop_condition": "Проверены все показатели в основном и неблагоприятном сценариях; подготовлен единый документ strategy-brief.",
         })
 
     # 4. UX screenshots or interview / synthetic persona probes when qualitative gaps exist.

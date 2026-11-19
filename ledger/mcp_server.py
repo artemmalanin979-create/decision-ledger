@@ -7,12 +7,14 @@ import json
 from pathlib import Path
 import sys
 
+from .brief_calc import evaluate_brief_model, render_brief_calc_markdown
 from .claims import audit_claims
 from .cost import append_cost_entry, import_cost_from_logs, summarize_case_cost
 from .dashboard import write_dashboard
 from .draft_template import compile_draft_template, generate_draft_template
 from .economics import evaluate_economics
 from .kb import ingest_case_into_kb, search_kb
+from .pdf_text import extract_pdf_text
 from .review import render, validate
 from .router import route_next_step
 from .store import dumps, load
@@ -162,7 +164,7 @@ TOOLS = [
     },
     {
         "name": "ledger_export_strategies",
-        "description": "Export Product and Communication strategies (Markdown + PDF) directly from case.sqlite3 for any case.",
+        "description": "Export Product and Communication strategies and/or unified 5-part brief (Markdown + PDF) from case.sqlite3.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -172,20 +174,48 @@ TOOLS = [
                 "draft": {"type": "boolean", "default": False},
                 "prefix": {"type": "string", "default": "strategy"},
                 "include_pdf": {"type": "boolean", "default": True},
+                "brief": {"type": "boolean", "default": False},
+                "only_brief": {"type": "boolean", "default": False},
             },
             "required": ["case"],
         },
     },
     {
         "name": "ledger_draft_template",
-        "description": "Generate a concise YAML draft template for a case (auto-linking SHA-256 sources) or compile YAML draft text into validated proposal JSON.",
+        "description": "Generate a concise YAML draft template for a case (auto-linking SHA-256 sources, optionally with 5-part brief_plan) or compile YAML draft text into validated proposal JSON.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "case": {"type": "string"},
+                "brief": {"type": "boolean", "default": False},
                 "yaml_text": {"type": "string", "description": "Optional YAML draft text to compile and validate"},
             },
             "required": ["case"],
+        },
+    },
+    {
+        "name": "ledger_pdf",
+        "description": "Extract layout-preserving per-page text from a PDF document (pdftotext -layout with pure-stdlib fallback).",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "file": {"type": "string"},
+                "max_pages": {"type": "integer"},
+                "format": {"type": "string", "enum": ["text", "json"], "default": "text"},
+            },
+            "required": ["file"],
+        },
+    },
+    {
+        "name": "ledger_brief_calc",
+        "description": "Evaluate deterministic 5-row brief scorecard, 14-day activation (including unanswered invites in denominator), segment balances, and 500 RUB gross-profit bridge with calendar launch-month caps.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "spec": {"type": "object"},
+                "format": {"type": "string", "enum": ["json", "md"], "default": "json"},
+            },
+            "required": ["spec"],
         },
     },
 ]
@@ -206,8 +236,14 @@ def _dispatch_tool(name: str, arguments: dict, *, source_health_fn, decision_sta
     if name == "ledger_xlsx":
         rep = read_xlsx_records(Path(arguments["file"]).resolve(), sheet=arguments.get("sheet"))
         return render_xlsx_markdown(rep) if arguments.get("format") == "md" else rep
+    if name == "ledger_pdf":
+        rep = extract_pdf_text(Path(arguments["file"]).resolve(), max_pages=arguments.get("max_pages"))
+        return rep["text"] if arguments.get("format", "text") == "text" else rep
     if name == "ledger_economics":
         return evaluate_economics(arguments["spec"])
+    if name == "ledger_brief_calc":
+        rep = evaluate_brief_model(arguments["spec"])
+        return render_brief_calc_markdown(rep) if arguments.get("format") == "md" else rep
     if name == "ledger_kb_search":
         kb_dir = Path(arguments.get("kb_dir", ".kb")).resolve()
         return search_kb(
@@ -278,13 +314,15 @@ def _dispatch_tool(name: str, arguments: dict, *, source_health_fn, decision_sta
                 use_draft=bool(arguments.get("draft", False)),
                 prefix=arguments.get("prefix", "strategy"),
                 include_pdf=bool(arguments.get("include_pdf", True)),
+                include_brief=bool(arguments.get("brief", False)),
+                only_brief=bool(arguments.get("only_brief", False)),
             )
         if name == "ledger_draft_template":
             if arguments.get("yaml_text"):
                 compiled = compile_draft_template(arguments["yaml_text"], sources)
                 validate(compiled, sources)
                 return compiled
-            return generate_draft_template(case, state, sources)
+            return generate_draft_template(case, state, sources, brief=bool(arguments.get("brief", False)))
         if name == "ledger_view":
             if arguments.get("dashboard"):
                 out = write_dashboard(case, state, sources, db=db)
