@@ -28,10 +28,10 @@ flowchart TB
     subgraph L3["3. Детерминированное ядро (ledger/ · Python 3.11+ stdlib)"]
         C1["router.py · выбор тира и fallback"]
         C2["stats.py + table.py · ДИ Вильсона и Симпсон"]
-        C3["economics.py + cost.py · маржа, пороги и учёт затрат"]
+        C3["economics.py + cost.py · маржа, пороги и парсер логов CLI"]
         C4["claims.py + web_fetch.py · аудит обещаний и снимки"]
-        C5["dashboard.py · интерактивный HTML-паспорт"]
-        C6["mcp_server.py · JSON-RPC 2.0 поверх stdio (9 тулов)"]
+        C5["dashboard.py + strategies.py · HTML-паспорт и MD/PDF стратегии"]
+        C6["mcp_server.py · JSON-RPC 2.0 поверх stdio (10 тулов)"]
     end
 
     subgraph L4["4. Хранилища состояния и памяти (SQLite 3)"]
@@ -91,6 +91,8 @@ flowchart TB
 | `ledger/economics.py` | Детерминированный расчёт юнит-экономики тарифа: `contribution_margin`, `margin_rate`, потолок допустимых прямых затрат `max_allowable_cost` при заданной целевой марже, запас прочности `cost_headroom`, операционная окупаемость разовых вложений и матрица чувствительности (`+15%`, `+25%` к прямым затратам и `-10%` к цене). |
 | `ledger/claims.py` | Статический аудит согласованности продуктовой и коммуникационной стратегий: блокирует безусловные рекламные обещания (`100%`, `всегда`, `ни одной потерянной продажи`, `на любой кассе`), попытки опереть рыночный спрос исключительно на `synthetic`-источники, пропуск ограничений из узлов `unknown` и отсутствие `stop_rule` в плане проверки. |
 | `ledger/router.py` | Оценка стадии кейса, модальностей файлов и бюджета (`lean`, `balanced`, `thorough`). Назначает вычислительный тир (`zero_llm`, `fast`, `reasoning`) и строит детерминированный план обхода сбоев при вызове `--failed-tool` без повторного выполнения уже сохранённых шагов. |
+| `ledger/cost.py` | Верифицированный импорт телеметрии рантайма CLI (`ledger cost --from-log`: парсинг `*.stream.jsonl(.gz)` + `turns.jsonl`, `transcript*.jsonl`, `measured-telemetry.json`, Codex `jsonl`) с пересборкой `cost.jsonl` (`verified: true`); ручной самоотчёт модели помечается `verified: false` (`self_reported_unverified`). |
+| `ledger/strategies.py` | Универсальная выгрузка двух итоговых управленческих документов (`strategy-product.md/.pdf` и `strategy-comms.md/.pdf`) напрямую из `case.sqlite3` (включая автоматическое извлечение таблиц экономики из `evidence`) для любого кейса через headless Chromium или встроенный `stdlib` PDF-генератор. |
 
 ---
 
@@ -108,7 +110,8 @@ flowchart TB
 | `ledger_kb_search` | Полнотекстовый поиск в SQLite FTS5 с фильтрацией по тегам и эпистемическому классу `origin_class` |
 | `ledger_kb_ingest` | Индексация источников и утверждённых решений кейса в межсессионную базу знаний с разметкой `supersedes` |
 | `ledger_view` | Рендер утверждённого решения / черновика в Markdown или выпуск интерактивного `dashboard.html` |
-| `ledger_cost` | Сводка и запись шагов времени, токенов, повторов и участия человека в `.cases/<case>/cost.jsonl` |
+| `ledger_export_strategies` | Выгрузка читаемых продуктовой и коммуникационной стратегий (`MD` + `PDF`) из `case.sqlite3` любого кейса |
+| `ledger_cost` | Импорт сырых логов CLI (`from_log`), сводка и учёт шагов времени, токенов и участия человека в `cost.jsonl` |
 
 Чтение состояния, расчёты, аудит обещаний, база знаний и выпуск паспорта доступны нативно через `stdio MCP`, а транзакционные мутации жизненного цикла (`init`, `source`, `fetch`, `propose`, `accept --expect <sha>`) выполняются через CLI `python3 -m ledger`, удерживая явный гейт подтверждения человека.
 

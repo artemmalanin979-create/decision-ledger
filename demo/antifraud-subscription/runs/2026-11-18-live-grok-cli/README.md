@@ -11,7 +11,7 @@
 | `casts/*.cast.gz` | записи терминала asciinema v2, воспроизведение: `zcat … > x.cast && asciinema play x.cast` |
 | `subagents/` | история субагентов (в т.ч. скептик Чата №3, см. инцидент изоляции в HONESTY.md) |
 | `status/` | `ledger status` после каждого чата и финальные ответы агента |
-| `case/` | нетронутые артефакты прогона: паспорт решения, `proposal.json`, `cost.jsonl`, Решения №1 и №2 с утверждениями Артёма Маланина (`ledger view`; о расхождении внутренней самооценки модели в `case/cost.jsonl` с внешним счётчиком CLI `$9.915540` см. `HONESTY.md`) |
+| `case/` | артефакты прогона: нетронутый `proposal.json` и `decision-v1-live.md`, а также детерминированно пересобранные из сырых логов и SQLite `cost.jsonl` (`ledger cost --from-log`), `decision-passport-live.html`, `decision-v2-live.md` и выгруженные стратегии `strategy-product.{md,pdf}` и `strategy-comms.{md,pdf}` (`ledger export-strategies`) |
 | `aborted-chat2-typo/` | прерванный через ~10 с запуск Чата №2 с опечаткой в фамилии |
 | `clean-copy-git-log.txt` | коммиты чистой копии: снимок, `manager.md` после вопросов, `later/` перед Чатом №3 |
 

@@ -23,7 +23,7 @@
 
 ## 2. Источники цен моделей и формула расчёта (`cost.jsonl`)
 
-Каждый шаг работы агента записывается в `.cases/<кейс>/cost.jsonl` с явным указанием модели, входных/кэшированных/выходных токенов, времени, повторов и минут человека ([ledger/cost.py](../ledger/cost.py), проверено `2026-11-17`, расчётный курс `1 USD = 98,50 ₽` по ориентиру [Банка России](https://cbr.ru/currency_base/daily/)):
+Каждый шаг работы агента записывается в `.cases/<кейс>/cost.jsonl` командой `python3 -m ledger cost <case> --from-log <путь_к_логам_CLI>`, которая читает сырые логи рантайма (`*.stream.jsonl(.gz)` + `turns.jsonl`, `transcript*.jsonl`, `measured-telemetry.json`, `Codex jsonl`) и маркирует записи `verified: true` (`telemetry_origin: "cli_runtime_log"`). Любой ручной самоотчёт модели через `--step` помечается как неверифицированный (`verified: false`, `self_reported_unverified`). Справочные тарифы API ([ledger/cost.py](../ledger/cost.py), проверено `2026-11-17`, расчётный курс `1 USD = 98,50 ₽` по ориентиру [Банка России](https://cbr.ru/currency_base/daily/)):
 
 | Модель / тир | Вход (`$ / 1M`) | Чтение кэша (`$ / 1M`) | Выход (`$ / 1M`) | Источник тарифа (дата проверки `2026-11-17`) |
 | --- | ---: | ---: | ---: | --- |

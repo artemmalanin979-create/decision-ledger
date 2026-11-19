@@ -88,13 +88,15 @@ mkdir -p "$RUN_DIR"
 ## 5. Проверка в Cursor (нативный MCP) и сохранение сырых логов
 
 Чтобы документально закрыть проверку в **Cursor**:
-1. Откройте эту же папку `~/tmp/dl-live-session/decision-ledger` в **Cursor** -> откройте `Settings -> MCP` и убедитесь, что сервер `decision-ledger` из `.cursor/mcp.json` горит зелёным (9 инструментов `ledger_*`), а правило `.cursor/rules/decision-ledger.mdc` активно.
+1. Откройте эту же папку `~/tmp/dl-live-session/decision-ledger` в **Cursor** -> откройте `Settings -> MCP` и убедитесь, что сервер `decision-ledger` из `.cursor/mcp.json` горит зелёным (10 инструментов `ledger_*`), а правило `.cursor/rules/decision-ledger.mdc` активно.
 2. В новом чате Cursor попросите: *«Проверь через MCP-инструмент `ledger_status` состояние кейса `.cases/antifraud` и покажи текущую ревизию решения и открытые обязательства»* (20–30 секунд на видео).
-3. Скопируйте сырые экспорты всех трёх чатов, итоговый `.cases/antifraud/cost.jsonl` (дописав реальные счётчики токенов/модели из UI IDE и измеренные секундомером `--human-minutes`) и артефакты в `"$RUN_DIR"`:
+3. Импортируйте фактические счётчики токенов и времени напрямую из сырых логов рантайма CLI через `ledger cost --from-log` (не полагаясь на самоотчёт модели), выгрузите обе чистовые стратегии через `ledger export-strategies` и сохраните артефакты в `"$RUN_DIR"`:
 
 ```sh
-cp .cases/antifraud/cost.jsonl "$RUN_DIR/"
-cp .cases/antifraud/dashboard.html "$RUN_DIR/decision-passport-live.html"
-python3 -m ledger view .cases/antifraud --decision 1 > "$RUN_DIR/decision-v1-live.md"
-python3 -m ledger view .cases/antifraud --decision 2 > "$RUN_DIR/decision-v2-live.md"
+python3 -m ledger cost .cases/antifraud --from-log "$RUN_DIR"
+python3 -m ledger export-strategies .cases/antifraud -o "$RUN_DIR/case"
+cp .cases/antifraud/cost.jsonl "$RUN_DIR/case/"
+python3 -m ledger dashboard .cases/antifraud -o "$RUN_DIR/case/decision-passport-live.html"
+python3 -m ledger view .cases/antifraud --decision 1 > "$RUN_DIR/case/decision-v1-live.md"
+python3 -m ledger view .cases/antifraud --decision 2 > "$RUN_DIR/case/decision-v2-live.md"
 ```
