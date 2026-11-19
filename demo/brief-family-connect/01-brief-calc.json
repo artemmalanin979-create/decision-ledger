@@ -1,0 +1,297 @@
+{
+  "baseline_reference": {
+    "gp_base_plan": "282",
+    "gp_base_est": "275",
+    "act_base_plan": "5 000",
+    "act_base_est": "4 000",
+    "fam_base_plan": "7 500",
+    "fam_base_est": "6 500",
+    "own_base_plan": "1 000",
+    "own_base_est": "800",
+    "act14_base_plan": "50%",
+    "act14_base_est": "42%"
+  },
+  "pilot_design": {
+    "weekly_eligible_units": 200.0,
+    "recruitment_weeks": 6.0,
+    "observation_days": 7,
+    "total_calendar_days_until_readout": 49.0,
+    "fits_within_single_quarter_90d": true,
+    "total_recruited_units": 1200,
+    "units_per_arm": 600,
+    "control_event_rate_pct": 18.0,
+    "target_test_event_rate_pct": 11.0,
+    "absolute_effect_pp": -7.0,
+    "relative_effect_pct": -38.89,
+    "expected_control_wilson_95_pct": [
+      15.13,
+      21.27
+    ],
+    "expected_test_wilson_95_pct": [
+      8.74,
+      13.76
+    ],
+    "intervals_separate_at_expected_rates": true
+  },
+  "scenarios": {
+    "main": {
+      "title": "Основной сценарий (Q2 пилот семей -> Q3 раскатка семей + H2 переиспользование на мульти-SIM)",
+      "activation_q4": {
+        "created_groups_denominator": 2000,
+        "accepted_invite_groups": 1560,
+        "unanswered_or_declined_groups_in_denominator": 440,
+        "activated_within_14d_numerator": 1240,
+        "activation_14d_rate": 0.62,
+        "activation_14d_pct": 62.0,
+        "invite_acceptance_rate": 0.78,
+        "conditional_action_rate_given_accepted": 0.794872,
+        "naive_rate_excluding_unanswered_warning": 0.794872,
+        "ci95_low": 0.598517,
+        "ci95_high": 0.641023,
+        "target_rate": 0.6,
+        "meets_target": true,
+        "additional_activated_needed_for_target": 0
+      },
+      "families": {
+        "market_total": 300000,
+        "available_base": 100000,
+        "start_connected": 6500,
+        "no_change_end_connected": 8000,
+        "organic_net_additions": 1500,
+        "incremental_new_connected": 3300,
+        "incremental_churn_saved": 900,
+        "incremental_vs_no_change": 4200,
+        "projected_end_connected": 12200,
+        "target_end_connected": 12000,
+        "meets_target": true,
+        "gap_vs_target": 200,
+        "share_of_available_base_pct": 12.2,
+        "acquisition_spend_rub": 252000.0,
+        "incremental_cost_per_added_unit_rub": 60.0,
+        "active_last_month": {
+          "no_change_active": 5000,
+          "no_change_active_share_pct": 62.5,
+          "projected_active_share_pct": 68.0,
+          "projected_active": 8296,
+          "target_active": 8000,
+          "meets_target": true,
+          "gap_vs_target": 296,
+          "lift_from_connected_growth": 2625.0,
+          "lift_from_engagement_share": 671.0
+        }
+      },
+      "multi_sim_owners": {
+        "market_total": 180000,
+        "available_base": 40000,
+        "start_connected": 800,
+        "no_change_end_connected": 1000,
+        "organic_net_additions": 200,
+        "incremental_new_connected": 880,
+        "incremental_churn_saved": 170,
+        "incremental_vs_no_change": 1050,
+        "projected_end_connected": 2050,
+        "target_end_connected": 2000,
+        "meets_target": true,
+        "gap_vs_target": 50,
+        "share_of_available_base_pct": 5.12,
+        "acquisition_spend_rub": 42000.0,
+        "incremental_cost_per_added_unit_rub": 40.0
+      },
+      "gross_profit": {
+        "no_change_gross_profit_rub": 279000000.0,
+        "target_gross_profit_rub": 285000000.0,
+        "required_gap_vs_no_change_rub": 6000000.0,
+        "margin_per_extra_paid_month_rub": 500.0,
+        "cohorts": [
+          {
+            "name": "q2_pilot_families",
+            "launch_month": 5,
+            "max_possible_months_in_year": 8,
+            "retained_numbers": 900.0,
+            "avg_extra_months_in_plan_year": 3.0,
+            "extra_paid_months_in_plan_year": 2700.0,
+            "gross_profit_in_plan_year_rub": 1350000.0,
+            "carryover_months_next_years": 1800.0,
+            "carryover_gross_profit_next_years_rub": 900000.0
+          },
+          {
+            "name": "q3_scale_families",
+            "launch_month": 7,
+            "max_possible_months_in_year": 6,
+            "retained_numbers": 3200.0,
+            "avg_extra_months_in_plan_year": 2.5,
+            "extra_paid_months_in_plan_year": 8000.0,
+            "gross_profit_in_plan_year_rub": 4000000.0,
+            "carryover_months_next_years": 9600.0,
+            "carryover_gross_profit_next_years_rub": 4800000.0
+          },
+          {
+            "name": "h2_multi_sim_owners",
+            "launch_month": 8,
+            "max_possible_months_in_year": 5,
+            "retained_numbers": 850.0,
+            "avg_extra_months_in_plan_year": 2.0,
+            "extra_paid_months_in_plan_year": 1700.0,
+            "gross_profit_in_plan_year_rub": 850000.0,
+            "carryover_months_next_years": 2125.0,
+            "carryover_gross_profit_next_years_rub": 1062500.0
+          },
+          {
+            "name": "q4_late_families_and_devices",
+            "launch_month": 10,
+            "max_possible_months_in_year": 3,
+            "retained_numbers": 1400.0,
+            "avg_extra_months_in_plan_year": 1.2,
+            "extra_paid_months_in_plan_year": 1680.0,
+            "gross_profit_in_plan_year_rub": 840000.0,
+            "carryover_months_next_years": 4900.0,
+            "carryover_gross_profit_next_years_rub": 2450000.0
+          }
+        ],
+        "extra_paid_number_months_in_plan_year": 14080.0,
+        "gross_profit_from_retention_rub": 7040000.0,
+        "other_gross_profit_rub": 0.0,
+        "new_direct_opex_rub": 450000.0,
+        "net_incremental_gross_profit_rub": 6590000.0,
+        "projected_gross_profit_rub": 285590000.0,
+        "projected_gross_profit_mln_rub": 285.59,
+        "meets_target": true,
+        "gap_vs_target_rub": 590000.0,
+        "breakeven_extra_paid_months_zero_opex": 12000,
+        "breakeven_extra_paid_months_with_opex": 12900,
+        "carryover_next_years_gross_profit_rub": 9212500.0,
+        "capex_separate": {
+          "total_person_months": 10.0,
+          "person_month_cost_rub": null,
+          "capex_total_rub": null,
+          "max_capex_for_plan_year_payback_rub": 6590000.0,
+          "max_person_month_rate_for_plan_year_payback_rub": 659000.0
+        }
+      }
+    },
+    "adverse": {
+      "title": "Неблагоприятный сценарий (без выделенного QA, сдвиг старта на 1 мес., перенос мульти-SIM на 2-й год)",
+      "activation_q4": {
+        "created_groups_denominator": 1500,
+        "accepted_invite_groups": 1050,
+        "unanswered_or_declined_groups_in_denominator": 450,
+        "activated_within_14d_numerator": 810,
+        "activation_14d_rate": 0.54,
+        "activation_14d_pct": 54.0,
+        "invite_acceptance_rate": 0.7,
+        "conditional_action_rate_given_accepted": 0.771429,
+        "naive_rate_excluding_unanswered_warning": 0.771429,
+        "ci95_low": 0.514708,
+        "ci95_high": 0.565088,
+        "target_rate": 0.6,
+        "meets_target": false,
+        "additional_activated_needed_for_target": 90
+      },
+      "families": {
+        "market_total": 300000,
+        "available_base": 100000,
+        "start_connected": 6500,
+        "no_change_end_connected": 8000,
+        "organic_net_additions": 1500,
+        "incremental_new_connected": 1900,
+        "incremental_churn_saved": 500,
+        "incremental_vs_no_change": 2400,
+        "projected_end_connected": 10400,
+        "target_end_connected": 12000,
+        "meets_target": false,
+        "gap_vs_target": -1600,
+        "share_of_available_base_pct": 10.4,
+        "acquisition_spend_rub": 240000.0,
+        "incremental_cost_per_added_unit_rub": 100.0,
+        "active_last_month": {
+          "no_change_active": 5000,
+          "no_change_active_share_pct": 62.5,
+          "projected_active_share_pct": 65.0,
+          "projected_active": 6760,
+          "target_active": 8000,
+          "meets_target": false,
+          "gap_vs_target": -1240,
+          "lift_from_connected_growth": 1500.0,
+          "lift_from_engagement_share": 260.0
+        }
+      },
+      "multi_sim_owners": {
+        "market_total": 180000,
+        "available_base": 40000,
+        "start_connected": 800,
+        "no_change_end_connected": 1000,
+        "organic_net_additions": 200,
+        "incremental_new_connected": 0,
+        "incremental_churn_saved": 0,
+        "incremental_vs_no_change": 0,
+        "projected_end_connected": 1000,
+        "target_end_connected": 2000,
+        "meets_target": false,
+        "gap_vs_target": -1000,
+        "share_of_available_base_pct": 2.5,
+        "acquisition_spend_rub": 0.0,
+        "incremental_cost_per_added_unit_rub": 0.0
+      },
+      "gross_profit": {
+        "no_change_gross_profit_rub": 279000000.0,
+        "target_gross_profit_rub": 285000000.0,
+        "required_gap_vs_no_change_rub": 6000000.0,
+        "margin_per_extra_paid_month_rub": 500.0,
+        "cohorts": [
+          {
+            "name": "q2_delayed_pilot_families",
+            "launch_month": 6,
+            "max_possible_months_in_year": 7,
+            "retained_numbers": 600.0,
+            "avg_extra_months_in_plan_year": 2.2,
+            "extra_paid_months_in_plan_year": 1320.0,
+            "gross_profit_in_plan_year_rub": 660000.0,
+            "carryover_months_next_years": 900.0,
+            "carryover_gross_profit_next_years_rub": 450000.0
+          },
+          {
+            "name": "q3_late_scale_families",
+            "launch_month": 8,
+            "max_possible_months_in_year": 5,
+            "retained_numbers": 2200.0,
+            "avg_extra_months_in_plan_year": 1.8,
+            "extra_paid_months_in_plan_year": 3960.0,
+            "gross_profit_in_plan_year_rub": 1980000.0,
+            "carryover_months_next_years": 4840.0,
+            "carryover_gross_profit_next_years_rub": 2420000.0
+          },
+          {
+            "name": "q4_late_families",
+            "launch_month": 10,
+            "max_possible_months_in_year": 3,
+            "retained_numbers": 1000.0,
+            "avg_extra_months_in_plan_year": 1.0,
+            "extra_paid_months_in_plan_year": 1000.0,
+            "gross_profit_in_plan_year_rub": 500000.0,
+            "carryover_months_next_years": 2500.0,
+            "carryover_gross_profit_next_years_rub": 1250000.0
+          }
+        ],
+        "extra_paid_number_months_in_plan_year": 6280.0,
+        "gross_profit_from_retention_rub": 3140000.0,
+        "other_gross_profit_rub": 0.0,
+        "new_direct_opex_rub": 550000.0,
+        "net_incremental_gross_profit_rub": 2590000.0,
+        "projected_gross_profit_rub": 281590000.0,
+        "projected_gross_profit_mln_rub": 281.59,
+        "meets_target": false,
+        "gap_vs_target_rub": -3410000.0,
+        "breakeven_extra_paid_months_zero_opex": 12000,
+        "breakeven_extra_paid_months_with_opex": 13100,
+        "carryover_next_years_gross_profit_rub": 4120000.0,
+        "capex_separate": {
+          "total_person_months": 6.0,
+          "person_month_cost_rub": null,
+          "capex_total_rub": null,
+          "max_capex_for_plan_year_payback_rub": 2590000.0,
+          "max_person_month_rate_for_plan_year_payback_rub": 431666.67
+        }
+      }
+    }
+  }
+}

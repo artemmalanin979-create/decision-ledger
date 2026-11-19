@@ -1,0 +1,170 @@
+{
+  "baseline_reference": {
+    "gp_base_plan": "282",
+    "gp_base_est": "275",
+    "act_base_plan": "5 000",
+    "act_base_est": "4 000",
+    "fam_base_plan": "7 500",
+    "fam_base_est": "6 500",
+    "own_base_plan": "1 000",
+    "own_base_est": "800",
+    "act14_base_plan": "50%",
+    "act14_base_est": "42%"
+  },
+  "pilot": {
+    "weekly_eligible_units": 200,
+    "recruitment_weeks": 6,
+    "observation_days": 7,
+    "control_event_rate": 0.18,
+    "target_test_event_rate": 0.11
+  },
+  "scenarios": {
+    "main": {
+      "title": "Основной сценарий (Q2 пилот семей -> Q3 раскатка семей + H2 переиспользование на мульти-SIM)",
+      "activation_q4": {
+        "created_groups": 2000,
+        "accepted_invite_groups": 1560,
+        "activated_within_14d_groups": 1240,
+        "target_rate": 0.60
+      },
+      "families": {
+        "market_total": 300000,
+        "available_base": 100000,
+        "start_connected": 6500,
+        "no_change_end_connected": 8000,
+        "target_end_connected": 12000,
+        "incremental_new_connected": 3300,
+        "incremental_churn_saved": 900,
+        "acquisition_spend_rub": 252000,
+        "no_change_active_last_month": 5000,
+        "target_active_last_month": 8000,
+        "projected_active_share": 0.68
+      },
+      "multi_sim_owners": {
+        "market_total": 180000,
+        "available_base": 40000,
+        "start_connected": 800,
+        "no_change_end_connected": 1000,
+        "target_end_connected": 2000,
+        "incremental_new_connected": 880,
+        "incremental_churn_saved": 170,
+        "acquisition_spend_rub": 42000
+      },
+      "gross_profit": {
+        "no_change_gross_profit_rub": 279000000,
+        "target_gross_profit_rub": 285000000,
+        "margin_per_extra_paid_month_rub": 500,
+        "retention_cohorts": [
+          {
+            "name": "q2_pilot_families",
+            "launch_month": 5,
+            "retained_numbers": 900,
+            "avg_extra_months_in_plan_year": 3.0,
+            "avg_extra_months_next_years": 2.0
+          },
+          {
+            "name": "q3_scale_families",
+            "launch_month": 7,
+            "retained_numbers": 3200,
+            "avg_extra_months_in_plan_year": 2.5,
+            "avg_extra_months_next_years": 3.0
+          },
+          {
+            "name": "h2_multi_sim_owners",
+            "launch_month": 8,
+            "retained_numbers": 850,
+            "avg_extra_months_in_plan_year": 2.0,
+            "avg_extra_months_next_years": 2.5
+          },
+          {
+            "name": "q4_late_families_and_devices",
+            "launch_month": 10,
+            "retained_numbers": 1400,
+            "avg_extra_months_in_plan_year": 1.2,
+            "avg_extra_months_next_years": 3.5
+          }
+        ],
+        "other_gross_profit_rub": 0,
+        "new_direct_opex_rub": 450000,
+        "capex_person_months": {
+          "design": 1.5,
+          "analytics": 2.0,
+          "development_q2": 3.0,
+          "development_h2": 2.5,
+          "qa_verification": 1.0
+        },
+        "person_month_cost_rub": null
+      }
+    },
+    "adverse": {
+      "title": "Неблагоприятный сценарий (без выделенного QA, сдвиг старта на 1 мес., перенос мульти-SIM на 2-й год)",
+      "activation_q4": {
+        "created_groups": 1500,
+        "accepted_invite_groups": 1050,
+        "activated_within_14d_groups": 810,
+        "target_rate": 0.60
+      },
+      "families": {
+        "market_total": 300000,
+        "available_base": 100000,
+        "start_connected": 6500,
+        "no_change_end_connected": 8000,
+        "target_end_connected": 12000,
+        "incremental_new_connected": 1900,
+        "incremental_churn_saved": 500,
+        "acquisition_spend_rub": 240000,
+        "no_change_active_last_month": 5000,
+        "target_active_last_month": 8000,
+        "projected_active_share": 0.65
+      },
+      "multi_sim_owners": {
+        "market_total": 180000,
+        "available_base": 40000,
+        "start_connected": 800,
+        "no_change_end_connected": 1000,
+        "target_end_connected": 2000,
+        "incremental_new_connected": 0,
+        "incremental_churn_saved": 0,
+        "acquisition_spend_rub": 0
+      },
+      "gross_profit": {
+        "no_change_gross_profit_rub": 279000000,
+        "target_gross_profit_rub": 285000000,
+        "margin_per_extra_paid_month_rub": 500,
+        "retention_cohorts": [
+          {
+            "name": "q2_delayed_pilot_families",
+            "launch_month": 6,
+            "retained_numbers": 600,
+            "avg_extra_months_in_plan_year": 2.2,
+            "avg_extra_months_next_years": 1.5
+          },
+          {
+            "name": "q3_late_scale_families",
+            "launch_month": 8,
+            "retained_numbers": 2200,
+            "avg_extra_months_in_plan_year": 1.8,
+            "avg_extra_months_next_years": 2.2
+          },
+          {
+            "name": "q4_late_families",
+            "launch_month": 10,
+            "retained_numbers": 1000,
+            "avg_extra_months_in_plan_year": 1.0,
+            "avg_extra_months_next_years": 2.5
+          }
+        ],
+        "other_gross_profit_rub": 0,
+        "new_direct_opex_rub": 550000,
+        "capex_person_months": {
+          "design": 1.0,
+          "analytics": 2.0,
+          "development_q2": 3.0,
+          "development_h2": 0.0,
+          "qa_verification": 0.0
+        },
+        "person_month_cost_rub": null
+      }
+    }
+  }
+}

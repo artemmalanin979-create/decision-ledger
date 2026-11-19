@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Связь для близких и собственных устройств: ступенчатая проактивная защита от потери интернета — Decision Ledger</title>
+<style>
+  :root {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --ink: #0F172A;
+    --muted: #475569;
+    --subtle: #64748B;
+    --line: #E2E8F0;
+    --accent: #0F766E;
+    --accent-soft: #F0FDFA;
+    --warn: #B45309;
+    --warn-soft: #FFFBEB;
+    --alert: #B91C1C;
+    --alert-soft: #FEF2F2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 40px 56px;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .container { max-width: 1360px; margin: 0 auto; }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
+    padding-bottom: 20px; border-bottom: 1px solid var(--line); margin-bottom: 24px;
+  }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 26px; line-height: 1.2; letter-spacing: -0.02em;
+  }
+  h2 {
+    margin: 28px 0 12px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px; letter-spacing: -0.01em;
+  }
+  h3 { margin: 0; font-size: 14px; }
+  .summary { margin: 0; color: var(--muted); max-width: 840px; font-size: 14px; }
+  .status-pill {
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--line); background: var(--surface); white-space: nowrap;
+  }
+  .status-ok { border-color: #99F6E4; background: var(--accent-soft); color: var(--accent); }
+  .status-warn { border-color: #FDE68A; background: var(--warn-soft); color: var(--warn); }
+  .status-alert { border-color: #FECACA; background: var(--alert-soft); color: var(--alert); }
+  .meta-strip {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px;
+  }
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+  }
+  .metric-label { font-size: 11px; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-value { font-size: 14px; font-weight: 600; margin-top: 4px; }
+  .impact-banner {
+    background: var(--alert-soft); border: 1px solid #FECACA; border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 18px; color: #7F1D1D;
+  }
+  .impact-banner p { margin: 4px 0 0; font-size: 13px; }
+  .accept-panel, .whatif-panel {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 20px;
+  }
+  .accept-grid {
+    display: grid; grid-template-columns: 1.2fr 0.8fr 1.4fr; gap: 12px; align-items: end;
+  }
+  .field-label {
+    display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--subtle);
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .field-input {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font-size: 13px; font-family: inherit; color: var(--ink); background: #F8FAFC;
+  }
+  .cmd-box {
+    margin-top: 10px; padding: 9px 12px; background: #0F172A; color: #E2E8F0;
+    border-radius: 6px; overflow-x: auto; font-size: 12px;
+  }
+  .accept-actions {
+    margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+  .action-btn {
+    padding: 7px 13px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .action-btn-primary {
+    background: var(--accent); border-color: var(--accent); color: #FFFFFF;
+  }
+  .action-btn-primary:hover { background: #115E59; color: #FFFFFF; }
+  .accept-feedback { font-size: 12px; font-weight: 600; color: var(--accent); }
+  .whatif-header {
+    display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }
+  .preset-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset-btn {
+    padding: 5px 11px; border-radius: 6px; border: 1px solid var(--line); background: #F8FAFC;
+    color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+  .preset-btn.active-preset {
+    border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  }
+  .whatif-controls-top {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 12px 0;
+  }
+  .checkbox-inline {
+    display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); padding-bottom: 6px; cursor: pointer;
+  }
+  .sliders-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px;
+  }
+  .slider-card {
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #F8FAFC;
+  }
+  .slider-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; margin-bottom: 8px;
+  }
+  .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+  .num-input {
+    width: 72px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--surface); font-size: 12px; text-align: right;
+  }
+  .whatif-kpi-strip {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px;
+  }
+  .kpi-mini {
+    border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px; background: var(--surface);
+  }
+  .kpi-mini .k-lbl { font-size: 11px; color: var(--subtle); }
+  .kpi-mini .k-val { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  tr.whatif-selected-row td { background: var(--accent-soft); }
+  .lineage-grid {
+    display: grid; grid-template-columns: 0.85fr 1.25fr 1.1fr; gap: 16px; align-items: start;
+  }
+  .col-title {
+    font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 10px; display: flex; justify-content: space-between;
+  }
+  .node-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 11px 13px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.12s ease, opacity 0.12s ease;
+  }
+  .node-card:hover { border-color: #94A3B8; }
+  .node-card.selected-option { border-left: 3px solid var(--accent); }
+  .node-card.stale, .strategy-card.stale { border-color: #FCA5A5; background: #FFFDFD; }
+  .node-card.active-link, .strategy-card.active-link { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .node-card.dimmed, .strategy-card.dimmed { opacity: 0.35; }
+  .node-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .node-body { font-size: 13px; color: var(--ink); margin-bottom: 6px; }
+  .objection-line { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; margin-bottom: 6px; }
+  .objection-line span { font-weight: 600; color: var(--ink); }
+  .node-meta { font-size: 11px; color: var(--subtle); }
+  .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--line);
+    color: var(--muted); background: #F8FAFC;
+  }
+  .tag-ok { border-color: #99F6E4; background: var(--accent-soft); color: var(--accent); }
+  .tag-warn { border-color: #FDE68A; background: var(--warn-soft); color: var(--warn); }
+  .tag-alert { border-color: #FECACA; background: var(--alert-soft); color: var(--alert); }
+  .strategy-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .strategy-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; cursor: pointer;
+  }
+  .strategy-card p { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+  .claim-ok { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--accent); font-weight: 500; }
+  .claim-warn { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--alert); font-weight: 500; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtle); background: #F8FAFC; }
+  .history-list { display: grid; gap: 8px; }
+  .history-item {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; font-size: 13px;
+  }
+  .mono { font-family: "Source Code Pro", "DejaVu Sans Mono", monospace; font-size: 12px; }
+  .reset-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 5px; padding: 2px 8px; font-size: 11px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Decision Ledger · Паспорт продуктового решения · brief-family-connect</div>
+      <h1>Связь для близких и собственных устройств: ступенчатая проактивная защита от потери интернета</h1>
+      <p class="summary">Приоритет 1-го полугодия — семейные группы на тарифах с общим пакетом интернета (доступная база 100 000 домохозяйств, 6 500 подключённых на старте): запускаем упреждающий пороговый сигнал организатору и идемпотентное выделение ГБ со статусом pending при раздельном отзываемом согласии участника, а во 2-м полугодии переиспользуем тот же движок без шага приглашения для владельцев нескольких собственных номеров (доступная база 40 000, старт 800). В основном сценарии (допущения модели) решение выводит валовую прибыль с 279 до 285,59 млн руб. (+14 080 доп. оплаченных номер-месяцев по 500 руб. минус 0,45 млн руб. прямых OPEX) при отдельном CAPEX 10,0 чел.-мес. (порог окупаемости за плановый год — ставка до 659 тыс. руб./чел.-мес.); пилот Q2 защищён жёсткими стоп-правилами по мгновенному отзыву согласий и нулевому допуску двойных списаний.</p>
+    </div>
+    <div class="status-pill status-ok">Утверждено · Решение №1</div>
+  </header>
+
+  <section class="meta-strip">
+    <div class="metric-card">
+      <div class="metric-label">Исходный запрос</div>
+      <div class="metric-value">Сквозная проработка продуктового брифа ПАО «МегаФон» «Связь для близких и собственных устройств»: единая стратегия из 5 частей, сценарная финансовая модель планового года (279 -&gt; &gt;=285 млн руб.), план Q1–Q4, ориентир конца 3-го года и развилки решений руководителя Q1/Q2</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Контрольная точка (follow-up)</div>
+      <div class="metric-value">Сопровождение Решения №1 (opt_phased_shield) и контроль триггеров пересмотра</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Источники и ревизии</div>
+      <div class="metric-value">2 источника · 1 утверждённое решение</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Затраты и участие человека</div>
+      <div class="metric-value">4 064 692 вх. (445 311 нов. + 3 619 381 кэш) / 82 233 вых. токенов · 1302.0 с · ₽ не рассчитываются (квота подписки) · чел: не измерялось</div>
+      <div class="node-meta" style="margin-top:5px;"><span class="tag tag-ok" style="margin-right:6px;">Логи CLI (verified)</span>Верифицированный импорт из 01-session1-brief-5part-draft.jsonl.gz: сумма input_tokens + cache_read_tokens и output_tokens по PLANNER_RESPONSE, время по created_at; квота подписки IDE (₽ не рассчитываются); Верифицированный импорт из…</div>
+    </div>
+  </section>
+
+  
+  
+  <section class="accept-panel" id="accept-gate-panel">
+    <div class="node-head" style="margin-bottom:10px;">
+      <div>
+        <span class="eyebrow" style="margin-bottom:2px;display:block;">Гейт человека (Human-in-the-loop)</span>
+        <h3 style="font-size:15px;">Утверждение решения комитетом (<span class="mono">ledger accept</span>)</h3>
+      </div>
+      <span class="tag tag-ok">Решение №1 зафиксировано · Руководитель продуктового направления</span>
+    </div>
+    <div class="accept-grid">
+      <label class="field-label"><span>Вариант решения</span>
+        <select id="accept-option" class="field-input" onchange="updateAcceptCommand()"><option value="opt_keep">opt_keep — Сохранить текущее реактивное обслуживание без изменений</option><option value="opt_lean_deeplink">opt_lean_deeplink — Бережливое пороговое уведомление со ссылкой deep-link на существующий экран передачи ГБ</option><option value="opt_phased_shield" selected>opt_phased_shield — Ступенчатый запуск: проактивная защита связи семейных групп (Q2) и переиспользование движка для собственных номеров (H2)</option><option value="opt_close_freeze">opt_close_freeze — Отказаться от инвестиций в доработку семейного кабинета и перенаправить ресурс разработки</option></select>
+      </label>
+      <label class="field-label"><span>Кто утверждает (<span class="mono">--by</span>)</span>
+        <input id="accept-by" type="text" class="field-input" value="Продуктовый комитет" oninput="updateAcceptCommand()"/>
+      </label>
+      <label class="field-label"><span>Основание (<span class="mono">--reason</span>)</span>
+        <input id="accept-reason" type="text" class="field-input" value="Утверждён план Q1 (аудит логов, интервью, UX-тест и SLA смежников) и рамка 49-дневного кластерного пилота Q2 по исчерпанию доли интернета в семейных группах" oninput="updateAcceptCommand()"/>
+      </label>
+    </div>
+    <div id="accept-mismatch-note" class="claim-warn" style="display:none;margin-top:8px;border-top:none;padding-top:0;">
+      Выбранный вариант отличается от <span class="mono">opt_phased_shield</span> в черновике: <span class="mono">ledger accept</span> заблокирует подмену без обновления черновика через <span class="mono">propose</span>.
+    </div>
+    <div class="cmd-box">
+      <code id="accept-cmd-preview" class="mono"></code>
+    </div>
+    <div class="accept-actions">
+      <button type="button" class="action-btn" id="accept-copy-btn" onclick="copyAcceptCommand()">Скопировать команду accept</button>
+      <span class="node-meta" style="align-self:center;">Зафиксировано 2026-11-19T17:57:43+00:00 · SHA <span class="mono">db2f9752c1a60523…</span></span>
+      <span id="accept-feedback" class="accept-feedback" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h2>Трассировка оснований (кликните узел для подсветки зависимостей)</h2>
+    <button class="reset-btn" onclick="resetSelection()">Сбросить фильтр</button>
+  </div>
+  <section class="lineage-grid">
+    <div>
+      <div class="col-title"><span>1. Источники (2)</span></div>
+      <div class="node-card" data-node="source:brief_model" onclick="selectNode('source:brief_model')"><div class="node-head"><span class="mono">brief_model</span><span class="tag">table · ok</span></div><div class="node-meta">inputs/brief_model.json · <span class="mono">df0e287d24</span></div></div><div class="node-card" data-node="source:brief_pdf" onclick="selectNode('source:brief_pdf')"><div class="node-head"><span class="mono">brief_pdf</span><span class="tag">document · ok</span></div><div class="node-meta">inputs/brief_family_connect.pdf · <span class="mono">558d2c665c</span></div></div>
+    </div>
+    <div>
+      <div class="col-title"><span>2. Утверждения и гипотезы (11)</span></div>
+      <div class="node-card" data-node="finding:f01_market_and_dedup" onclick="selectNode('finding:f01_market_and_dedup')"><div class="node-head"><span class="mono">f01_market_and_dedup</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">На учебном рынке помощь со связью нужна 300 000 домохозяйств и 180 000 владельцев нескольких собственных номеров; с учётом действующих тарифов и способов привлечения оператору доступны 100 000 домохозяйств и 40 000 владельцев, причём клиенты, подходящие под оба описания, уже учтены только в составе домохозяйств (исключён двойной счёт базы при сохранении обоих сценариев в продукте).</div><div class="node-meta">Опора: brief_pdf:стр. 3, раздел Рынок и исходные показатели</div></div><div class="node-card" data-node="finding:f02_scorecard_baseline" onclick="selectNode('finding:f02_scorecard_baseline')"><div class="node-head"><span class="mono">f02_scorecard_baseline</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Исходные и целевые ориентиры брифа: валовая прибыль — базовый год 282 млн руб. (план) и 275 млн руб. (оценка), плановый год 279 млн руб. (без изменений) и цель не ниже 285 млн руб. (разрыв +6 млн руб.); активные семейные группы за последний месяц — 5 000 / 4 000 в базовом году, 5 000 без изменений и цель 8 000; подключённые семейные группы на конец года — 7 500 / 6 500 в базовом году, 8 000 без изменений и цель 12 000; подключённые владельцы нескольких номеров — 1 000 / 800 в базовом году, 1 000 без изменений и цель 2 000; 14-дневная активация групп, созданных в Q4 — 50% / 42% в базовом году, 45% без изменений и цель не ниже 60%.</div><div class="node-meta">Опора: brief_pdf:стр. 3, таблица Базовый год и Плановый год</div></div><div class="node-card" data-node="finding:f03_metric_definitions" onclick="selectNode('finding:f03_metric_definitions')"><div class="node-head"><span class="mono">f03_metric_definitions</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Строгие правила расчёта показателей: (1) семейная группа подключена, пока помимо организатора в ней есть минимум один участник, а владелец подключён при объединении минимум двух собственных номеров; (2) группа активна в календарном месяце, если подключена на конец месяца и кто-то посмотрел остаток общего пакета или выделил интернет участнику; (3) 14-дневная активация в Q4 отсчитывается от создания группы, включает в знаменатель все созданные группы вместе с приглашениями без ответа и подводится через 14 полных дней после окончания Q4; (4) учебная ставка валовой прибыли равна 500 руб. за один дополнительный оплаченный месяц одного номера внутри планового года (не более 13 - M месяцев для запуска в месяце M), а затраты на разработку считаются отдельно.</div><div class="node-meta">Опора: brief_pdf:стр. 3, определения показателей; стр. 9, Как рассчитать прибыль и окупаемость</div></div><div class="node-card" data-node="finding:f04_current_capabilities_and_roles" onclick="selectNode('finding:f04_current_capabilities_and_roles')"><div class="node-head"><span class="mono">f04_current_capabilities_and_roles</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Сегодня организатор семейной группы уже может вручную добавить интернет из свободного остатка общего пакета, а владелец нескольких номеров — переключаться между ними в личном кабинете, однако об исчерпании интернета или денег клиенты нередко узнают лишь после перебоя. Организатор, участник и плательщик могут быть разными людьми; согласие участника на просмотр остатка интернета выдаётся отдельно от согласия на просмотр начислений и отзывается в любой момент; оператору известны сведения о номере, но не заряд батареи роутера без достоверных данных от самого устройства.</div><div class="node-meta">Опора: brief_pdf:стр. 1, Как люди пользуются связью сегодня; стр. 4-5, Различите сигнал и причину и Покажите весь путь</div></div><div class="node-card" data-node="finding:f05_team_and_governance_constraints" onclick="selectNode('finding:f05_team_and_governance_constraints')"><div class="node-head"><span class="mono">f05_team_and_governance_constraints</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Руководитель направления назначен; к концу Q1 требуется решение о выделении ресурсов на пилот, к концу Q2 совместно с финансовой командой — решение о расширении охвата, доработке, продлении наблюдения или остановке. Ресурсные ограничения старта: по 0,5 ставки дизайнера и аналитика ещё предстоит выделить, на Q2 предварительно выделено 3,0 чел.-мес. разработки, а 1,0 чел.-мес. специалиста по проверке услуги (тестированию) пока не подтверждён.</div><div class="node-meta">Опора: brief_pdf:стр. 1, развилки Q1-Q2; стр. 11, таблица Ресурсы, риски и решение руководителя</div></div><div class="node-card" data-node="finding:f06_unknown_incident_and_channel_data" onclick="selectNode('finding:f06_unknown_incident_and_channel_data')"><div class="node-head"><span class="mono">f06_unknown_incident_and_channel_data</span><div class="tags"><span class="tag tag-warn">Неизвестно</span></div></div><div class="node-body">В исходных материалах отсутствуют эмпирические частоты причин перебоев (доля исчерпания квоты ГБ против неоплаты счёта и выключенного питания роутера), рассказы конкретных клиентов, доля повторных обращений об одном случае, конверсия по каналам привлечения (приложение, поддержка, продажи), задержка обновления остатков в биллинге и фактические кривые удержания номеров. До снятия этих пробелов в Q1 по 6-месячным логам сети/биллинга и 12-15 клиентским интервью широкая разработка не открывается.</div><div class="node-meta">Опора: f02_scorecard_baseline, f04_current_capabilities_and_roles</div></div><div class="node-card" data-node="finding:f07_unknown_dev_rate_rub" onclick="selectNode('finding:f07_unknown_dev_rate_rub')"><div class="node-head"><span class="mono">f07_unknown_dev_rate_rub</span><div class="tags"><span class="tag tag-warn">Неизвестно</span></div></div><div class="node-body">Рублёвая стоимость одного человеко-месяца разработки, дизайна, аналитики и тестирования в брифе не задана. До получения внутренней финансовой ставки к гейту Q1/Q2 трудозатраты планируются в человеко-месяцах, а условие окупаемости задаётся формулой квартального возврата вложений и верхним порогом допустимой ставки человеко-месяца.</div><div class="node-meta">Опора: f03_metric_definitions, f05_team_and_governance_constraints</div></div><div class="node-card" data-node="finding:f08_priority_assumption_with_threshold" onclick="selectNode('finding:f08_priority_assumption_with_threshold')"><div class="node-head"><span class="mono">f08_priority_assumption_with_threshold</span><div class="tags"><span class="tag tag-warn">Допущение</span></div></div><div class="node-body">Проверяемое допущение первого приоритета до выгрузки логов Q1: среди подключённых семейных групп на совместимых тарифах минимум 25% групп за квартал сталкиваются со снижением выделенной доли участника к критическому порогу при наличии свободного остатка у организатора (поток не менее 200 впервые подходящих уникальных групп в неделю в Q2), а доля 7-дневных ограничений интернета в этой когорте риска снижается с 18,0% в контроле до 11,0% или ниже в тесте (-7,0 п.п., или -38,89% относительно контроля). Порог смены приоритета в Q1: если поток подходящих групп окажется ниже 100 в неделю или свыше 60% перебоев и оттока в семьях вызваны просрочкой счёта плательщика и непонятными списаниями, MVP Q2 переключается на упреждающий контроль даты/суммы списания и расшифровку начислений.</div><div class="node-meta">Опора: f02_scorecard_baseline, f04_current_capabilities_and_roles, f06_unknown_incident_and_channel_data</div></div><div class="node-card" data-node="finding:f09_channel_and_activation_assumptions" onclick="selectNode('finding:f09_channel_and_activation_assumptions')"><div class="node-head"><span class="mono">f09_channel_and_activation_assumptions</span><div class="tags"><span class="tag tag-warn">Допущение</span></div></div><div class="node-body">Сценарные допущения воронки привлечения и активации (brief_model): при строгой дедупликации касаний по первому целевому контакту за 14 дней (приложение &gt; CVM-сообщения &gt; поддержка и продажи) основной сценарий добавляет сверх прогноза без изменений +4 200 семейных групп (+3 300 новых и +900 сохранённых при прямых затратах 252 тыс. руб., или 60 руб. на добавленную группу -&gt; итог 12 200 групп и 8 296 активных при доле активности 68,0%) и с августа за счёт переиспользования движка без шага приглашения +1 050 владельцев нескольких номеров (+880 новых и +170 сохранённых при затратах 42 тыс. руб., или 40 руб. на владельца -&gt; итог 2 050). В Q4 из 2 000 созданных групп 1 560 принимают приглашение (440 неотвеченных/отказов остаются в знаменателе) и 1 240 совершают первое полезное действие за 14 дней (62,0% при цели не ниже 60%).</div><div class="node-meta">Опора: f01_market_and_dedup, f02_scorecard_baseline, f03_metric_definitions, f06_unknown_incident_and_channel_data</div></div><div class="node-card" data-node="finding:f10_profit_bridge_and_capex_inference" onclick="selectNode('finding:f10_profit_bridge_and_capex_inference')"><div class="node-head"><span class="mono">f10_profit_bridge_and_capex_inference</span><div class="tags"><span class="tag ">Вывод</span></div></div><div class="node-body">Детерминированный расчёт brief-calc подтверждает: для закрытия разрыва +6,00 млн руб. (279 -&gt; 285 млн руб.) по ставке 500 руб./мес. требуется минимум 12 000 дополнительных оплаченных номер-месяцев при нулевых новых прямых расходах и 12 900 номер-месяцев при 0,45 млн руб. новых прямых OPEX. С учётом календарного потолка 13 - M месяцев внутри планового года четыре когорты основного сценария (запуск в месяцах 5, 7, 8 и 10) приносят 14 080 оплаченных номер-месяцев (+7,04 млн руб.) и выводят валовую прибыль на 285,59 млн руб. (+0,59 млн руб. сверх цели) плюс 9,21 млн руб. переходящего эффекта в годы 2-3; при отдельном CAPEX 10,0 чел.-мес. годовая окупаемость выполняется при ставке до 659 000 руб./чел.-мес. В неблагоприятном сценарии (без подтверждённого QA, со сдвигом старта на 1 мес. и переносом мульти-SIM на 2-й год) валовая прибыль составляет 281,59 млн руб. (недобор -3,41 млн руб., или 6 820 номер-месяцев), подключённые семьи — 10 400 (-1 600), активные — 6 760 (-1 240), мульти-SIM — 1 000 (-1 000), активация Q4 — 54,0% (-6,0 п.п.).</div><div class="node-meta">Опора: brief_model:scenarios.main, scenarios.adverse и pilot, f02_scorecard_baseline, f03_metric_definitions, f07_unknown_dev_rate_rub, f08_priority_assumption_with_threshold, f09_channel_and_activation_assumptions</div></div><div class="node-card" data-node="finding:f11_year3_scaling_forecast" onclick="selectNode('finding:f11_year3_scaling_forecast')"><div class="node-head"><span class="mono">f11_year3_scaling_forecast</span><div class="tags"><span class="tag tag-warn">Прогноз</span></div></div><div class="node-body">Сценарный ориентир конца 3-го года при условии подтверждения годового удержания номеров на когортах 1-го года: доведение подключённой базы до 25 000 семейных групп (25,0% от доступных 100 000 домохозяйств при не менее 17 500 активных групп в месяц) и 6 000 владельцев нескольких собственных номеров (15,0% от доступных 40 000 владельцев без двойного счёта). Расширение самих знаменателей 100 000 и 40 000 возможно только при отдельном коммерческом решении о допуске младших и архивных тарифов после проверки отсутствия каннибализации ARPU.</div><div class="node-meta">Опора: f01_market_and_dedup, f10_profit_bridge_and_capex_inference</div></div>
+    </div>
+    <div>
+      <div class="col-title"><span>3. Альтернативы комитета (4)</span></div>
+      <div class="node-card" data-node="option:opt_keep" onclick="selectNode('option:opt_keep')"><div class="node-head"><strong>Сохранить текущее реактивное обслуживание без изменений</strong><div class="tags"><span class="tag">Оставить как есть</span></div></div><div class="node-body">Не требует выделения дизайнера, аналитика, 3,0 чел.-мес. разработки в Q2 и новых прямых расходов на сервисные уведомления; сохраняет инерционный рост семейных групп с 6 500 до 8 000 и валовой прибыли с 275 до 279 млн руб.</div><div class="objection-line"><span>Возражение:</span> Гарантированно не выполняет ни одну из пяти годовых целей брифа: недобор 6,00 млн руб. валовой прибыли (279 против 285 млн руб.), 3 000 активных и 4 000 подключённых семейных групп, 1 000 владельцев нескольких номеров и 15 п.п. по 14-дневной активации Q4 (45% против 60%).</div><div class="node-meta">Основания: f02_scorecard_baseline, f04_current_capabilities_and_roles</div></div><div class="node-card" data-node="option:opt_lean_deeplink" onclick="selectNode('option:opt_lean_deeplink')"><div class="node-head"><strong>Бережливое пороговое уведомление со ссылкой deep-link на существующий экран передачи ГБ</strong><div class="tags"><span class="tag">Изменить продукт</span></div></div><div class="node-body">Требует около 1,5 чел.-мес. разработки в Q2 без создания нового экрана управления группой: отправляет организатору своевременный сигнал со ссылкой на уже работающую в личном кабинете операцию выделения интернета, что позволяет быстро проверить реакцию клиентов при дефиците разработчиков и используется как рукав сравнения B в пилоте.</div><div class="objection-line"><span>Возражение:</span> Не устраняет потерю 55% групп на неотвеченных приглашениях, не добавляет прозрачный статус pending с защитой от повторного нажатия при задержке биллинга и не переносится на контроль списаний по собственным роутерам, из-за чего не закрывает годовые цели по валовой прибыли (285 млн руб.), активации Q4 (60%) и второму сегменту (2 000 владельцев).</div><div class="node-meta">Основания: f02_scorecard_baseline, f04_current_capabilities_and_roles, f08_priority_assumption_with_threshold, f10_profit_bridge_and_capex_inference</div></div><div class="node-card selected-option" data-node="option:opt_phased_shield" onclick="selectNode('option:opt_phased_shield')"><div class="node-head"><strong>Ступенчатый запуск: проактивная защита связи семейных групп (Q2) и переиспользование движка для собственных номеров (H2)</strong><div class="tags"><span class="tag">Изменить продукт</span><span class="tag tag-ok">Рекомендован</span></div></div><div class="node-body">Снимает корневой барьер внезапных блокировок интернета и потерь на приглашениях в ядре из 100 000 доступных домохозяйств, проверяет надбавку нового идемпотентного экрана (со статусом pending и раздельными согласиями) против бережливого deep-link в кластерном пилоте Q2, а во 2-м полугодии переиспользует тот же бэкенд пороговых уведомлений без шага приглашения для 40 000 владельцев собственных номеров, закрывая все 5 целей в основном сценарии (285,59 млн руб., 12 200 семей, 8 296 активных, 2 050 мульти-SIM, 62,0% активации Q4).</div><div class="objection-line"><span>Возражение:</span> Чувствителен к предстартовой готовности биллинга, неподтверждённому 1,0 чел.-мес. тестирования и неизвестной рублёвой ставке человеко-месяца: в неблагоприятном сценарии (сдвиг старта на 1 мес. и перенос мульти-SIM на 2-й год) валовая прибыль останавливается на 281,59 млн руб. (-3,41 млн руб. к цели), а при ставке свыше 659 тыс. руб./чел.-мес. окупаемость CAPEX выходит за пределы планового года.</div><div class="node-meta">Основания: f01_market_and_dedup, f02_scorecard_baseline, f03_metric_definitions, f05_team_and_governance_constraints, f08_priority_assumption_with_threshold, f09_channel_and_activation_assumptions, f10_profit_bridge_and_capex_inference, f11_year3_scaling_forecast</div></div><div class="node-card" data-node="option:opt_close_freeze" onclick="selectNode('option:opt_close_freeze')"><div class="node-head"><strong>Отказаться от инвестиций в доработку семейного кабинета и перенаправить ресурс разработки</strong><div class="tags"><span class="tag">Закрыть инициативу</span></div></div><div class="node-body">Защищает операторский бюджет разработки от невозвратного CAPEX, если аудит логов Q1 покажет редкую встречаемость управляемых перебоев (менее 100 подходящих групп в неделю) либо если финансовая ставка 1 чел.-мес. сделает окупаемость недостижимой даже на двухлетнем горизонте.</div><div class="objection-line"><span>Возражение:</span> Консервирует деградацию метрик направления после слабого базового года (275 млн руб. при плане 282 млн руб.) и лишает оператора инструмента удержания многономерных семей и вторых устройств в собственной базе.</div><div class="node-meta">Основания: f02_scorecard_baseline, f05_team_and_governance_constraints, f06_unknown_incident_and_channel_data, f07_unknown_dev_rate_rub</div></div>
+    </div>
+  </section>
+
+  <h2>Согласованная продуктовая и коммуникационная стратегия</h2>
+  <section class="strategy-grid">
+    <div class="strategy-card" data-node="strategy:product" onclick="selectNode('strategy:product')"><div class="node-head"><h3>Продуктовая стратегия</h3><span class="tag" title="f01_market_and_dedup, f03_metric_definitions, f04_current_capabilities_and_roles, f08_priority_assumption_with_threshold, f10_profit_bridge_and_capex_inference">5 оснований</span></div><p>1) Целевой сегмент первого этапа (Q1-Q2) — семейные группы на совместимых тарифах с общим пакетом интернета (доступная база 100 000 домохозяйств; подключено 6 500). В MVP входят: пороговый триггер низкого остатка доли участника при наличии свободного пакета у организатора, гранулярные согласия участника с мгновенным отзывом (отдельно на остаток интернета, отдельно на начисления), карточка быстрого выделения ГБ или пополнения счёта плательщиком с явным статусом pending и ключом идемпотентности, а также упрощённое приглашение по ссылке с одним напоминанием через 24-72 часа. Базовая функция бесплатна в рамках совместимого семейного тарифа.<br/>2) Во 2-м полугодии (только после подтверждения эффекта на гейте Q2) готовый движок пороговых триггеров и статуса pending переиспользуется для второго сегмента — владельцев нескольких собственных номеров (доступная база 40 000 без пересечений с домохозяйствами; подключено 800) без шага приглашения другого человека, с разделением в интерфейсе статуса счёта/трафика SIM роутера и неизвестного оператору состояния питания/батареи устройства.<br/>3) Осознанные исключения первого запуска: исключаем неподдерживаемые и архивные тарифы без общего пакета, платные партнёрские подписки, геолокацию близких, чтение заряда батареи от прошивок роутеров и бесконтрольное автосписание без волеизъявления плательщика. Экономика опирается на 14 080 доп. оплаченных номер-месяцев внутри планового года по 500 руб. минус 0,45 млн руб. прямых OPEX (+6,59 млн руб. к базе 279 млн руб. -&gt; 285,59 млн руб.).</p><div class="node-meta" style="margin-top:8px;">Основания: f01_market_and_dedup, f03_metric_definitions, f04_current_capabilities_and_roles, f08_priority_assumption_with_threshold, f10_profit_bridge_and_capex_inference</div></div><div class="strategy-card" data-node="strategy:communication" onclick="selectNode('strategy:communication')"><div class="node-head"><h3>Коммуникационная стратегия</h3><span class="tag" title="f01_market_and_dedup, f04_current_capabilities_and_roles, f06_unknown_incident_and_channel_data, f09_channel_and_activation_assumptions">4 основания</span></div><p>Ценностное предложение строится вокруг своевременного предупреждения и управляемого действия без безусловных обещаний отсутствия перебоев: в рамках совместимых семейных тарифов и при наличии действующего согласия участника на просмотр остатка интернета оператор заранее сообщает организатору о приближении доли близкого к порогу исчерпания и позволяет выделить гигабайты из свободного остатка общего пакета до срабатывания ограничения трафика. В коммуникации и интерфейсе прямо оговариваются условия применимости и границы сервиса: доступ к начислениям закрыт без отдельного согласия участника; участник вправе отозвать разрешение в любой момент; зачисление ГБ или платежа отображается в статусе ожидания до подтверждения системой расчётов; для собственных роутеров оператор не покрывает диагностику питания и заряда батареи самого устройства. Привлечение ведётся через собственные CVM-каналы (контекстные подсказки в приложении, сервисные уведомления, поддержка после обращения) с дедупликацией по первому касанию за 14 дней.</p><div class="node-meta" style="margin-top:8px;">Основания: f01_market_and_dedup, f04_current_capabilities_and_roles, f06_unknown_incident_and_channel_data, f09_channel_and_activation_assumptions</div><div class="claim-ok">Аудит обещаний: границы применимости согласованы с продуктом</div></div><div class="strategy-card" data-node="strategy:experiment" onclick="selectNode('strategy:experiment')"><div class="node-head"><h3>План проверки и стоп-правила</h3><span class="tag" title="f03_metric_definitions, f05_team_and_governance_constraints, f08_priority_assumption_with_threshold, f10_profit_bridge_and_capex_inference">4 основания</span></div><p>В Q2 проводится контролируемый кластерный пилот с рандомизацией целыми семейными группами на совместимых тарифах (единица анализа — группа с первым в Q2 снижением доли участника к порогу при активном согласии и свободном остатке пакета). Расчёт главной метрики (доля групп с сетевым ограничением интернета по исчерпанию объёма в течение 7 дней от события) выполняется строго по принципу ITT, сохраняя в знаменателе не открывших уведомление. Сравниваются контроль (текущее обслуживание), бережливый способ (уведомление + deep-link на существующую передачу ГБ) и новый экран быстрого действия со статусом pending: при потоке 200 уникальных групп в неделю за 6 недель набора + 7 дней наблюдения (49 дней внутри Q2) формируется по 600 групп на рукав парного сравнения для проверки критерия снижения блокировок не менее чем на 5-7 п.п. (с 18% до 11% или ниже) и преимущества нового экрана над deep-link не менее +2,0 п.п. Жёсткие стоп-правила пилота: (1) немедленная остановка пилота руководителем направления при хотя бы 1 случае видимости чужих данных после отзыва согласия; (2) немедленная остановка спорных операций владельцем биллинга при двойном списании денег или двойном вычитании ГБ; (3) блокировка масштабирования при доле операций с неизвестным статусом свыше 1,0% или росте нехватки общего пакета у других участников группы более чем на +2,0 п.п.; (4) пересмотр и отказ от масштабирования на гейте Q2/Q3, если рост использования не даёт прироста оплаченных месяцев со сроком окупаемости CAPEX в пределах норматива финансов.</p><div class="node-meta" style="margin-top:8px;">Основания: f03_metric_definitions, f05_team_and_governance_constraints, f08_priority_assumption_with_threshold, f10_profit_bridge_and_capex_inference</div></div>
+  </section>
+
+  
+  <h2>Продуктовая методология и контроль рисков</h2><div class="strategy-card" style="margin-bottom:14px;"><div class="node-head"><h3>JTBD: Покупатель vs Пользователь</h3><span class="tag" title="f04_current_capabilities_and_roles, f06_unknown_incident_and_channel_data, f08_priority_assumption_with_threshold">3 основания</span></div><p><strong>Задача плательщика:</strong> Когда я оплачиваю связь семьи или собственного домашнего роутера, я хочу заранее получить понятный сигнал о риске отключения и в одно подтверждённое действие распределить оплаченный пакет или пополнить счёт, чтобы близкие и домашние устройства не оставались без интернета в нужный момент.<br/><strong>Задача пользователя:</strong> Когда я пользуюсь номером внутри семейной группы, я хочу оставаться на связи без необходимости просить родных о срочной помощи и при этом сам решать, видит ли организатор только остаток интернета или также мои начисления, сохраняя право отозвать доступ в любой момент.</p><div class="node-meta" style="margin-top:8px;"><strong>Толчок:</strong> Внезапная блокировка интернета у ребёнка или пожилого родственника при наличии неиспользованных гигабайт в общем пакете семьи, а также тихая остановка домашнего/дачного роутера из-за пропущенной даты списания. · <strong>Притяжение:</strong> Упреждающее оповещение до отключения трафика и быстрое выделение ГБ с честным статусом подтверждения биллинга без лишних звонков и переключений по меню. · <strong>Тревога:</strong> Опасение участника потерять приватность личных расходов и детализации, а у организатора и плательщика — страх двойного списания денег/гигабайт при повторном нажатии или случайного обнуления общего пакета всей семьи. · <strong>Инерция:</strong> Привычка реагировать только после жалобы в семейном чате, полагаться на банковский автоплатёж (который не распределяет квоту ГБ внутри тарифа) или вручную проверять номера в личном кабинете.</div></div><div style="margin-bottom:14px;"><div class="col-title"><span>Opportunity Solution Tree · Исход: Достижение в плановом году не менее 285 млн руб. валовой прибыли (+6 млн руб. к базе без изменений), 12 000 подключённых и 8 000 активных семейных групп, 2 000 владельцев собственных номеров и 60% 14-дневной активации в Q4.</span></div><div class="strategy-grid"><div class="node-card"><div class="node-head"><span class="mono">opp_timely_family_intervention</span><span class="tag">2 основания</span></div><div class="node-body"><strong>Дать организатору возможность вмешаться до блокировки интернета у участника без раскрытия лишних персональных сведений.</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt_phased_shield</span> — тест допущения: Аудит логов Q1 (порог &gt;= 200 подходящих групп/нед.) и кластерный ITT-пилот Q2 на снижение 7-дневных блокировок с 18% до &lt;= 11%.</li><li><span class="mono">opt_lean_deeplink</span> — тест допущения: Сравнение конверсии и 7-дневных блокировок бережливого deep-link против нового экрана со статусом pending (порог оправдания разработки &gt;= 2,0 п.п.).</li><li><span class="mono">opt_keep</span> — тест допущения: Контрольная группа пилота Q2 измеряет базовую частоту 7-дневных блокировок и удержания без вмешательства.</li></ul><div class="node-meta">Опора: f04_current_capabilities_and_roles, f08_priority_assumption_with_threshold</div></div><div class="node-card"><div class="node-head"><span class="mono">opp_invite_onboarding_14d</span><span class="tag">3 основания</span></div><div class="node-body"><strong>Сократить потерю более половины созданных семейных групп на шаге неотвеченного приглашения и первого действия в течение 14 дней.</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt_phased_shield</span> — тест допущения: Проверка в пилоте и Q4-когорте доли активированных за 14 дней со всеми созданными группами в знаменателе (цель &gt;= 60% против 45% без изменений).</li></ul><div class="node-meta">Опора: f02_scorecard_baseline, f03_metric_definitions, f09_channel_and_activation_assumptions</div></div><div class="node-card"><div class="node-head"><span class="mono">opp_multi_sim_reuse</span><span class="tag">3 основания</span></div><div class="node-body"><strong>Защитить владельцев второй SIM-карты (роутер/модем) от пропуска даты списания за счёт переиспользования движка уведомлений без шага приглашения.</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt_phased_shield</span> — тест допущения: Запуск во 2-м полугодии после гейта Q2 с проверкой объединения &gt;= 2 собственных номеров и снижения неоплаченных простоев SIM роутера.</li><li><span class="mono">opt_close_freeze</span> — тест допущения: Если в Q1/Q2 ставка разработки или слабое удержание не окупают CAPEX, расширение замораживается.</li></ul><div class="node-meta">Опора: f01_market_and_dedup, f04_current_capabilities_and_roles, f09_channel_and_activation_assumptions</div></div></div></div><div style="margin-bottom:14px;"><div class="col-title"><span>Матрица «Обещание коммуникации ↔ Возможность продукта»</span></div><table><thead><tr><th>Обещание аудитории</th><th>Механизм продукта</th><th>Основания</th><th>Честная граница</th><th>Канал</th></tr></thead><tbody><tr><td><strong>Заранее предупредим организатора о снижении выделенной доли интернета у близкого и поможем добавить гигабайты из свободного общего пакета в несколько нажатий.</strong></td><td>Серверный триггер порога квоты участника + проверка свободного остатка и совместимости тарифа + идемпотентная операция выделения ГБ со статусом pending.</td><td class="mono">f04_current_capabilities_and_roles, f08_priority_assumption_with_threshold, f10_profit_bridge_and_capex_inference</td><td>Действует только на совместимых семейных тарифах при активном согласии участника на просмотр остатка интернета, положительном балансе счёта и наличии свободного объёма в пакете; зачисление завершается после подтверждения биллингом.</td><td>Мобильное приложение оператора (push и карточка группы) и сервисные SMS при недоступности push.</td></tr><tr><td><strong>Участник семейной группы сам выбирает, открывать ли только остаток интернета или также сведения о начислениях, и может закрыть доступ в любой момент.</strong></td><td>Раздельная модель прав доступа (data_quota_view отдельно от charges_view) и синхронная инвалидация токенов чтения при отзыве согласия через приложение или USSD/SMS.</td><td class="mono">f04_current_capabilities_and_roles, f05_team_and_governance_constraints</td><td>До принятия приглашения и сразу после отзыва согласия организатор не видит никаких данных по номеру участника; согласие на начисления не включено по умолчанию.</td><td>Экран приглашения, настройки приватности номера в личном кабинете и бесплатная USSD/SMS-команда.</td></tr><tr><td><strong>Владелец роутера или второго собственного устройства получит напоминание на основной смартфон перед списанием платы и отличит неоплату номера от выключенного устройства.</strong></td><td>Переиспользование движка пороговых уведомлений во 2-м полугодии для объединённых собственных номеров без шага приглашения с выводом статуса счёта и сетевых ограничений SIM.</td><td class="mono">f01_market_and_dedup, f04_current_capabilities_and_roles, f09_channel_and_activation_assumptions</td><td>Оператор показывает только состояние счёта, пакета и регистрации SIM в сети; заряд батареи и питание роутера оператору неизвестны без телеметрии самого устройства.</td><td>Личный кабинет мульти-SIM владельца и push/SMS-уведомления на основной контактный номер.</td></tr></tbody></table></div><div style="margin-bottom:14px;"><div class="col-title"><span>Pre-mortem выбранного варианта (через 6 месяцев)</span></div><table><thead><tr><th>Сценарий провала</th><th>Вероятность</th><th>Влияние</th><th>Предотвратимость</th><th>Защитная мера / стоп-правило</th></tr></thead><tbody><tr><td>Утечка видимости остатка ГБ или начислений участника после отзыва им согласия из-за кэширования в личном кабинете.</td><td class="mono">low</td><td class="mono">high</td><td class="mono">high</td><td>Обязательная приёмка с ИБ до старта пилота по 3 состояниям согласия и стоп-правило немедленной остановки пилота руководителем направления при единичном инциденте.</td></tr><tr><td>Двойное списание платежа или двойное вычитание гигабайт из общего пакета при задержке ответа биллинга и повторном нажатии кнопки.</td><td class="mono">medium</td><td class="mono">high</td><td class="mono">high</td><td>Ключ идемпотентности операции, явный статус pending в UI и немедленная остановка спорных операций владельцем биллинга со сверкой реестра.</td></tr><tr><td>Неподтверждение 1,0 чел.-мес. специалиста по проверке услуги и задержка API биллинга сдвигают старт пилота и срывают годовые цели (сценарий adverse: 281,59 млн руб.).</td><td class="mono">medium</td><td class="mono">high</td><td class="mono">medium</td><td>Фиксация SLA смежников до конца Q1; при отказе в QA — выделение 0,5 чел.-мес. разработки на автотесты отказов, сужение пилота до 1 тарифа и честная развилка по переносу мульти-SIM на гейте Q2.</td></tr><tr><td>Клиенты охотно перераспределяют бесплатные гигабайты внутри семьи, но это не увеличивает число оплаченных номер-месяцев (эффект удержания близок к нулю).</td><td class="mono">medium</td><td class="mono">high</td><td class="mono">medium</td><td>Отслеживание платежей исходных кластеров пилота (включая номера после выхода из группы), отключение платных SMS при слабой конверсии и закрытие дальнейшего CAPEX с финансовой командой.</td></tr></tbody></table></div>
+
+  <h2>Обязательства команды и триггеры пересмотра</h2>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Владелец</th><th>Срок</th><th>Задача</th><th>Условие пересмотра</th><th>Статус</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mono">act_q1_logs_and_ux</td><td>Аналитик (0,5 ставки) и Дизайнер (0,5 ставки)</td><td class="mono">2027-03-15</td><td>Выгрузить 6-месячные логи порогов квоты, списаний и дедуплицированных обращений (окно 72 ч), провести 12-15 интервью и контрбалансированный UX-тест (AB/BA) прототипа.</td><td>Если поток уникальных подходящих семей ниже 100 в неделю или свыше 60% сбоев вызваны неоплатой счёта/списаниями — сменить приоритет MVP Q2 на контроль платежей.</td><td>Открыто</td></tr><tr><td class="mono">act_q1_dependencies_and_gate</td><td>Руководитель направления, владелец биллинга, команды ЛК/ИБ и поддержки</td><td class="mono">2027-03-31</td><td>Подтвердить SLA обновления остатков, API идемпотентности (pending/completed), раздельную проверку 3 состояний согласия, регламент поддержки, ставку 1 чел.-мес. в рублях и решение по 1,0 чел.-мес. QA на гейте Q1.</td><td>При неготовности мгновенного отзыва согласий заблокировать раскрытие чужих остатков; при неподтверждении QA — сузить пилот до 1 тарифа и перевести 0,5 чел.-мес. разработки на автотесты отказов.</td><td>Открыто</td></tr><tr><td class="mono">act_q2_cluster_pilot</td><td>Руководитель направления, Разработка (3,0 чел.-мес.) и QA (1,0 чел.-мес.)</td><td class="mono">2027-06-25</td><td>Провести 49-дневный кластерный ITT-пилот целыми семейными группами (6 недель набора по 200 групп/нед. + 7 дней наблюдения): контроль против бережливого deep-link и нового экрана со статусом pending.</td><td>Немедленный стоп при видимости данных после отзыва согласия или двойном списании; на гейте Q2 с финансами остановить тираж нового экрана, если его выигрыш над deep-link ниже 2,0 п.п. или не окупает CAPEX.</td><td>Открыто</td></tr><tr><td class="mono">act_h2_scale_and_multisim</td><td>Руководитель направления, CVM и Финансовая команда</td><td class="mono">2027-12-31</td><td>Масштабировать проверенное решение на семейную базу в Q3, с августа раскатать переиспользуемый движок на владельцев собственных номеров без шага приглашения, сохранив 10% holdout, и подвести итог Q4-активации через 14 дней после конца года.</td><td>При отсутствии прироста оплаченных месяцев в когортах Q2-Q3 относительно контроля отключить платный SMS-канал и заморозить дальнейший CAPEX 2-го полугодия.</td><td>Открыто</td></tr>
+    </tbody>
+  </table>
+
+  <h2>История принятых решений</h2>
+  <section class="history-list">
+    <div class="history-item"><span class="mono">Решение №1</span><strong>opt_phased_shield</strong><span>Утвердил: Руководитель продуктового направления · 2026-11-19T17:57:43+00:00</span><div class="node-meta">Утверждён план Q1 (аудит логов, интервью, UX-тест и SLA смежников) и рамка 49-дневного кластерного пилота Q2 по исчерпанию доли интернета в семейных группах · снимок <span class="mono">db2f9752c1a6</span></div></div>
+  </section>
+</div>
+<script>
+const GRAPH = {"sources": {}, "findings": {"f01_market_and_dedup": {"sources": ["brief_pdf"], "depends_on": []}, "f02_scorecard_baseline": {"sources": ["brief_pdf"], "depends_on": []}, "f03_metric_definitions": {"sources": ["brief_pdf"], "depends_on": []}, "f04_current_capabilities_and_roles": {"sources": ["brief_pdf"], "depends_on": []}, "f05_team_and_governance_constraints": {"sources": ["brief_pdf"], "depends_on": []}, "f06_unknown_incident_and_channel_data": {"sources": [], "depends_on": ["f02_scorecard_baseline", "f04_current_capabilities_and_roles"]}, "f07_unknown_dev_rate_rub": {"sources": [], "depends_on": ["f03_metric_definitions", "f05_team_and_governance_constraints"]}, "f08_priority_assumption_with_threshold": {"sources": [], "depends_on": ["f02_scorecard_baseline", "f04_current_capabilities_and_roles", "f06_unknown_incident_and_channel_data"]}, "f09_channel_and_activation_assumptions": {"sources": [], "depends_on": ["f01_market_and_dedup", "f02_scorecard_baseline", "f03_metric_definitions", "f06_unknown_incident_and_channel_data"]}, "f10_profit_bridge_and_capex_inference": {"sources": ["brief_model"], "depends_on": ["f02_scorecard_baseline", "f03_metric_definitions", "f07_unknown_dev_rate_rub", "f08_priority_assumption_with_threshold", "f09_channel_and_activation_assumptions"]}, "f11_year3_scaling_forecast": {"sources": [], "depends_on": ["f01_market_and_dedup", "f10_profit_bridge_and_capex_inference"]}}, "targets": {"option:opt_keep": ["f02_scorecard_baseline", "f04_current_capabilities_and_roles"], "option:opt_lean_deeplink": ["f02_scorecard_baseline", "f04_current_capabilities_and_roles", "f08_priority_assumption_with_threshold", "f10_profit_bridge_and_capex_inference"], "option:opt_phased_shield": ["f01_market_and_dedup", "f02_scorecard_baseline", "f03_metric_definitions", "f05_team_and_governance_constraints", "f08_priority_assumption_with_threshold", "f09_channel_and_activation_assumptions", "f10_profit_bridge_and_capex_inference", "f11_year3_scaling_forecast"], "option:opt_close_freeze": ["f02_scorecard_baseline", "f05_team_and_governance_constraints", "f06_unknown_incident_and_channel_data", "f07_unknown_dev_rate_rub"], "strategy:product": ["f01_market_and_dedup", "f03_metric_definitions", "f04_current_capabilities_and_roles", "f08_priority_assumption_with_threshold", "f10_profit_bridge_and_capex_inference"], "strategy:communication": ["f01_market_and_dedup", "f04_current_capabilities_and_roles", "f06_unknown_incident_and_channel_data", "f09_channel_and_activation_assumptions"], "strategy:experiment": ["f03_metric_definitions", "f05_team_and_governance_constraints", "f08_priority_assumption_with_threshold", "f10_profit_bridge_and_capex_inference"]}};
+const ACCEPT_META = {"has_draft": false, "case_cli": ".cases/brief-family-connect", "recommended": "opt_phased_shield", "expect_sha": "db2f9752c1a605234a1cc72499b2a6693e6d1c9ebdff296dd7fd16451a39d26f", "live_enabled": false, "live_token": ""};
+const ECON_MODEL = null;
+
+function relatedSet(nodeId) {
+  const rel = new Set([nodeId]);
+  if (nodeId.startsWith("source:")) {
+    const sid = nodeId.slice(7);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [fid, f] of Object.entries(GRAPH.findings)) {
+        const key = "finding:" + fid;
+        if (rel.has(key)) continue;
+        if (f.sources.includes(sid) || f.depends_on.some(d => rel.has("finding:" + d))) {
+          rel.add(key); changed = true;
+        }
+      }
+    }
+    for (const [tid, deps] of Object.entries(GRAPH.targets)) {
+      if (deps.some(d => rel.has("finding:" + d))) rel.add(tid);
+    }
+  } else if (nodeId.startsWith("finding:")) {
+    const start = nodeId.slice(8);
+    const up = [start];
+    while (up.length) {
+      const cur = up.pop();
+      const f = GRAPH.findings[cur];
+      if (!f) continue;
+      f.sources.forEach(s => rel.add("source:" + s));
+      f.depends_on.forEach(d => { if (!rel.has("finding:" + d)) { rel.add("finding:" + d); up.push(d); } });
+    }
+    const down = new Set([start]);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [fid, f] of Object.entries(GRAPH.findings)) {
+        if (!down.has(fid) && f.depends_on.some(d => down.has(d))) {
+          down.add(fid); rel.add("finding:" + fid); changed = true;
+        }
+      }
+    }
+    for (const [tid, deps] of Object.entries(GRAPH.targets)) {
+      if (deps.some(d => down.has(d))) rel.add(tid);
+    }
+  } else {
+    const deps = GRAPH.targets[nodeId] || [];
+    const stack = [...deps];
+    stack.forEach(d => rel.add("finding:" + d));
+    while (stack.length) {
+      const cur = stack.pop();
+      const f = GRAPH.findings[cur];
+      if (!f) continue;
+      f.sources.forEach(s => rel.add("source:" + s));
+      f.depends_on.forEach(d => { if (!rel.has("finding:" + d)) { rel.add("finding:" + d); stack.push(d); } });
+    }
+  }
+  return rel;
+}
+function selectNode(nodeId) {
+  const rel = relatedSet(nodeId);
+  document.querySelectorAll("[data-node]").forEach(el => {
+    const id = el.getAttribute("data-node");
+    el.classList.toggle("active-link", rel.has(id));
+    el.classList.toggle("dimmed", !rel.has(id));
+  });
+}
+function resetSelection() {
+  document.querySelectorAll("[data-node]").forEach(el => {
+    el.classList.remove("active-link", "dimmed");
+  });
+}
+
+/* --- Committee Accept Gate (Item 4) --- */
+function shQuote(val) {
+  const s = String(val || "").trim();
+  return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+}
+function buildAcceptCommand() {
+  const optEl = document.getElementById("accept-option");
+  if (!optEl) return "";
+  const opt = optEl.value;
+  const by = (document.getElementById("accept-by")?.value || "Продуктовый комитет").trim();
+  const reason = (document.getElementById("accept-reason")?.value || "Согласовано").trim();
+  const sha = ACCEPT_META.expect_sha || "<draft_sha256>";
+  return `python3 -m ledger accept ${ACCEPT_META.case_cli} ${opt} --expect ${sha} --by ${shQuote(by)} --reason ${shQuote(reason)}`;
+}
+function updateAcceptCommand() {
+  const preview = document.getElementById("accept-cmd-preview");
+  if (!preview) return;
+  preview.textContent = buildAcceptCommand();
+  const opt = document.getElementById("accept-option")?.value || "";
+  const warn = document.getElementById("accept-mismatch-note");
+  if (warn) {
+    warn.style.display = (ACCEPT_META.recommended && opt !== ACCEPT_META.recommended) ? "block" : "none";
+  }
+}
+function copyAcceptCommand() {
+  const cmd = buildAcceptCommand();
+  const fb = document.getElementById("accept-feedback");
+  const showOk = (msg) => {
+    if (!fb) return;
+    fb.textContent = msg;
+    setTimeout(() => { if (fb.textContent === msg) fb.textContent = ""; }, 3200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(cmd).then(() => showOk("Команда скопирована в буфер обмена")).catch(() => fallbackCopy(cmd, showOk));
+  } else {
+    fallbackCopy(cmd, showOk);
+  }
+}
+function fallbackCopy(text, cb) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand("copy"); cb("Команда скопирована в буфер обмена"); }
+  catch (e) { cb("Выделите строку выше и скопируйте (Ctrl+C)"); }
+  document.body.removeChild(ta);
+}
+async function triggerLiveAccept() {
+  if (!ACCEPT_META.live_enabled) return;
+  const fb = document.getElementById("accept-feedback");
+  const btn = document.getElementById("accept-live-btn");
+  const payload = {
+    option: document.getElementById("accept-option").value,
+    expect: ACCEPT_META.expect_sha,
+    by: document.getElementById("accept-by").value,
+    reason: document.getElementById("accept-reason").value
+  };
+  if (btn) btn.disabled = true;
+  if (fb) fb.textContent = "Запись решения в case.sqlite3…";
+  try {
+    const res = await fetch("/api/accept", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Ledger-Token": ACCEPT_META.live_token },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      if (fb) fb.textContent = "Ошибка гейта: " + (data.error || res.statusText);
+      if (btn) btn.disabled = false;
+      return;
+    }
+    if (fb) fb.textContent = `Утверждено: Решение №${data.decision.revision} (${data.decision.option})`;
+    setTimeout(() => window.location.reload(), 700);
+  } catch (err) {
+    if (fb) fb.textContent = "Сбой соединения с локальным сервером: " + err;
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* --- Interactive What-If Unit Economics (Item 1 · exact ledger/economics.py formulas) --- */
+const WHATIF_STATE = { selectedId: null, preset: "base", overrides: {} };
+
+function fmtRub(val, digits = 2) {
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  const parts = rounded.toFixed(digits).split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const dec = (digits > 0 && parts[1] !== "00" && parts[1] !== "0") ? ("," + parts[1]) : "";
+  return parts[0] + dec + " ₽";
+}
+function fmtNum(val, suffix = "", digits = 2) {
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  let s = rounded.toFixed(digits).replace(".", ",");
+  if (s.endsWith(",00")) s = s.slice(0, -3);
+  return s + suffix;
+}
+function evaluatePlanExact(price, recurring, cac, retention, minMargin) {
+  const rev = Math.max(0.01, Number(price));
+  const rec = Math.max(0, Number(recurring));
+  const upf = Math.max(0, Number(cac));
+  const ret = Math.max(1, Math.round(Number(retention)));
+  const amortUpfront = upf > 0 ? (upf / ret) : 0.0;
+  const directCost = rec + amortUpfront;
+  const contribution = rev - directCost;
+  const contributionRate = contribution / rev;
+  const maxAllowableCost = rev * (1.0 - minMargin);
+  const costHeadroom = maxAllowableCost - directCost;
+  const cashMarginBeforeCapex = rev - rec;
+  const paybackMonths = (upf > 0 && cashMarginBeforeCapex > 0)
+    ? Number((upf / cashMarginBeforeCapex).toFixed(2))
+    : (upf === 0 ? 0.0 : null);
+  let maxUpfrontCac = Number(((maxAllowableCost - rec) * ret).toFixed(2));
+  if (maxUpfrontCac < 0) maxUpfrontCac = null;
+  const monthlyRoom = maxAllowableCost - rec;
+  let minRetention = null;
+  if (upf === 0) {
+    minRetention = monthlyRoom >= 0 ? 1 : null;
+  } else if (monthlyRoom > 0) {
+    minRetention = Number((upf / monthlyRoom).toFixed(2));
+  }
+  const minMonthlyPrice = minMargin < 1.0 ? Number((directCost / (1.0 - minMargin)).toFixed(2)) : null;
+  const meetsTarget = (contributionRate + 1e-12) >= minMargin;
+  return {
+    price: rev, recurring: rec, cac: upf, retention: ret,
+    amortUpfront, directCost, contribution, contributionRate,
+    maxAllowableCost, costHeadroom, paybackMonths,
+    maxUpfrontCac, minRetention, minMonthlyPrice, meetsTarget
+  };
+}
+function presetParamsForPlan(plan, preset) {
+  if (preset === "cvm") {
+    return { price: plan.price, recurring: plan.recurring, cac: plan.cac > 0 ? 25 : 0, retention: plan.retention };
+  }
+  if (preset === "paid") {
+    const paidCac = plan.cac > 0 ? Math.round(plan.cac * 1.25) : 260;
+    return { price: plan.price, recurring: plan.recurring, cac: paidCac, retention: plan.retention };
+  }
+  if (preset === "stress") {
+    return {
+      price: plan.price,
+      recurring: Number((plan.recurring * 1.15).toFixed(2)),
+      cac: plan.cac,
+      retention: Math.max(1, plan.retention - 2)
+    };
+  }
+  return { price: plan.price, recurring: plan.recurring, cac: plan.cac, retention: plan.retention };
+}
+function initWhatIf() {
+  if (!ECON_MODEL || !ECON_MODEL.plans || !ECON_MODEL.plans.length) return;
+  ECON_MODEL.plans.forEach(p => {
+    WHATIF_STATE.overrides[p.id] = { price: p.price, recurring: p.recurring, cac: p.cac, retention: p.retention };
+  });
+  WHATIF_STATE.selectedId = ECON_MODEL.plans[0].id;
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function syncSlidersToSelected() {
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  const setPair = (key, val, maxHint) => {
+    const sl = document.getElementById("sl-" + key);
+    const nm = document.getElementById("num-" + key);
+    if (sl) {
+      if (val > Number(sl.max)) sl.max = String(Math.ceil(val * 1.5));
+      sl.value = String(val);
+    }
+    if (nm) nm.value = String(val);
+  };
+  setPair("price", cur.price);
+  setPair("cac", cur.cac);
+  setPair("retention", cur.retention);
+  setPair("recurring", cur.recurring);
+}
+function selectWhatIfPlan(planId) {
+  WHATIF_STATE.selectedId = planId;
+  const sel = document.getElementById("whatif-plan-select");
+  if (sel && sel.value !== planId) sel.value = planId;
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function applyEconPreset(preset, btnEl) {
+  WHATIF_STATE.preset = preset;
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active-preset", b === btnEl));
+  const applyAll = document.getElementById("whatif-apply-all")?.checked;
+  ECON_MODEL.plans.forEach(p => {
+    if (applyAll || p.id === WHATIF_STATE.selectedId || preset === "base") {
+      WHATIF_STATE.overrides[p.id] = presetParamsForPlan(p, preset);
+    }
+  });
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function recomputeAllWhatIf() {
+  if (WHATIF_STATE.preset !== "base") {
+    const activeBtn = document.querySelector(`.preset-btn[data-preset="${WHATIF_STATE.preset}"]`);
+    applyEconPreset(WHATIF_STATE.preset, activeBtn);
+  } else {
+    renderWhatIf();
+  }
+}
+function onSliderInput(field, rawVal) {
+  const num = Number(rawVal);
+  if (Number.isNaN(num)) return;
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  cur[field] = field === "retention" ? Math.max(1, Math.round(num)) : Math.max(0, num);
+  const sl = document.getElementById("sl-" + field);
+  const nm = document.getElementById("num-" + field);
+  if (sl && document.activeElement !== sl) {
+    if (cur[field] > Number(sl.max)) sl.max = String(Math.ceil(cur[field] * 1.5));
+    sl.value = String(cur[field]);
+  }
+  if (nm && document.activeElement !== nm) nm.value = String(cur[field]);
+  renderWhatIf();
+}
+function renderWhatIf() {
+  if (!ECON_MODEL) return;
+  const minM = ECON_MODEL.min_margin_rate;
+  const selPlan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId) || ECON_MODEL.plans[0];
+  const selCur = WHATIF_STATE.overrides[selPlan.id];
+  const selEval = evaluatePlanExact(selCur.price, selCur.recurring, selCur.cac, selCur.retention, minM);
+
+  const basisBadge = document.getElementById("badge-price-basis");
+  if (basisBadge) {
+    const priceChanged = Math.abs(selCur.price - selPlan.price) > 1e-6;
+    basisBadge.textContent = priceChanged ? "допущение (what-if)" : selPlan.basis_label;
+    basisBadge.className = priceChanged ? "tag tag-warn" : "tag tag-ok";
+  }
+  const showDelta = (id, baseV, curV, unit) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (Math.abs(curV - baseV) < 1e-6) {
+      el.textContent = `База спецификации: ${fmtNum(baseV, unit)}`;
+    } else {
+      const sign = curV > baseV ? "+" : "";
+      el.textContent = `База: ${fmtNum(baseV, unit)} → изменено (${sign}${fmtNum(curV - baseV, unit)})`;
+    }
+  };
+  showDelta("delta-price", selPlan.price, selCur.price, " ₽");
+  showDelta("delta-cac", selPlan.cac, selCur.cac, " ₽");
+  showDelta("delta-retention", selPlan.retention, selCur.retention, " мес.");
+  showDelta("delta-recurring", selPlan.recurring, selCur.recurring, " ₽");
+
+  const kpiStrip = document.getElementById("whatif-kpi-strip");
+  if (kpiStrip) {
+    const statusCls = selEval.meetsTarget ? "tag tag-ok" : "tag tag-alert";
+    const statusTxt = selEval.meetsTarget ? "Проходит порог комитета" : "Ниже порога комитета";
+    const paybackTxt = selEval.paybackMonths === null ? "не окупается" : fmtNum(selEval.paybackMonths, " мес.");
+    kpiStrip.innerHTML = `
+      <div class="kpi-mini">
+        <div class="k-lbl">Маржинальный вклад (расчёт на допущениях)</div>
+        <div class="k-val">${fmtRub(selEval.contribution)} (${fmtNum(selEval.contributionRate * 100, "%", 1)})</div>
+        <div style="margin-top:4px;"><span class="${statusCls}">${statusTxt}</span></div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Полные прямые затраты / мес.</div>
+        <div class="k-val">${fmtRub(selEval.directCost)}</div>
+        <div class="node-meta">OPEX ${fmtRub(selEval.recurring)} + CAC/мес. ${fmtRub(selEval.amortUpfront)}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Запас до потолка затрат (headroom)</div>
+        <div class="k-val" style="color:${selEval.costHeadroom >= 0 ? 'var(--accent)' : 'var(--alert)'};">${selEval.costHeadroom >= 0 ? '+' : ''}${fmtRub(selEval.costHeadroom)}</div>
+        <div class="node-meta">Потолок прямых затрат: ${fmtRub(selEval.maxAllowableCost)}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Окупаемость CAC (операционная)</div>
+        <div class="k-val">${paybackTxt}</div>
+        <div class="node-meta">При удержании ${selEval.retention} мес.</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Границы безубыточности к цели</div>
+        <div class="k-val" style="font-size:12px;">CAC &lt;= ${fmtRub(selEval.maxUpfrontCac)}</div>
+        <div class="node-meta">Удерж. &gt;= ${fmtNum(selEval.minRetention, " мес.")} · Цена &gt;= ${fmtRub(selEval.minMonthlyPrice)}</div>
+      </div>`;
+  }
+
+  const tbody = document.getElementById("whatif-table-body");
+  if (tbody) {
+    tbody.innerHTML = ECON_MODEL.plans.map(p => {
+      const cur = WHATIF_STATE.overrides[p.id];
+      const ev = evaluatePlanExact(cur.price, cur.recurring, cur.cac, cur.retention, minM);
+      const isSel = p.id === WHATIF_STATE.selectedId;
+      const badge = ev.meetsTarget
+        ? '<span class="tag tag-ok">проходит</span>'
+        : '<span class="tag tag-alert">ниже порога</span>';
+      const priceBasis = Math.abs(cur.price - p.price) > 1e-6 ? "what-if" : p.basis_label;
+      const beLine = ev.maxUpfrontCac !== null
+        ? `CAC &lt;= ${fmtRub(ev.maxUpfrontCac)} · удерж. &gt;= ${fmtNum(ev.minRetention, " мес.")}`
+        : `рекуррентные затраты выше потолка ${fmtRub(ev.maxAllowableCost)} (CAC не спасает)`;
+      return `<tr class="${isSel ? 'whatif-selected-row' : ''}" style="cursor:pointer;" onclick="selectWhatIfPlan('${p.id}')">
+        <td><span class="mono">${p.id}</span><div class="node-meta">${p.title}</div></td>
+        <td>${fmtRub(ev.price)} <span class="node-meta">(${priceBasis})</span></td>
+        <td>${fmtRub(ev.recurring)}</td>
+        <td>${fmtRub(ev.cac)}</td>
+        <td>${ev.retention} мес.</td>
+        <td>${fmtRub(ev.directCost)}</td>
+        <td><strong>${fmtNum(ev.contributionRate * 100, "%", 1)}</strong> (${fmtRub(ev.contribution)}) ${badge}</td>
+        <td style="font-size:12px;">${beLine}</td>
+      </tr>`;
+    }).join("");
+  }
+}
+
+updateAcceptCommand();
+initWhatIf();
+</script>
+</body>
+</html>

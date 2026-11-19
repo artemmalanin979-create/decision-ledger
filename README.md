@@ -19,16 +19,15 @@
 
 <p align="center">
   <a href="https://github.com/artemmalanin979-create/decision-ledger/actions/workflows/ci.yml"><img src="https://github.com/artemmalanin979-create/decision-ledger/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-  <img src="https://img.shields.io/badge/tests-39%20passing-0d9488" alt="39 tests passing" />
+  <img src="https://img.shields.io/badge/tests-44%20passing-0d9488" alt="44 tests passing" />
   <img src="https://img.shields.io/badge/audit--repo-0%20secrets%20%26%20PII%20(git%20%2B%20.gz%20%2B%20.xlsx)-0d9488" alt="0 secrets and PII" />
-  <img src="https://img.shields.io/badge/demo%20data-2%20real%20open%20cases%20(SHA--256)-0f766e" alt="2 real open cases" />
+  <img src="https://img.shields.io/badge/demo%20data-2%20open%20cases%20%2B%20MegaFon%20brief-0f766e" alt="2 real open cases + MegaFon brief" />
 </p>
 
 <p align="center">
-  <a href="demo/antifraud-subscription/README.md"><b>Основное демо (Безопасность)</b></a> ·
-  <a href="demo/megakino-plus-2027/README.md"><b>2-й открытый кейс (МегаКино / 376-ФЗ)</b></a> ·
-  <a href="demo/antifraud-subscription/strategy-product.pdf"><b>Продуктовая стратегия (PDF)</b></a> ·
-  <a href="demo/antifraud-subscription/strategy-comms.pdf"><b>Коммуникационная стратегия (PDF)</b></a> ·
+  <a href="demo/brief-family-connect/strategy-brief.pdf"><b>Офиц. пример брифа МегаФона (PDF, 5 частей)</b></a> ·
+  <a href="demo/antifraud-subscription/README.md"><b>Открытое демо №1 (Безопасность)</b></a> ·
+  <a href="demo/megakino-plus-2027/README.md"><b>Открытое демо №2 (МегаКино / 376-ФЗ)</b></a> ·
   <a href="demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/HONESTY.md"><b>Живой прогон 18.11 (Grok CLI)</b></a> ·
   <a href="docs/architecture.md">Архитектура и MCP</a> ·
   <a href="docs/benchmark.md">Бенчмарк</a> ·
@@ -68,10 +67,11 @@
 
 ## С чего начать (маршрут проверки за 2 минуты)
 
-1. **Прочитать готовые стратегии для комитета (открытые данные МегаФона, ЦБ РФ и «Ведомостей»)** → продуктовая стратегия [strategy-product.pdf](demo/antifraud-subscription/strategy-product.pdf) ([.md](demo/antifraud-subscription/strategy-product.md)) и коммуникационная стратегия [strategy-comms.pdf](demo/antifraud-subscription/strategy-comms.pdf) ([.md](demo/antifraud-subscription/strategy-comms.md)).
-2. **Открыть интерактивный паспорт решения и граф пересмотра после новости от 29.10.2026** → [decision-passport.html](demo/antifraud-subscription/decision-passport.html) и разбор по шагам в [demo/antifraud-subscription/README.md](demo/antifraud-subscription/README.md).
-3. **Проверить чистый живой прогон в 3 отдельных сеансах терминала (без подсказок и без `demo/`)** → таблица таймингов [ниже](#живой-прогон-18112026--grok-build-cli-измерено), сырые логи, `asciinema`-касты и аудит изоляции в [HONESTY.md](demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/HONESTY.md).
-4. **Прогнать автотесты и детерминированное ядро локально за 30 секунд (`0` установок `pip`, `0` API-ключей)** → `make check` ([инструкция ниже](#быстрый-старт-за-5-минут-из-чистого-клона)).
+1. **Открыть прогон официального примера брифа номинации ПАО «МегаФон» («Связь для близких и собственных устройств»)** → единый документ из 5 частей в точном порядке брифа [strategy-brief.pdf](demo/brief-family-connect/strategy-brief.pdf) ([.md](demo/brief-family-connect/strategy-brief.md)) и навигатор [demo/brief-family-connect/README.md](demo/brief-family-connect/README.md) (`0` выдуманных чисел, 14-дневная активация со всеми созданными группами в знаменателе, мост валовой прибыли `279 -> 285,59 млн ₽` по `500 ₽/мес.` и оба решения руководителя `Q1/Q2`).
+2. **Прочитать готовые стратегии по реальным открытым данным МегаФона, ЦБ РФ и «Ведомостей»** → продуктовая стратегия [strategy-product.pdf](demo/antifraud-subscription/strategy-product.pdf) ([.md](demo/antifraud-subscription/strategy-product.md)), коммуникационная стратегия [strategy-comms.pdf](demo/antifraud-subscription/strategy-comms.pdf) ([.md](demo/antifraud-subscription/strategy-comms.md)) и второй открытый кейс по мультиподпискам и `376-ФЗ` [demo/megakino-plus-2027/README.md](demo/megakino-plus-2027/README.md).
+3. **Открыть интерактивный паспорт решения и граф пересмотра после новости от 29.10.2026** → [decision-passport.html](demo/antifraud-subscription/decision-passport.html) и разбор по шагам в [demo/antifraud-subscription/README.md](demo/antifraud-subscription/README.md).
+4. **Проверить чистый живой прогон в 3 отдельных сеансах терминала (без подсказок и без `demo/`)** → таблица таймингов [ниже](#живой-прогон-18112026--grok-build-cli-измерено), сырые логи, `asciinema`-касты и аудит изоляции в [HONESTY.md](demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/HONESTY.md).
+5. **Прогнать автотесты и детерминированное ядро локально за 30 секунд (`0` установок `pip`, `0` API-ключей)** → `make check` ([инструкция ниже](#быстрый-старт-за-5-минут-из-чистого-клона)).
 
 ---
 
@@ -86,7 +86,8 @@
 
 | Путь в репозитории | Назначение и что внутри | Тип |
 | --- | --- | --- |
-| [`demo/antifraud-subscription/README.md`](demo/antifraud-subscription/README.md) | **Витрина основного демо-кейса**: постановка, таблица 18 открытых источников с `SHA-256`, ход 3 шагов и телеметрия | `СТРАТЕГИЯ` |
+| [`demo/brief-family-connect/`](demo/brief-family-connect/README.md) · [`strategy-brief.pdf`](demo/brief-family-connect/strategy-brief.pdf) | **Прогон официального примера брифа ПАО «МегаФон»** («Связь для близких и собственных устройств»): **единый документ из 5 частей** (`MD` + `PDF`), `0` выдуманных чисел, детерминированный `01-brief-calc.json`, `decision-passport.html` и верифицированные логи (`21,7 мин`) | `СТРАТЕГИЯ` |
+| [`demo/antifraud-subscription/README.md`](demo/antifraud-subscription/README.md) | **Витрина основного открытого кейса**: постановка, таблица 18 открытых источников с `SHA-256`, ход 3 шагов и телеметрия | `СТРАТЕГИЯ` |
 | [`demo/antifraud-subscription/strategy-product.md`](demo/antifraud-subscription/strategy-product.md) · [`.pdf`](demo/antifraud-subscription/strategy-product.pdf) | **Итоговая продуктовая стратегия 2027 (Решение №2)**: резюме комитета, JTBD, дерево OST, 5 альтернатив, пороги смены выбора, Pre-mortem, пилот Q1 | `СТРАТЕГИЯ` |
 | [`demo/antifraud-subscription/strategy-comms.md`](demo/antifraud-subscription/strategy-comms.md) · [`.pdf`](demo/antifraud-subscription/strategy-comms.pdf) | **Итоговая коммуникационная стратегия 2027 (Решение №2)**: разбор живых лендингов «Было → Стало», офферы 3 когорт, CVM-триггеры, матрица обещаний и стоп-лист | `СТРАТЕГИЯ` |
 | [`demo/antifraud-subscription/decision-passport.html`](demo/antifraud-subscription/decision-passport.html) | Самодостаточный интерактивный HTML-паспорт Решения №2 (трассировка графа оснований, **ползунки чувствительности `what-if`** CVM vs платный `CAC` по формулам `economics.py`, **панель гейта `accept`**, OST, матрица обещаний) | `СТРАТЕГИЯ` |
@@ -95,11 +96,11 @@
 | [`demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/`](demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/) | **Чистый живой прогон в 3 новых чатах (`grok-4.7`)**: `turns.jsonl`, `logs/*.stream.jsonl.gz`, `casts/*.cast.gz`, выгруженные стратегии `case/strategy-*.pdf`, верифицированный `cost.jsonl` (`--from-log`) и [`HONESTY.md`](demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/HONESTY.md) | `ПРОТОКОЛ` |
 | [`examples/antifraud-subscription/`](examples/antifraud-subscription/) | Входные материалы открытого кейса: `brief.md`, рамки `manager.md` (без списка вариантов), 9 веб-снимков, таблица тарифов, data-only `economics_2027.json`, 2 скриншота лендингов, гайд интервью и 6 ИИ-персон | `ДАННЫЕ` |
 | [`AGENTS.md`](AGENTS.md) · [`CLAUDE.md`](CLAUDE.md) · [`.cursor/`](.cursor/) · [`.mcp.json`](.mcp.json) | Корневой системный контракт эпистемики и безопасности + нативные правила и конфигурации `stdio MCP` для IDE | `КОНТРАКТ` |
-| [`.agents/skills/`](.agents/skills/) · [`agents/`](agents/) · [`playbook/`](playbook/) | 6 процедурных навыков по шагам, 3 ролевых субагента (`evidence-extractor`, `synthetic-respondent`, `skeptic-reviewer`) и 8 методичек (`JTBD`, `OST`, `Pre-mortem`, `Promise Matrix`) | `КОНТРАКТ` |
-| [`ledger/`](ledger/) | Детерминированное ядро: SQLite-реестр `store.py`, граф `review.py`, ДИ Вильсона и Симпсон `stats.py`/`table.py`, `.xlsx`-ридер `xlsx.py`, YAML-компилятор `draft_template.py`, экономика `economics.py`, лог-телеметрия `cost.py`, паспорт с `what-if` и `accept` `dashboard.py`, экспорт MD/PDF `strategies.py`, чекер `claims.py`, FTS5 БЗ `kb.py`, `mcp_server.py` (`12` тулов), `repo_audit.py` | `ЯДРО` |
+| [`.agents/skills/`](.agents/skills/) · [`agents/`](agents/) · [`playbook/`](playbook/) | 7 процедурных навыков по шагам (вкл. `strategic-brief-5part`), 3 ролевых субагента (`evidence-extractor`, `synthetic-respondent`, `skeptic-reviewer`) и 9 методичек (`brief-5part`, `JTBD`, `OST`, `Pre-mortem`, `Promise Matrix`) | `КОНТРАКТ` |
+| [`ledger/`](ledger/) | Детерминированное ядро: SQLite-реестр `store.py`, граф `review.py`, ДИ Вильсона и Симпсон `stats.py`/`table.py`, чтение PDF `pdf_text.py` и `.xlsx` `xlsx.py`, YAML-компилятор `draft_template.py`, экономика `economics.py` и 5-строчный бриф `brief_calc.py`, лог-телеметрия `cost.py`, паспорт `dashboard.py`, экспорт MD/PDF `strategies.py`, чекер `claims.py`, FTS5 БЗ `kb.py`, `mcp_server.py` (`14` тулов), `repo_audit.py` | `ЯДРО` |
 | [`docs/architecture.md`](docs/architecture.md) · [`docs/benchmark.md`](docs/benchmark.md) · [`docs/portability.md`](docs/portability.md) · [`docs/live-run.md`](docs/live-run.md) | Внутреннее устройство, методика полной стоимости и 6-осевого бенчмарка, матрица переносимости между IDE и протокол живого прогона | `КОНТРАКТ` |
 | [`demo/retail-continuity/`](demo/retail-continuity/README.md) · [`examples/call-filter/`](examples/call-filter/scenario-notes.md) | Два **вымышленных учебных кейса на синтетических данных** для проверки доменной переносимости ядра (включая `export-strategies`) без правки кода | `ДАННЫЕ` |
-| [`tests/`](tests/) · [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | 39 модульных и сквозных автотестов (`unittest`, `0` внешних пакетов) + матричный CI на Python `3.11 / 3.12 / 3.13` со сканом всей истории git, `.gz` и `.xlsx` | `ЯДРО` |
+| [`tests/`](tests/) · [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | 44 модульных и сквозных автотеста (`unittest`, `0` внешних пакетов) + матричный CI на Python `3.11 / 3.12 / 3.13` со сканом всей истории git, `.gz` и `.xlsx` | `ЯДРО` |
 
 ---
 
@@ -122,7 +123,7 @@
 </p>
 
 - **Нулевые внешние зависимости (`Python 3.11+ stdlib`, `SQLite 3`)**: чистый клон работает на `Linux`, `macOS` и `Windows` без `pip install`, Docker-контейнеров, внешних векторных БД и зашитых API-ключей.
-- **Двойная шина инструментов (`CLI` + `stdio MCP`)**: терминальные агенты (`Codex CLI`, `Antigravity`, `Grok Build CLI`, `OpenCode`) вызывают 20 команд `python3 -m ledger <cmd>` (включая `xlsx`, `draft --template`, `propose draft.yaml`, `cost --from-log`, `export-strategies` и `dashboard --serve`), а IDE с поддержкой Model Context Protocol (`Cursor`, `Claude Code`, `Windsurf`) поднимают локальный JSON-RPC 2.0 сервер `python3 -m ledger mcp` (`12` инструментов чтения, `.xlsx`, расчёта, YAML-шаблона, экспорта стратегий, аудита и поиска по БЗ с поддержкой `NDJSON` и `Content-Length`).
+- **Двойная шина инструментов (`CLI` + `stdio MCP`)**: терминальные агенты (`Codex CLI`, `Antigravity`, `Grok Build CLI`, `OpenCode`) вызывают 22 команды `python3 -m ledger <cmd>` (включая `pdf`, `xlsx`, `brief-calc`, `draft --template [--brief]`, `propose draft.yaml`, `cost --from-log`, `export-strategies [--only-brief]` и `dashboard --serve`), а IDE с поддержкой Model Context Protocol (`Cursor`, `Claude Code`, `Windsurf`) поднимают локальный JSON-RPC 2.0 сервер `python3 -m ledger mcp` (`14` инструментов чтения, PDF, `.xlsx`, расчёта юнит-экономики и 5-строчного брифа, YAML-шаблона, экспорта стратегий, аудита и поиска по БЗ с поддержкой `NDJSON` и `Content-Length`).
 - **Эпистемическая защита памяти (`SQLite FTS5`)**: межсессионная база `.kb/knowledge.sqlite3` индексирует источники и решения с поддержкой русских словоформ; прошлые выводы агента (`prior_conclusion`) и синтетические персоны (`synthetic_probe`) помечаются `can_cite_as_fact = false`, а при пересмотре старая ревизия переводится в `superseded`.
 - **Карантин `prompt injection` и аудит истории git**: текст внешних веб-страниц сканируется `scan_untrusted_text` и никогда не повышается до системных правил; команда `python3 -m ledger audit-repo . --history` и `hooks/pre-commit` проверяют рабочее дерево, сжатые `.gz` логи и все блобы истории коммитов на секреты (`sk-*`, `sk-ant-*`, `xai-*`, `ghp_*`, `AKIA*`) и мобильные номера ПДн.
 
@@ -132,7 +133,7 @@
 
 ## Демонстрационный проект ПАО «МегаФон» (100% открытые данные)
 
-Поскольку отдельный демонстрационный бриф партнёра на странице номинации не публиковался, сквозной кейс выполнен на реальной продуктовой развилке экосистемы безопасности ПАО «МегаФон» (**«Моя безопасность +» `149 ₽ / 30 дн.` и «Семейная безопасность +» `249 ₽ / 30 дн.` поверх ассистента «Ева» — стратегия роста и коммуникации на 2027 год**) строго по открытым источникам Банка России, «Ведомостей», отчётности МСФО и публичных витрин операторов.
+В репозитории представлены как **сквозной прогон официального примера брифа номинации ПАО «МегаФон»** ([`demo/brief-family-connect/`](demo/brief-family-connect/README.md) — «Связь для близких и собственных устройств», единый 5-частный документ [`strategy-brief.pdf`](demo/brief-family-connect/strategy-brief.pdf) на учебных числах брифа без единой выдуманной цифры, `1 302 с = 21,7 мин` по логам), так и **два полноформатных кейса на 100% реальных открытых данных ПАО «МегаФон»**: (1) подписки безопасности **«Моя безопасность +» `149 ₽ / 30 дн.` и «Семейная безопасность +» `249 ₽ / 30 дн.` поверх ассистента «Ева»** (по источникам Банка России, «Ведомостей», отчётности МСФО и публичных витрин операторов) и (2) контентные мультиподписки **«МегаКино» `399 ₽` / «МегаФон Плюс» `345–460 ₽`** с учётом `376-ФЗ` ([`demo/megakino-plus-2027/`](demo/megakino-plus-2027/README.md)).
 
 ### 1. Диагностика реальных продуктовых витрин МегаФона (Шаги 1–2)
 
@@ -232,12 +233,16 @@
 ### Шаг 1. Проверка чистого клона из терминала (30 секунд, без модели)
 
 ```bash
-# Запуск 39 модульных и сквозных автотестов + скан секретов и ПДн по всей истории git, .gz и .xlsx
+# Запуск 44 модульных и сквозных автотестов + скан секретов и ПДн по всей истории git, .gz и .xlsx
 make check
 
 # Или напрямую через стандартный интерпретатор Python 3.11+:
 python3 -W error::ResourceWarning -m unittest discover -s tests -v
 python3 -m ledger audit-repo . --history
+
+# Чтение 11-страничного PDF-брифа и детерминированный расчёт 5 показателей (основной и неблагоприятный сценарии)
+python3 -m ledger pdf examples/brief-family-connect/initial/brief_family_connect.pdf --max-pages 2
+python3 -m ledger brief-calc demo/brief-family-connect/01-brief-model.json --format md
 
 # Чтение многолистовой рабочей книги Excel (.xlsx) на чистом stdlib (0 pip-пакетов)
 python3 -m ledger xlsx examples/megakino-plus-2027/initial/tables/subscription_benchmarks_2026.xlsx --format md
@@ -296,46 +301,49 @@ python3 -m ledger rates examples/retail-backup/later/recount.csv \
 decision-ledger/
 ├── AGENTS.md, CLAUDE.md             # Постоянные правила, эпистемика, карантин prompt injection
 ├── .cursor/, .claude/, .mcp.json    # Нативные правила IDE, хуки и конфигурации stdio MCP-сервера
-├── .agents/skills/                  # 6 модульных навыков по этапам работы продакта:
+├── .agents/skills/                  # 7 модульных навыков по этапам работы продакта:
 │   ├── problem-framing/             #   отсев лишних вопросов на входе (не более 3 меняющих выбор)
 │   ├── cohort-and-economics/        #   95% ДИ Вильсона, парадокс Симпсона, маржа и пороги переключения
+│   ├── strategic-brief-5part/       #   единая 5-частная стратегия по PDF-брифу (строгие знаменатели, Q1–Q4, CAPEX)
 │   ├── synthetic-interviews-ux/     #   эпизодические гайды интервью, 6 ИИ-персон и разбор живых экранов
 │   ├── product-frameworks/          #   JTBD, дерево OST (Торрес), Pre-mortem (Клейн), матрица обещаний
 │   ├── strategy-and-claims/         #   сборка >=3–5 альтернатив и аудит рекламных формулировок
 │   └── decision-followup/           #   сопровождение поручений и транзитивный пересмотр в новых чатах
 ├── agents/                          # 3 ролевых субагента (evidence-extractor, synthetic-respondent, skeptic)
-├── playbook/                        # Методички: contract, research, decision, follow-up, jtbd, ost, premortem, promise-matrix
+├── playbook/                        # Методички: brief-5part, contract, research, decision, follow-up, jtbd, ost, premortem, promise-matrix
 ├── ledger/                          # Детерминированное ядро на Python 3.11+ stdlib (0 pip-пакетов):
 │   ├── store.py, review.py          #   транзакционный SQLite со снимками SHA-256 и графом impact (--updates)
 │   ├── stats.py, table.py, xlsx.py  #   95% ДИ Вильсона, guardrails, Симпсон и чтение/запись .xlsx на stdlib
-│   ├── draft_template.py            #   генератор и компилятор YAML-шаблона черновика (reviewed: auto)
+│   ├── pdf_text.py, brief_calc.py   #   чтение вёрстки PDF и 5-строчный калькулятор брифа (14д активация, 500 ₽/мес.)
+│   ├── draft_template.py            #   генератор и компилятор YAML-шаблона черновика (reviewed: auto, --brief)
 │   ├── economics.py, cost.py        #   юнит-экономика с порогами + импорт логов CLI (--from-log) в cost.jsonl
-│   ├── strategies.py, dashboard.py  #   экспорт MD/PDF из case.sqlite3 + HTML-паспорт с ползунками what-if и гейтом accept
+│   ├── strategies.py, dashboard.py  #   экспорт MD/PDF (в т.ч. --only-brief) + HTML-паспорт с what-if и accept
 │   ├── claims.py, web_fetch.py      #   аудит обещаний, карантин инъекций и HTTPS-снимки открытых страниц
 │   ├── kb.py, router.py             #   SQLite FTS5 база знаний (can_cite_as_fact) и маршрутизатор сбоев
-│   ├── mcp_server.py                #   JSON-RPC 2.0 MCP-сервер (12 тулов, включая ledger_xlsx и ledger_draft_template)
+│   ├── mcp_server.py                #   JSON-RPC 2.0 MCP-сервер (14 тулов, включая ledger_pdf и ledger_brief_calc)
 │   └── repo_audit.py, benchmark_eval.py # скан секретов/ПДн по истории git, .gz и .xlsx + рубрика бенчмарка
 ├── demo/
+│   ├── brief-family-connect/        # Прогон офиц. примера брифа МегаФона (единый 5-частный strategy-brief.pdf)
 │   ├── antifraud-subscription/      # Основной демо-проект на открытых данных (стратегии MD/PDF, паспорт, runs/)
 │   ├── megakino-plus-2027/          # Второй реальный открытый кейс вне антифрода (МегаКино, 376-ФЗ, .xlsx, draft.yaml)
 │   └── retail-continuity/           # Вымышленный учебный кейс для проверки переносимости (B2B резерв касс)
-├── examples/                        # Входные данные: antifraud и megakino-plus-2027 (открытые); retail-backup и call-filter (учебные)
+├── examples/                        # Входные данные: brief-family-connect (бриф МегаФона), antifraud и megakino (открытые); retail и call-filter (учебные)
 ├── scripts/render_antifraud_pdfs.py # Воспроизводимая сборка PDF-стратегий и скриншотов паспорта (headless Chrome)
-├── docs/                            # Спецификации: architecture.md, benchmark.md, portability.md, live-run.md, assets/
-└── tests/                           # 39 модульных и сквозных автотестов
+├── docs/                            # Спецификации: architecture.md, benchmark.md, portability.md, live-run.md, final-score.md, assets/
+└── tests/                           # 44 модульных и сквозных автотеста
 ```
 
 ---
 
 ## Что доказано и честные границы системы
 
-**Проверено программно и задокументировано (39 автотестов + сырые логи):**
+**Проверено программно и задокументировано (44 автотеста + сырые логи):**
 - **Целостность доказательств и гейта человека**: побайтные снимки `SHA-256` в таблице `evidence`, уникальность подтверждения через `draft_sequence`, панель копирования/локального вызова `accept` в веб-паспорте и блокировка `accept` хуком `pre-accept` при обнаружении безусловных обещаний («100% защита», «от любых мошенников»).
-- **Точность количественных расчётов вне LLM**: 95% доверительные интервалы Вильсона на малых выборках, автоматическая детекция парадокса Симпсона, чтение многолистовых книг `.xlsx` на `stdlib`, интерактивный `what-if` пересчёт чувствительности (`CVM CAC` vs платный внешний трафик, `Retention`) прямо в `decision-passport.html` по точным формулам `economics.py`.
-- **Реальная переносимость между средами, сеансами и доменами**: один и тот же формат кейса прошёл прогоны в **Grok Build CLI (`grok-4.7`)**, **Antigravity** и **Codex CLI (`gpt-6.1-sol`)**, проверку чтения через `stdio MCP`, а также отработал на **двух независимых реальных открытых кейсах ПАО «МегаФон»** (линейка безопасности и контентные подписки «МегаКино» / «МегаФон Плюс» по `376-ФЗ`, где первый проход с `ledger draft --template` занял по логам `20,7 мин = 1 239 с`) и двух учебных стендах.
+- **Точность количественных расчётов вне LLM**: 95% доверительные интервалы Вильсона на малых выборках, автоматическая детекция парадокса Симпсона, чтение PDF и многолистовых книг `.xlsx` на `stdlib`, детерминированный расчёт 5-строчного продуктового брифа (`brief_calc.py`), интерактивный `what-if` пересчёт чувствительности (`CVM CAC` vs платный внешний трафик, `Retention`) прямо в `decision-passport.html` по точным формулам `economics.py`.
+- **Реальная переносимость между средами, сеансами и доменами**: один и тот же формат кейса прошёл прогоны в **Grok Build CLI (`grok-4.7`)**, **Antigravity** и **Codex CLI (`gpt-6.1-sol`)**, проверку чтения через `stdio MCP` (`14` тулов), отработал на **официальном примере брифа номинации ПАО «МегаФон»** ([`demo/brief-family-connect/strategy-brief.pdf`](demo/brief-family-connect/strategy-brief.pdf), `21,7 мин` = `1 302 с` по сырым логам), на **двух независимых реальных открытых кейсах ПАО «МегаФон»** (линейка безопасности и контентные подписки «МегаКино» / «МегаФон Плюс» по `376-ФЗ`, 1-й проход `20,7 мин = 1 239 с`) и двух учебных стендах.
 
 **Честные ограничения (чего система намеренно не обещает):**
 - **Смысловой выбор остаётся за руководителем продукта**: ядро гарантирует связность ссылок, чистоту арифметики и соблюдение стоп-листа обещаний, но полноту продуктовых гипотез и финальное решение оценивает человек на гейте `accept`.
 - **Модельные респонденты не измеряют спрос**: ответы 6 синтетических персон (`synthetic: true`, `can_cite_as_fact: false`) служат только для поиска барьеров восприятия и стресс-теста формулировок; фактическую конверсию и удержание измеряет полевой пилот со стоп-правилами.
-- **Реактивное сопровождение и отсутствие Cursor GUI на стенде**: проверка просроченных поручений `actions` и изменившихся источников выполняется при обращении к кейсу (`status` / `route` / `fetch`). На рабочей Linux-машине графическое приложение Cursor IDE не установлено (только CLI-шим), поэтому протокол `stdio MCP` (`12` тулов) верифицирован из терминала и автотестами без видеозаписи окна GUI Cursor; `human_minutes` секундомером не фиксировались (`null`).
+- **Реактивное сопровождение и отсутствие Cursor GUI на стенде**: проверка просроченных поручений `actions` и изменившихся источников выполняется при обращении к кейсу (`status` / `route` / `fetch`). На рабочей Linux-машине графическое приложение Cursor IDE не установлено (только CLI-шим), поэтому протокол `stdio MCP` (`14` тулов) верифицирован из терминала и автотестами без видеозаписи окна GUI Cursor; `human_minutes` секундомером не фиксировались (`null`).
 - **Когда агент избыточен**: для разовых пятиминутных вопросов без таблиц, внешних источников и возврата к решению обычный чат быстрее; `Decision Ledger` создан для защищаемых решений комитета, которые живут и пересматриваются во времени.

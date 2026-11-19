@@ -1,0 +1,33 @@
+{
+  "passed": true,
+  "high_severity_warnings": 0,
+  "total_warnings": 0,
+  "checks": [
+    {
+      "check": "no_unconditional_overclaims",
+      "passed": true
+    },
+    {
+      "check": "communication_boundaries_stated",
+      "passed": true
+    },
+    {
+      "check": "synthetic_not_used_as_demand_proof",
+      "passed": true
+    },
+    {
+      "check": "experiment_has_stop_rule",
+      "passed": true
+    },
+    {
+      "check": "product_communication_scope_aligned",
+      "passed": true
+    },
+    {
+      "check": "prompt_injections_quarantined",
+      "passed": true,
+      "flagged_sources": []
+    }
+  ],
+  "warnings": []
+}

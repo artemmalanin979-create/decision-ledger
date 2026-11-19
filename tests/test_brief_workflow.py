@@ -299,6 +299,33 @@ class BriefWorkflowTests(unittest.TestCase):
         payload = json.loads(lines[1]["result"]["content"][0]["text"])
         self.assertEqual(payload["scenarios"]["main"]["activation_q4"]["activation_14d_pct"], 30.0)
 
+    def test_real_megafon_sample_brief_demo_artifacts_and_logs(self):
+        demo_dir = ROOT / "demo/brief-family-connect"
+        self.assertTrue((demo_dir / "strategy-brief.md").is_file())
+        self.assertTrue((demo_dir / "strategy-brief.pdf").is_file())
+        md = (demo_dir / "strategy-brief.md").read_text(encoding="utf-8")
+        for heading in (
+            "### Вводное резюме и развилки решений руководителя",
+            "## 1. Клиент и его проблема",
+            "## 2. Предложение и путь к клиенту",
+            "## 3. Польза для клиента и прибыль оператора",
+            "## 4. Стратегический выбор и план по кварталам",
+            "## 5. Ресурсы, риски и решение руководителя",
+        ):
+            self.assertIn(heading, md)
+        calc = evaluate_brief_model(json.loads((demo_dir / "01-brief-model.json").read_text(encoding="utf-8")))
+        self.assertTrue(calc["scenarios"]["main"]["gross_profit"]["meets_target"])
+        self.assertFalse(calc["scenarios"]["adverse"]["gross_profit"]["meets_target"])
+        self.assertEqual(calc["scenarios"]["main"]["activation_q4"]["activation_14d_pct"], 62.0)
+
+        with tempfile.TemporaryDirectory() as td:
+            c = Path(td) / "verify-brief-logs"
+            self.assertEqual(run_cli("init", c, "Проверка сырых логов brief-family-connect").returncode, 0)
+            imp = json.loads(run_cli("cost", c, "--from-log", demo_dir / "logs").stdout)
+            self.assertEqual(imp["imported_steps"], 2)
+            self.assertTrue(imp["cost"]["telemetry_verified"])
+            self.assertEqual(imp["cost"]["wall_seconds"], 1302.0)
+
 
 if __name__ == "__main__":
     unittest.main()
