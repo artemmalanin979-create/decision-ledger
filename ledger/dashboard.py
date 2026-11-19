@@ -311,19 +311,30 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
             if cost_summary.get("human_minutes") is not None
             else "чел: не измерялось"
         )
-        if cost_summary.get("api_cost_rub") is None:
-            money_part = "₽ не рассчитываются (квота подписки)"
-        else:
+        if cost_summary.get("api_cost_rub") is not None:
             money_part = f'{est_prefix}{cost_summary["api_cost_rub"]:.2f} ₽ (${cost_summary["api_cost_usd"]:.3f})'
+        elif cost_summary.get("api_cost_usd") is not None:
+            money_part = f'Оценка CLI из лога: ${cost_summary["api_cost_usd"]:.4f} (квота подписки, ₽ не списывались)'
+        else:
+            money_part = "₽ не рассчитываются (квота подписки)"
         tokens_part = (
-            f'{cost_summary["input_tokens"]:,} вх. / {cost_summary["output_tokens"]:,} вых. токенов'.replace(",", " ")
+            f'{cost_summary["input_tokens"]:,} вх. ({cost_summary.get("uncached_input_tokens", 0):,} нов. + {cost_summary["cached_tokens"]:,} кэш) / {cost_summary["output_tokens"]:,} вых. токенов'.replace(",", " ")
             if cost_summary.get("input_tokens") else ""
+        )
+        prov_badge = (
+            '<span class="tag tag-ok" style="margin-right:6px;">Логи CLI (verified)</span>'
+            if cost_summary.get("telemetry_verified")
+            else '<span class="tag tag-alert" style="margin-right:6px;">Самоотчёт модели (не верифицировано)</span>'
         )
         cost_card_val = " · ".join(
             part for part in (tokens_part, f'{cost_summary["wall_seconds"]} с', money_part, human_part) if part
         )
         method_note = "; ".join(cost_summary.get("methods") or [])
-        cost_method_html = f'<div class="node-meta" style="margin-top:4px;">{escape(_clip_words(method_note))}</div>' if method_note else ""
+        cost_method_html = (
+            f'<div class="node-meta" style="margin-top:5px;">{prov_badge}{escape(_clip_words(method_note))}</div>'
+            if method_note
+            else f'<div class="node-meta" style="margin-top:5px;">{prov_badge}</div>'
+        )
     else:
         cost_card_val = f'{_plural_ru(telemetry["events"], "шаг", "шага", "шагов")} · {telemetry["total_seconds"]} с · {_plural_ru(telemetry["tool_calls"], "вызов", "вызова", "вызовов")} CLI'
         cost_method_html = ""

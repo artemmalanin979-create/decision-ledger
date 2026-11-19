@@ -8,13 +8,14 @@ from pathlib import Path
 import sys
 
 from .claims import audit_claims
-from .cost import append_cost_entry, summarize_case_cost
+from .cost import append_cost_entry, import_cost_from_logs, summarize_case_cost
 from .dashboard import write_dashboard
 from .economics import evaluate_economics
 from .kb import ingest_case_into_kb, search_kb
 from .review import render
 from .router import route_next_step
 from .store import dumps, load
+from .strategies import export_strategies
 from .table import summarize_rates
 
 SERVER_INFO = {"name": "decision-ledger", "version": "2.0.0"}
@@ -119,11 +120,14 @@ TOOLS = [
     },
     {
         "name": "ledger_cost",
-        "description": "Inspect or append a step to .cases/<case>/cost.jsonl with cited model pricing, retries, and human minutes.",
+        "description": "Import verified CLI runtime logs (--from-log), inspect, or append a step to .cases/<case>/cost.jsonl.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "case": {"type": "string"},
+                "from_log": {"type": "array", "items": {"type": "string"}},
+                "turns": {"type": "string"},
+                "append": {"type": "boolean", "default": False},
                 "step": {"type": "string"},
                 "session": {"type": "string", "default": "session-1"},
                 "model": {"type": "string", "default": "zero_llm"},
@@ -136,6 +140,22 @@ TOOLS = [
                 "estimated": {"type": "boolean", "default": False},
                 "method": {"type": "string", "default": ""},
                 "note": {"type": "string", "default": ""},
+            },
+            "required": ["case"],
+        },
+    },
+    {
+        "name": "ledger_export_strategies",
+        "description": "Export Product and Communication strategies (Markdown + PDF) directly from case.sqlite3 for any case.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "case": {"type": "string"},
+                "out_dir": {"type": "string"},
+                "decision": {"type": "integer"},
+                "draft": {"type": "boolean", "default": False},
+                "prefix": {"type": "string", "default": "strategy"},
+                "include_pdf": {"type": "boolean", "default": True},
             },
             "required": ["case"],
         },
@@ -168,6 +188,13 @@ def _dispatch_tool(name: str, arguments: dict, *, source_health_fn, decision_sta
 
     case = Path(arguments["case"]).resolve()
     if name == "ledger_cost":
+        if arguments.get("from_log"):
+            return import_cost_from_logs(
+                case,
+                [Path(p) for p in arguments["from_log"]],
+                turns_path=(Path(arguments["turns"]) if arguments.get("turns") else None),
+                append=bool(arguments.get("append", False)),
+            )
         if arguments.get("step"):
             return append_cost_entry(
                 case,
@@ -187,7 +214,7 @@ def _dispatch_tool(name: str, arguments: dict, *, source_health_fn, decision_sta
         with load(case, write=False) as (state, _):
             return summarize_case_cost(case, state.get("telemetry", []))
 
-    with load(case, write=False) as (state, _):
+    with load(case, write=False) as (state, db):
         sources = source_health_fn(case, state["sources"])
         if name == "ledger_status":
             return decision_status_fn(state, sources, date.today().isoformat(), case)
@@ -208,21 +235,34 @@ def _dispatch_tool(name: str, arguments: dict, *, source_health_fn, decision_sta
         if name == "ledger_kb_ingest":
             kb_dir = Path(arguments.get("kb_dir", ".kb")).resolve()
             return ingest_case_into_kb(kb_dir, case, state)
+        if name == "ledger_export_strategies":
+            return export_strategies(
+                case,
+                state,
+                sources,
+                db,
+                out_dir=(Path(arguments["out_dir"]) if arguments.get("out_dir") else None),
+                decision_rev=arguments.get("decision"),
+                use_draft=bool(arguments.get("draft", False)),
+                prefix=arguments.get("prefix", "strategy"),
+                include_pdf=bool(arguments.get("include_pdf", True)),
+            )
         if name == "ledger_view":
             if arguments.get("dashboard"):
                 out = write_dashboard(case, state, sources)
                 return {"dashboard": str(out)}
+            cs = summarize_case_cost(case, state.get("telemetry", []))
             decisions = state["decisions"]
             draft = state["draft"]
             if arguments.get("draft") or (arguments.get("decision") is None and not decisions):
                 if not draft:
                     raise ValueError("No draft")
-                return render(draft, state["sources"])
+                return render(draft, state["sources"], cost_summary=cs)
             rev = arguments.get("decision") or len(decisions)
             if not 1 <= rev <= len(decisions):
                 raise ValueError("Decision revision does not exist")
             entry = decisions[rev - 1]
-            return render(entry["proposal"], state["sources"], entry)
+            return render(entry["proposal"], state["sources"], entry, cost_summary=cs)
 
     raise ValueError(f"Unknown tool: {name}")
 

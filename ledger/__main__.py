@@ -13,7 +13,7 @@ import sys
 from urllib.parse import urlsplit
 
 from .claims import audit_claims, scan_untrusted_text
-from .cost import append_cost_entry, summarize_case_cost
+from .cost import append_cost_entry, import_cost_from_logs, summarize_case_cost
 from .dashboard import write_dashboard
 from .economics import evaluate_economics_file, render_assumptions_markdown
 from .kb import ingest_case_into_kb, link_entries, retract_entry, search_kb, upsert_entry
@@ -22,6 +22,7 @@ from .repo_audit import audit_repository
 from .review import impact, render, validate
 from .router import record_telemetry, route_next_step, summarize_telemetry
 from .store import case_file, digest, dumps, init, load, now
+from .strategies import export_strategies
 from .table import summarize_rates
 from .web_fetch import fetch_open_webpage
 
@@ -239,7 +240,11 @@ def parse_args():
     telemetry.add_argument("--human", default="")
     telemetry.add_argument("--note", default="")
 
-    cost_cmd = command("cost", "Append to or summarize .cases/<case>/cost.jsonl with cited model pricing")
+    cost_cmd = command("cost", "Import verified CLI runtime logs (--from-log), append a step, or summarize cost.jsonl")
+    cost_cmd.add_argument("--from-log", nargs="+", type=Path, help="Raw CLI runtime log file(s) or run directory to import into cost.jsonl")
+    cost_cmd.add_argument("--turns", type=Path, help="Optional turns.jsonl index with wall-clock timings and exit codes")
+    cost_cmd.add_argument("--append", action="store_true", help="Append imported log steps instead of rebuilding cost.jsonl")
+    cost_cmd.add_argument("--include-baseline", action="store_true", help="Include baseline_* entries when importing measured-telemetry.json")
     cost_cmd.add_argument("--step")
     cost_cmd.add_argument("--session", default="session-1")
     cost_cmd.add_argument("--model", default="zero_llm")
@@ -259,6 +264,17 @@ def parse_args():
 
     dash = command("dashboard", "Generate a self-contained interactive HTML decision dashboard")
     dash.add_argument("-o", "--output", type=Path)
+
+    exp_strat = command(
+        "export-strategies",
+        "Export Product and Communication strategies (Markdown + PDF) directly from case.sqlite3",
+    )
+    exp_strat.add_argument("-o", "--out-dir", type=Path, help="Output directory (defaults to <case>/strategies)")
+    exp_choice = exp_strat.add_mutually_exclusive_group()
+    exp_choice.add_argument("--decision", type=int, help="Decision revision number (defaults to latest approved)")
+    exp_choice.add_argument("--draft", action="store_true", help="Export staged draft instead of approved decision")
+    exp_strat.add_argument("--prefix", default="strategy", help="Filename prefix (default: strategy -> strategy-product.md/.pdf)")
+    exp_strat.add_argument("--no-pdf", action="store_true", help="Write Markdown files only without rendering PDFs")
 
     rates = sub.add_parser("rates", help="Compute auditable weighted rates and Wilson CIs from CSV")
     rates.add_argument("file", type=Path)
@@ -365,6 +381,17 @@ def run_case(args):
     if cmd == "init":
         init(case, args.request)
         return {"case": str(case), "stage": "intake"}
+
+    if cmd == "cost" and getattr(args, "from_log", None):
+        return import_cost_from_logs(
+            case,
+            list(args.from_log),
+            turns_path=args.turns,
+            append=args.append,
+            include_baseline=args.include_baseline,
+        )
+    if cmd == "cost" and not args.step and not (case / "case.sqlite3").is_file() and (case / "cost.jsonl").is_file():
+        return summarize_case_cost(case)
 
     write_cmds = {"source", "fetch", "retire", "propose", "accept", "checkpoint", "done"}
     if cmd in {"telemetry", "cost"} and args.step:
@@ -487,6 +514,18 @@ def run_case(args):
         if cmd == "dashboard":
             out = write_dashboard(case, state, sources, args.output)
             return {"dashboard": str(out)}
+        if cmd == "export-strategies":
+            return export_strategies(
+                case,
+                state,
+                sources,
+                db,
+                out_dir=args.out_dir,
+                decision_rev=args.decision,
+                use_draft=args.draft,
+                prefix=args.prefix,
+                include_pdf=not args.no_pdf,
+            )
         if cmd == "propose":
             path = case_file(case, args.file)
             _, content = digest(path)

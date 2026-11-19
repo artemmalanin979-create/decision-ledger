@@ -221,6 +221,16 @@ def impact(proposal, sources):
 def render_cost_section(cost_summary: dict) -> list[str]:
     """Markdown lines for the cost/human-time section (money is null for subscription quotas)."""
     est_tag = "оценка по публичному тарифу (`estimated: true`)" if cost_summary.get("estimated") else "прямой замер"
+    if cost_summary.get("telemetry_verified"):
+        prov_str = "верифицировано из логов CLI (`verified: true`)"
+    elif cost_summary.get("unverified_self_reported_steps", 0) > 0:
+        prov_str = (
+            f"НЕ ВЕРИФИЦИРОВАНО: самоотчёт модели (`{cost_summary['unverified_self_reported_steps']}` шаг.) "
+            "— пересоберите через `ledger cost --from-log`"
+        )
+    else:
+        prov_str = "журнал пуст"
+
     if cost_summary.get("human_minutes") is None:
         human_str = "`не измерялось`"
     elif cost_summary.get("total_decision_cost_rub") is None:
@@ -230,17 +240,39 @@ def render_cost_section(cost_summary: dict) -> list[str]:
             f"`{cost_summary['human_minutes']} мин` (`{cost_summary['human_cost_rub']:.2f} ₽`) · "
             f"полная стоимость решения: **`{cost_summary['total_decision_cost_rub']:.2f} ₽`**"
         )
+
+    if cost_summary.get("api_cost_rub") is not None:
+        money_line = (
+            f"- Эквивалент API ({est_tag}): `${cost_summary['api_cost_usd']:.4f}` "
+            f"(`{cost_summary['api_cost_rub']:.2f} ₽`) · участие человека: {human_str}."
+        )
+    elif cost_summary.get("api_cost_usd") is not None:
+        money_line = (
+            f"- Оценка CLI из лога: `${cost_summary['api_cost_usd']:.4f}` "
+            f"(квота подписки, списания в ₽ не было) · участие человека: {human_str}."
+        )
+    else:
+        money_line = (
+            f"- Стоимость в ₽: `не рассчитывается` (квота подписки IDE, модель/цена в журнале хоста не указана) · "
+            f"участие человека: {human_str}."
+        )
+
     methods_str = "; ".join(cost_summary.get("methods") or [])
+    uncached = cost_summary.get("uncached_input_tokens", max(cost_summary["input_tokens"] - cost_summary["cached_tokens"], 0))
     out = [
         "## Прозрачность затрат и участие человека",
         "",
-        f"- Шагов в журнале `{cost_summary['log_file']}`: `{cost_summary['steps']}` · время прогонов: `{cost_summary['wall_seconds']} с` · вызовы инструментов: `{cost_summary.get('tool_calls', 0)}` · повторов: `{cost_summary['retries']}`.",
-        f"- Токены: полный вход `{cost_summary['input_tokens']}` (из кэша `{cost_summary['cached_tokens']}`, hit `{round(cost_summary['cache_hit_ratio']*100, 1)}%`), выход `{cost_summary['output_tokens']}`.",
         (
-            f"- Стоимость в ₽: `не рассчитывается` (квота подписки IDE, модель в журнале хоста не указана) · участие человека: {human_str}."
-            if cost_summary.get("api_cost_rub") is None
-            else f"- Эквивалент API ({est_tag}): `${cost_summary['api_cost_usd']:.4f}` (`{cost_summary['api_cost_rub']:.2f} ₽`) · участие человека: {human_str}."
+            f"- Шагов в журнале `{cost_summary['log_file']}`: `{cost_summary['steps']}` ({prov_str}) · "
+            f"время прогонов: `{cost_summary['wall_seconds']} с` · "
+            f"вызовы инструментов: `{cost_summary.get('tool_calls', 0)}` · повторов: `{cost_summary['retries']}`."
         ),
+        (
+            f"- Токены: полный вход `{cost_summary['input_tokens']}` "
+            f"(новый вход `{uncached}` + из кэша `{cost_summary['cached_tokens']}`, hit `{round(cost_summary['cache_hit_ratio']*100, 1)}%`), "
+            f"выход `{cost_summary['output_tokens']}`."
+        ),
+        money_line,
     ]
     if methods_str:
         out.append(f"- Методика учёта: {methods_str}")
