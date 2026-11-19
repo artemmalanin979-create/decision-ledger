@@ -45,7 +45,7 @@
       <text x="532" y="297" text-anchor="middle">SHA-256 + FTS5</text>
 
       <rect x="614" y="276" width="136" height="34" rx="6" fill="#111C2E" stroke="#26354D" stroke-width="1"/>
-      <text x="682" y="297" text-anchor="middle">32 автотеста OK</text>
+      <text x="682" y="297" text-anchor="middle">39 автотестов OK</text>
     </g>
   </g>
 
