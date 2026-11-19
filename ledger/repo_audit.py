@@ -8,6 +8,8 @@ from pathlib import Path
 import re
 import subprocess
 
+from .xlsx import extract_xlsx_text
+
 SECRET_PATTERNS = [
     ("openai_key", re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b")),
     ("anthropic_key", re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}\b")),
@@ -25,7 +27,12 @@ BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".pdf", ".zip"}
 MAX_GZIP_TEXT_BYTES = 32 * 1024 * 1024
 
 
-def _decode_blob_or_gzip(raw: bytes, *, is_gzip: bool) -> str | None:
+def _decode_blob_or_gzip(raw: bytes, *, is_gzip: bool, is_xlsx: bool = False) -> str | None:
+    if is_xlsx:
+        try:
+            return extract_xlsx_text(raw)
+        except ValueError:
+            return None
     if is_gzip:
         try:
             with gzip.GzipFile(fileobj=__import__("io").BytesIO(raw)) as gz:
@@ -94,7 +101,11 @@ def _scan_git_history(root: Path, issues: list[dict]) -> int:
                 ["git", "-C", str(root), "cat-file", "-p", blob_sha],
                 capture_output=True, check=False,
             )
-            text = _decode_blob_or_gzip(cat_res.stdout, is_gzip=(suffix == ".gz"))
+            text = _decode_blob_or_gzip(
+                cat_res.stdout,
+                is_gzip=(suffix == ".gz"),
+                is_xlsx=(suffix == ".xlsx"),
+            )
             if text is None:
                 continue
             scanned_blobs += 1
@@ -133,15 +144,17 @@ def audit_repository(root: Path, *, scan_history: bool = False) -> dict:
             issues.append({"file": rel, "kind": "forbidden_artifact", "detail": "Базы состояния и .env не должны попадать в git"})
             continue
 
-        if path.suffix.lower() in BINARY_SUFFIXES:
+        suffix = path.suffix.lower()
+        if suffix in BINARY_SUFFIXES:
             continue
 
-        is_gzip = path.suffix.lower() == ".gz"
-        text = _decode_blob_or_gzip(path.read_bytes(), is_gzip=is_gzip)
+        is_gzip = suffix == ".gz"
+        is_xlsx = suffix == ".xlsx"
+        text = _decode_blob_or_gzip(path.read_bytes(), is_gzip=is_gzip, is_xlsx=is_xlsx)
         if text is None:
             continue
 
-        _scan_text_blob(rel, text, issues, check_json=not is_gzip)
+        _scan_text_blob(rel, text, issues, check_json=not (is_gzip or is_xlsx))
 
     history_blobs = 0
     if scan_history and git_dir.exists():

@@ -7,7 +7,7 @@ from pathlib import Path
 from .review import impact
 from .store import now
 
-TABLE_EXTS = {".csv", ".tsv"}
+TABLE_EXTS = {".csv", ".tsv", ".xlsx"}
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".svg"}
 AUDIO_VIDEO_EXTS = {".mp3", ".wav", ".aac", ".ogg", ".m4a", ".mp4", ".webm"}
 DOC_EXTS = {".md", ".txt", ".json", ".pdf", ".html"}
@@ -139,8 +139,11 @@ def route_next_step(
             "stop_condition": "Все разрешённые входные файлы зарегистрированы с SHA-256.",
         })
 
-    # 3. Quantitative CSV tables -> ALWAYS route to zero-LLM deterministic CLI!
-    has_tables = any(s["kind"] in {"table", "synthetic"} and s["path"].endswith(".csv") for s in sources_health.values())
+    # 3. Quantitative CSV/XLSX tables -> ALWAYS route to zero-LLM deterministic CLI!
+    has_tables = any(
+        s["kind"] in {"table", "synthetic"} and s["path"].lower().endswith((".csv", ".tsv", ".xlsx"))
+        for s in sources_health.values()
+    )
     if has_tables and stage in {"intake", "research", "follow-up"}:
         steps.append({
             "step": "cohort_and_wilson_audit",

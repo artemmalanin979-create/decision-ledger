@@ -1,16 +1,22 @@
-"""Self-contained interactive HTML decision dashboard for product leaders."""
+"""Self-contained interactive HTML decision dashboard for product leaders (with what-if & accept gate)."""
 
 from __future__ import annotations
 
+import hashlib
 from html import escape
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import re
+import secrets
 
 from .claims import audit_claims
 from .cost import summarize_case_cost
+from .economics import PRICE_BASIS_LABELS, evaluate_economics
 from .review import impact
 from .router import summarize_telemetry
+from .store import dumps
+from .strategies import _extract_economics_blocks
 
 KIND_LABELS = {
     "fact": "Факт",
@@ -26,6 +32,10 @@ OPTION_TYPE_LABELS = {
     "change": "Изменить продукт",
     "close": "Закрыть инициативу",
 }
+
+
+def _draft_fingerprint(proposal: dict, sequence: int) -> str:
+    return hashlib.sha256(dumps([sequence, proposal]).encode("utf-8")).hexdigest()
 
 
 def _plural_ru(n: int, one: str, few: str, many: str) -> str:
@@ -52,7 +62,65 @@ def _clip_words(text: str, max_chars: int = 240) -> str:
     return f"{cut}…"
 
 
-def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
+def _clean_basis_label(code: str) -> str:
+    raw = PRICE_BASIS_LABELS.get(code, "допущение")
+    return raw.replace("**", "")
+
+
+def _extract_whatif_model(case: Path, state: dict, db=None) -> dict | None:
+    blocks = _extract_economics_blocks(case, state, db)
+    if not blocks and case.is_dir():
+        for cand in sorted(case.glob("*economics*.json")):
+            if not cand.is_file():
+                continue
+            try:
+                doc = json.loads(cand.read_text(encoding="utf-8-sig"))
+                if isinstance(doc, dict) and isinstance(doc.get("plans"), dict) and doc["plans"]:
+                    ev = evaluate_economics(doc)
+                    blocks.append((cand.stem, doc, ev))
+                    break
+            except (OSError, ValueError, KeyError, TypeError):
+                continue
+    if not blocks:
+        return None
+
+    # Prefer the primary multi-plan economics block (largest number of plans)
+    blocks_sorted = sorted(blocks, key=lambda item: len(item[2].get("plans") or {}), reverse=True)
+    source_id, spec_doc, ev_doc = blocks_sorted[0]
+    plans_out = []
+    for pid, p_eval in ev_doc["plans"].items():
+        plans_out.append({
+            "id": pid,
+            "title": p_eval["title"],
+            "basis_code": p_eval.get("epistemic_basis", "scenario_assumptions"),
+            "basis_label": _clean_basis_label(p_eval.get("epistemic_basis", "")),
+            "price": float(p_eval["monthly_revenue"]),
+            "recurring": float(p_eval["recurring_cost"]),
+            "cac": float(p_eval["upfront_total"]),
+            "retention": int(p_eval["amortize_months"]),
+            "assumptions": p_eval.get("assumptions") or {},
+        })
+
+    if not plans_out:
+        return None
+
+    return {
+        "source_id": source_id,
+        "currency": ev_doc.get("currency", "RUB"),
+        "min_margin_rate": float(ev_doc["min_margin_rate"]),
+        "note": str(spec_doc.get("note") or ""),
+        "plans": plans_out,
+    }
+
+
+def render_dashboard_html(
+    case: Path,
+    state: dict,
+    sources_health: dict,
+    *,
+    db=None,
+    live_api_token: str | None = None,
+) -> str:
     decisions = state.get("decisions", [])
     latest_decision = decisions[-1] if decisions else None
     draft = state.get("draft")
@@ -63,6 +131,7 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
     claims_report = audit_claims(active_proposal, sources_health) if active_proposal else None
     telemetry = summarize_telemetry(state.get("telemetry", []))
     cost_summary = summarize_case_cost(case, state.get("telemetry", []))
+    whatif_model = _extract_whatif_model(case, state, db)
 
     has_stale = bool(approved_impact and (approved_impact["sources"] or approved_impact["unreviewed"]))
     if draft and latest_decision:
@@ -103,6 +172,188 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
     affected_findings = set((approved_impact or active_impact or {}).get("findings", []))
     affected_options = set((approved_impact or active_impact or {}).get("options", []))
     affected_strategy = set((approved_impact or active_impact or {}).get("strategy", []))
+
+    # Build committee accept gate panel (Item 4)
+    case_cli_hint = f".cases/{case.name}" if case.parent.name == ".cases" else case.name
+    accept_gate_meta = {
+        "has_draft": bool(draft),
+        "case_cli": case_cli_hint,
+        "recommended": draft["recommended"] if draft else (latest_decision["option"] if latest_decision else ""),
+        "expect_sha": (
+            _draft_fingerprint(draft, state.get("draft_sequence", 0))
+            if draft
+            else (latest_decision["sha"] if latest_decision else "")
+        ),
+        "live_enabled": bool(live_api_token and draft),
+        "live_token": live_api_token or "",
+    }
+    accept_html = ""
+    if active_proposal:
+        opt_options_html = "".join(
+            f'<option value="{escape(oid)}"{" selected" if oid == active_proposal["recommended"] else ""}>'
+            f'{escape(oid)} — {escape(odata["title"])}</option>'
+            for oid, odata in active_proposal["options"].items()
+        )
+        if draft:
+            gate_badge = '<span class="tag tag-warn">Ожидает решения комитета (draft открыт)</span>'
+            default_reason = f"Согласовано по итогам проверки оснований и стоп-правил ({draft['recommended']})"
+            live_btn_html = (
+                '<button type="button" class="action-btn action-btn-primary" id="accept-live-btn" onclick="triggerLiveAccept()">'
+                'Утвердить в 1 клик (записать в SQLite)</button>'
+                if live_api_token
+                else '<span class="node-meta" style="align-self:center;">Для записи в 1 клик из браузера: '
+                     f'<span class="mono">python3 -m ledger dashboard {escape(case_cli_hint)} --serve</span></span>'
+            )
+        else:
+            gate_badge = (
+                f'<span class="tag tag-ok">Решение №{latest_decision["revision"]} зафиксировано · '
+                f'{escape(latest_decision["by"])}</span>'
+            )
+            default_reason = str(latest_decision["reason"]) if latest_decision else "Согласовано комитетом"
+            live_btn_html = (
+                f'<span class="node-meta" style="align-self:center;">Зафиксировано {escape(latest_decision["at"])} · '
+                f'SHA <span class="mono">{escape(latest_decision["sha"][:16])}…</span></span>'
+                if latest_decision
+                else ""
+            )
+        accept_html = f"""
+  <section class="accept-panel" id="accept-gate-panel">
+    <div class="node-head" style="margin-bottom:10px;">
+      <div>
+        <span class="eyebrow" style="margin-bottom:2px;display:block;">Гейт человека (Human-in-the-loop)</span>
+        <h3 style="font-size:15px;">Утверждение решения комитетом (<span class="mono">ledger accept</span>)</h3>
+      </div>
+      {gate_badge}
+    </div>
+    <div class="accept-grid">
+      <label class="field-label"><span>Вариант решения</span>
+        <select id="accept-option" class="field-input" onchange="updateAcceptCommand()">{opt_options_html}</select>
+      </label>
+      <label class="field-label"><span>Кто утверждает (<span class="mono">--by</span>)</span>
+        <input id="accept-by" type="text" class="field-input" value="Продуктовый комитет" oninput="updateAcceptCommand()"/>
+      </label>
+      <label class="field-label"><span>Основание (<span class="mono">--reason</span>)</span>
+        <input id="accept-reason" type="text" class="field-input" value="{escape(default_reason, quote=True)}" oninput="updateAcceptCommand()"/>
+      </label>
+    </div>
+    <div id="accept-mismatch-note" class="claim-warn" style="display:none;margin-top:8px;border-top:none;padding-top:0;">
+      Выбранный вариант отличается от <span class="mono">{escape(active_proposal["recommended"])}</span> в черновике: <span class="mono">ledger accept</span> заблокирует подмену без обновления черновика через <span class="mono">propose</span>.
+    </div>
+    <div class="cmd-box">
+      <code id="accept-cmd-preview" class="mono"></code>
+    </div>
+    <div class="accept-actions">
+      <button type="button" class="action-btn" id="accept-copy-btn" onclick="copyAcceptCommand()">Скопировать команду accept</button>
+      {live_btn_html}
+      <span id="accept-feedback" class="accept-feedback" aria-live="polite"></span>
+    </div>
+  </section>"""
+
+    # Build interactive what-if unit-economics calculator (Item 1)
+    whatif_html = ""
+    if whatif_model:
+        margin_pct_str = f"{whatif_model['min_margin_rate'] * 100:.1f}".rstrip("0").rstrip(".").replace(".", ",")
+        plan_opts_html = "".join(
+            f'<option value="{escape(p["id"])}">{escape(p["id"])} — {escape(p["title"])}</option>'
+            for p in whatif_model["plans"]
+        )
+        whatif_html = f"""
+  <h2>Интерактивный калькулятор чувствительности юнит-экономики (what-if)</h2>
+  <section class="whatif-panel" id="whatif-panel">
+    <div class="whatif-header">
+      <div>
+        <div class="node-meta" style="font-size:12px;color:var(--muted);">
+          Порог комитета: <strong>маржинальный вклад &gt;= {margin_pct_str}%</strong> (источник модели: <span class="mono">{escape(whatif_model["source_id"])}</span>).
+          Цены с витрин — публичные факты или рыночные ориентиры; <strong>CAC, срок удержания и рекуррентные затраты — сценарные допущения (what-if)</strong>,
+          пересчитываемые в браузере строго по формулам <span class="mono">ledger/economics.py</span> без внешних зависимостей.
+        </div>
+      </div>
+      <div class="preset-bar">
+        <button type="button" class="preset-btn active-preset" data-preset="base" onclick="applyEconPreset('base', this)">База спецификации</button>
+        <button type="button" class="preset-btn" data-preset="cvm" onclick="applyEconPreset('cvm', this)">Собственные CVM-каналы (CAC 25 ₽)</button>
+        <button type="button" class="preset-btn" data-preset="paid" onclick="applyEconPreset('paid', this)">Платный внешний трафик (CAC +25%)</button>
+        <button type="button" class="preset-btn" data-preset="stress" onclick="applyEconPreset('stress', this)">Стресс затрат (+15%) и оттока (-2 мес.)</button>
+      </div>
+    </div>
+
+    <div class="whatif-controls-top">
+      <label class="field-label" style="flex:1;min-width:260px;">Вариант для настройки ползунками
+        <select id="whatif-plan-select" class="field-input" onchange="selectWhatIfPlan(this.value)">{plan_opts_html}</select>
+      </label>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="whatif-apply-all" checked onchange="recomputeAllWhatIf()"/>
+        <span>Применять пресет канала привлечения (CVM / платный / стресс) сразу ко всем вариантам сравнения</span>
+      </label>
+    </div>
+
+    <div class="sliders-grid">
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Цена / 30 дн. (₽)</span>
+          <span id="badge-price-basis" class="tag">факт витрины</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-price" min="29" max="600" step="1" oninput="onSliderInput('price', this.value)"/>
+          <input type="number" id="num-price" min="1" max="50000" step="1" class="num-input mono" oninput="onSliderInput('price', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-price"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>CAC привлечения (₽)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-cac" min="0" max="800" step="5" oninput="onSliderInput('cac', this.value)"/>
+          <input type="number" id="num-cac" min="0" max="100000" step="5" class="num-input mono" oninput="onSliderInput('cac', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-cac"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Срок удержания (мес.)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-retention" min="1" max="36" step="1" oninput="onSliderInput('retention', this.value)"/>
+          <input type="number" id="num-retention" min="1" max="120" step="1" class="num-input mono" oninput="onSliderInput('retention', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-retention"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Рекуррентные затраты / мес. (₽)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-recurring" min="0" max="300" step="1" oninput="onSliderInput('recurring', this.value)"/>
+          <input type="number" id="num-recurring" min="0" max="50000" step="1" class="num-input mono" oninput="onSliderInput('recurring', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-recurring"></div>
+      </div>
+    </div>
+
+    <div class="whatif-kpi-strip" id="whatif-kpi-strip"></div>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Вариант</th>
+          <th>Цена / 30 дн.</th>
+          <th>Рекуррентные (допущ.)</th>
+          <th>CAC (допущ.)</th>
+          <th>Удержание (допущ.)</th>
+          <th>Прямые затраты / мес.</th>
+          <th>Маржинальный вклад</th>
+          <th>Пороги безубыточности к цели {margin_pct_str}%</th>
+        </tr>
+      </thead>
+      <tbody id="whatif-table-body"></tbody>
+    </table>
+  </section>"""
 
     # Build sources cards
     source_cards = []
@@ -413,7 +664,7 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
   .status-warn {{ border-color: #FDE68A; background: var(--warn-soft); color: var(--warn); }}
   .status-alert {{ border-color: #FECACA; background: var(--alert-soft); color: var(--alert); }}
   .meta-strip {{
-    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px;
   }}
   .metric-card {{
     background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
@@ -422,9 +673,83 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
   .metric-value {{ font-size: 14px; font-weight: 600; margin-top: 4px; }}
   .impact-banner {{
     background: var(--alert-soft); border: 1px solid #FECACA; border-radius: 8px;
-    padding: 14px 16px; margin-bottom: 20px; color: #7F1D1D;
+    padding: 14px 16px; margin-bottom: 18px; color: #7F1D1D;
   }}
   .impact-banner p {{ margin: 4px 0 0; font-size: 13px; }}
+  .accept-panel, .whatif-panel {{
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 20px;
+  }}
+  .accept-grid {{
+    display: grid; grid-template-columns: 1.2fr 0.8fr 1.4fr; gap: 12px; align-items: end;
+  }}
+  .field-label {{
+    display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--subtle);
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }}
+  .field-input {{
+    width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font-size: 13px; font-family: inherit; color: var(--ink); background: #F8FAFC;
+  }}
+  .cmd-box {{
+    margin-top: 10px; padding: 9px 12px; background: #0F172A; color: #E2E8F0;
+    border-radius: 6px; overflow-x: auto; font-size: 12px;
+  }}
+  .accept-actions {{
+    margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }}
+  .action-btn {{
+    padding: 7px 13px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); font-size: 12px; font-weight: 600; cursor: pointer;
+  }}
+  .action-btn:hover {{ border-color: var(--accent); color: var(--accent); }}
+  .action-btn-primary {{
+    background: var(--accent); border-color: var(--accent); color: #FFFFFF;
+  }}
+  .action-btn-primary:hover {{ background: #115E59; color: #FFFFFF; }}
+  .accept-feedback {{ font-size: 12px; font-weight: 600; color: var(--accent); }}
+  .whatif-header {{
+    display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }}
+  .preset-bar {{ display: flex; flex-wrap: wrap; gap: 8px; }}
+  .preset-btn {{
+    padding: 5px 11px; border-radius: 6px; border: 1px solid var(--line); background: #F8FAFC;
+    color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer;
+  }}
+  .preset-btn.active-preset {{
+    border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  }}
+  .whatif-controls-top {{
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 12px 0;
+  }}
+  .checkbox-inline {{
+    display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); padding-bottom: 6px; cursor: pointer;
+  }}
+  .sliders-grid {{
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px;
+  }}
+  .slider-card {{
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #F8FAFC;
+  }}
+  .slider-head {{
+    display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; margin-bottom: 8px;
+  }}
+  .slider-row {{ display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }}
+  .slider-row input[type="range"] {{ flex: 1; accent-color: var(--accent); cursor: pointer; }}
+  .num-input {{
+    width: 72px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--surface); font-size: 12px; text-align: right;
+  }}
+  .whatif-kpi-strip {{
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px;
+  }}
+  .kpi-mini {{
+    border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px; background: var(--surface);
+  }}
+  .kpi-mini .k-lbl {{ font-size: 11px; color: var(--subtle); }}
+  .kpi-mini .k-val {{ font-size: 14px; font-weight: 600; margin-top: 2px; }}
+  tr.whatif-selected-row td {{ background: var(--accent-soft); }}
   .lineage-grid {{
     display: grid; grid-template-columns: 0.85fr 1.25fr 1.1fr; gap: 16px; align-items: start;
   }}
@@ -508,6 +833,7 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
   </section>
 
   {impact_banner}
+  {accept_html}
 
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <h2>Трассировка оснований (кликните узел для подсветки зависимостей)</h2>
@@ -533,6 +859,7 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
     {"".join(strategy_cards) or '<div class="node-meta">Стратегия появится после этапа propose.</div>'}
   </section>
 
+  {whatif_html}
   {methodology_html}
 
   <h2>Обязательства команды и триггеры пересмотра</h2>
@@ -552,6 +879,9 @@ def render_dashboard_html(case: Path, state: dict, sources_health: dict) -> str:
 </div>
 <script>
 const GRAPH = {json.dumps(graph_data, ensure_ascii=False)};
+const ACCEPT_META = {json.dumps(accept_gate_meta, ensure_ascii=False)};
+const ECON_MODEL = {json.dumps(whatif_model, ensure_ascii=False)};
+
 function relatedSet(nodeId) {{
   const rel = new Set([nodeId]);
   if (nodeId.startsWith("source:")) {{
@@ -572,7 +902,6 @@ function relatedSet(nodeId) {{
     }}
   }} else if (nodeId.startsWith("finding:")) {{
     const start = nodeId.slice(8);
-    // Upstream
     const up = [start];
     while (up.length) {{
       const cur = up.pop();
@@ -581,7 +910,6 @@ function relatedSet(nodeId) {{
       f.sources.forEach(s => rel.add("source:" + s));
       f.depends_on.forEach(d => {{ if (!rel.has("finding:" + d)) {{ rel.add("finding:" + d); up.push(d); }} }});
     }}
-    // Downstream
     const down = new Set([start]);
     let changed = true;
     while (changed) {{
@@ -622,15 +950,409 @@ function resetSelection() {{
     el.classList.remove("active-link", "dimmed");
   }});
 }}
+
+/* --- Committee Accept Gate (Item 4) --- */
+function shQuote(val) {{
+  const s = String(val || "").trim();
+  return '"' + s.replace(/\\\\/g, "\\\\\\\\").replace(/"/g, '\\\\"') + '"';
+}}
+function buildAcceptCommand() {{
+  const optEl = document.getElementById("accept-option");
+  if (!optEl) return "";
+  const opt = optEl.value;
+  const by = (document.getElementById("accept-by")?.value || "Продуктовый комитет").trim();
+  const reason = (document.getElementById("accept-reason")?.value || "Согласовано").trim();
+  const sha = ACCEPT_META.expect_sha || "<draft_sha256>";
+  return `python3 -m ledger accept ${{ACCEPT_META.case_cli}} ${{opt}} --expect ${{sha}} --by ${{shQuote(by)}} --reason ${{shQuote(reason)}}`;
+}}
+function updateAcceptCommand() {{
+  const preview = document.getElementById("accept-cmd-preview");
+  if (!preview) return;
+  preview.textContent = buildAcceptCommand();
+  const opt = document.getElementById("accept-option")?.value || "";
+  const warn = document.getElementById("accept-mismatch-note");
+  if (warn) {{
+    warn.style.display = (ACCEPT_META.recommended && opt !== ACCEPT_META.recommended) ? "block" : "none";
+  }}
+}}
+function copyAcceptCommand() {{
+  const cmd = buildAcceptCommand();
+  const fb = document.getElementById("accept-feedback");
+  const showOk = (msg) => {{
+    if (!fb) return;
+    fb.textContent = msg;
+    setTimeout(() => {{ if (fb.textContent === msg) fb.textContent = ""; }}, 3200);
+  }};
+  if (navigator.clipboard && navigator.clipboard.writeText) {{
+    navigator.clipboard.writeText(cmd).then(() => showOk("Команда скопирована в буфер обмена")).catch(() => fallbackCopy(cmd, showOk));
+  }} else {{
+    fallbackCopy(cmd, showOk);
+  }}
+}}
+function fallbackCopy(text, cb) {{
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {{ document.execCommand("copy"); cb("Команда скопирована в буфер обмена"); }}
+  catch (e) {{ cb("Выделите строку выше и скопируйте (Ctrl+C)"); }}
+  document.body.removeChild(ta);
+}}
+async function triggerLiveAccept() {{
+  if (!ACCEPT_META.live_enabled) return;
+  const fb = document.getElementById("accept-feedback");
+  const btn = document.getElementById("accept-live-btn");
+  const payload = {{
+    option: document.getElementById("accept-option").value,
+    expect: ACCEPT_META.expect_sha,
+    by: document.getElementById("accept-by").value,
+    reason: document.getElementById("accept-reason").value
+  }};
+  if (btn) btn.disabled = true;
+  if (fb) fb.textContent = "Запись решения в case.sqlite3…";
+  try {{
+    const res = await fetch("/api/accept", {{
+      method: "POST",
+      headers: {{ "Content-Type": "application/json", "X-Ledger-Token": ACCEPT_META.live_token }},
+      body: JSON.stringify(payload)
+    }});
+    const data = await res.json();
+    if (!res.ok || !data.ok) {{
+      if (fb) fb.textContent = "Ошибка гейта: " + (data.error || res.statusText);
+      if (btn) btn.disabled = false;
+      return;
+    }}
+    if (fb) fb.textContent = `Утверждено: Решение №${{data.decision.revision}} (${{data.decision.option}})`;
+    setTimeout(() => window.location.reload(), 700);
+  }} catch (err) {{
+    if (fb) fb.textContent = "Сбой соединения с локальным сервером: " + err;
+    if (btn) btn.disabled = false;
+  }}
+}}
+
+/* --- Interactive What-If Unit Economics (Item 1 · exact ledger/economics.py formulas) --- */
+const WHATIF_STATE = {{ selectedId: null, preset: "base", overrides: {{}} }};
+
+function fmtRub(val, digits = 2) {{
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  const parts = rounded.toFixed(digits).split(".");
+  parts[0] = parts[0].replace(/\\B(?=(\\d{{3}})+(?!\\d))/g, " ");
+  const dec = (digits > 0 && parts[1] !== "00" && parts[1] !== "0") ? ("," + parts[1]) : "";
+  return parts[0] + dec + " ₽";
+}}
+function fmtNum(val, suffix = "", digits = 2) {{
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  let s = rounded.toFixed(digits).replace(".", ",");
+  if (s.endsWith(",00")) s = s.slice(0, -3);
+  return s + suffix;
+}}
+function evaluatePlanExact(price, recurring, cac, retention, minMargin) {{
+  const rev = Math.max(0.01, Number(price));
+  const rec = Math.max(0, Number(recurring));
+  const upf = Math.max(0, Number(cac));
+  const ret = Math.max(1, Math.round(Number(retention)));
+  const amortUpfront = upf > 0 ? (upf / ret) : 0.0;
+  const directCost = rec + amortUpfront;
+  const contribution = rev - directCost;
+  const contributionRate = contribution / rev;
+  const maxAllowableCost = rev * (1.0 - minMargin);
+  const costHeadroom = maxAllowableCost - directCost;
+  const cashMarginBeforeCapex = rev - rec;
+  const paybackMonths = (upf > 0 && cashMarginBeforeCapex > 0)
+    ? Number((upf / cashMarginBeforeCapex).toFixed(2))
+    : (upf === 0 ? 0.0 : null);
+  let maxUpfrontCac = Number(((maxAllowableCost - rec) * ret).toFixed(2));
+  if (maxUpfrontCac < 0) maxUpfrontCac = null;
+  const monthlyRoom = maxAllowableCost - rec;
+  let minRetention = null;
+  if (upf === 0) {{
+    minRetention = monthlyRoom >= 0 ? 1 : null;
+  }} else if (monthlyRoom > 0) {{
+    minRetention = Number((upf / monthlyRoom).toFixed(2));
+  }}
+  const minMonthlyPrice = minMargin < 1.0 ? Number((directCost / (1.0 - minMargin)).toFixed(2)) : null;
+  const meetsTarget = (contributionRate + 1e-12) >= minMargin;
+  return {{
+    price: rev, recurring: rec, cac: upf, retention: ret,
+    amortUpfront, directCost, contribution, contributionRate,
+    maxAllowableCost, costHeadroom, paybackMonths,
+    maxUpfrontCac, minRetention, minMonthlyPrice, meetsTarget
+  }};
+}}
+function presetParamsForPlan(plan, preset) {{
+  if (preset === "cvm") {{
+    return {{ price: plan.price, recurring: plan.recurring, cac: plan.cac > 0 ? 25 : 0, retention: plan.retention }};
+  }}
+  if (preset === "paid") {{
+    const paidCac = plan.cac > 0 ? Math.round(plan.cac * 1.25) : 260;
+    return {{ price: plan.price, recurring: plan.recurring, cac: paidCac, retention: plan.retention }};
+  }}
+  if (preset === "stress") {{
+    return {{
+      price: plan.price,
+      recurring: Number((plan.recurring * 1.15).toFixed(2)),
+      cac: plan.cac,
+      retention: Math.max(1, plan.retention - 2)
+    }};
+  }}
+  return {{ price: plan.price, recurring: plan.recurring, cac: plan.cac, retention: plan.retention }};
+}}
+function initWhatIf() {{
+  if (!ECON_MODEL || !ECON_MODEL.plans || !ECON_MODEL.plans.length) return;
+  ECON_MODEL.plans.forEach(p => {{
+    WHATIF_STATE.overrides[p.id] = {{ price: p.price, recurring: p.recurring, cac: p.cac, retention: p.retention }};
+  }});
+  WHATIF_STATE.selectedId = ECON_MODEL.plans[0].id;
+  syncSlidersToSelected();
+  renderWhatIf();
+}}
+function syncSlidersToSelected() {{
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  const setPair = (key, val, maxHint) => {{
+    const sl = document.getElementById("sl-" + key);
+    const nm = document.getElementById("num-" + key);
+    if (sl) {{
+      if (val > Number(sl.max)) sl.max = String(Math.ceil(val * 1.5));
+      sl.value = String(val);
+    }}
+    if (nm) nm.value = String(val);
+  }};
+  setPair("price", cur.price);
+  setPair("cac", cur.cac);
+  setPair("retention", cur.retention);
+  setPair("recurring", cur.recurring);
+}}
+function selectWhatIfPlan(planId) {{
+  WHATIF_STATE.selectedId = planId;
+  const sel = document.getElementById("whatif-plan-select");
+  if (sel && sel.value !== planId) sel.value = planId;
+  syncSlidersToSelected();
+  renderWhatIf();
+}}
+function applyEconPreset(preset, btnEl) {{
+  WHATIF_STATE.preset = preset;
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active-preset", b === btnEl));
+  const applyAll = document.getElementById("whatif-apply-all")?.checked;
+  ECON_MODEL.plans.forEach(p => {{
+    if (applyAll || p.id === WHATIF_STATE.selectedId || preset === "base") {{
+      WHATIF_STATE.overrides[p.id] = presetParamsForPlan(p, preset);
+    }}
+  }});
+  syncSlidersToSelected();
+  renderWhatIf();
+}}
+function recomputeAllWhatIf() {{
+  if (WHATIF_STATE.preset !== "base") {{
+    const activeBtn = document.querySelector(`.preset-btn[data-preset="${{WHATIF_STATE.preset}}"]`);
+    applyEconPreset(WHATIF_STATE.preset, activeBtn);
+  }} else {{
+    renderWhatIf();
+  }}
+}}
+function onSliderInput(field, rawVal) {{
+  const num = Number(rawVal);
+  if (Number.isNaN(num)) return;
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  cur[field] = field === "retention" ? Math.max(1, Math.round(num)) : Math.max(0, num);
+  const sl = document.getElementById("sl-" + field);
+  const nm = document.getElementById("num-" + field);
+  if (sl && document.activeElement !== sl) {{
+    if (cur[field] > Number(sl.max)) sl.max = String(Math.ceil(cur[field] * 1.5));
+    sl.value = String(cur[field]);
+  }}
+  if (nm && document.activeElement !== nm) nm.value = String(cur[field]);
+  renderWhatIf();
+}}
+function renderWhatIf() {{
+  if (!ECON_MODEL) return;
+  const minM = ECON_MODEL.min_margin_rate;
+  const selPlan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId) || ECON_MODEL.plans[0];
+  const selCur = WHATIF_STATE.overrides[selPlan.id];
+  const selEval = evaluatePlanExact(selCur.price, selCur.recurring, selCur.cac, selCur.retention, minM);
+
+  const basisBadge = document.getElementById("badge-price-basis");
+  if (basisBadge) {{
+    const priceChanged = Math.abs(selCur.price - selPlan.price) > 1e-6;
+    basisBadge.textContent = priceChanged ? "допущение (what-if)" : selPlan.basis_label;
+    basisBadge.className = priceChanged ? "tag tag-warn" : "tag tag-ok";
+  }}
+  const showDelta = (id, baseV, curV, unit) => {{
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (Math.abs(curV - baseV) < 1e-6) {{
+      el.textContent = `База спецификации: ${{fmtNum(baseV, unit)}}`;
+    }} else {{
+      const sign = curV > baseV ? "+" : "";
+      el.textContent = `База: ${{fmtNum(baseV, unit)}} → изменено (${{sign}}${{fmtNum(curV - baseV, unit)}})`;
+    }}
+  }};
+  showDelta("delta-price", selPlan.price, selCur.price, " ₽");
+  showDelta("delta-cac", selPlan.cac, selCur.cac, " ₽");
+  showDelta("delta-retention", selPlan.retention, selCur.retention, " мес.");
+  showDelta("delta-recurring", selPlan.recurring, selCur.recurring, " ₽");
+
+  const kpiStrip = document.getElementById("whatif-kpi-strip");
+  if (kpiStrip) {{
+    const statusCls = selEval.meetsTarget ? "tag tag-ok" : "tag tag-alert";
+    const statusTxt = selEval.meetsTarget ? "Проходит порог комитета" : "Ниже порога комитета";
+    const paybackTxt = selEval.paybackMonths === null ? "не окупается" : fmtNum(selEval.paybackMonths, " мес.");
+    kpiStrip.innerHTML = `
+      <div class="kpi-mini">
+        <div class="k-lbl">Маржинальный вклад (расчёт на допущениях)</div>
+        <div class="k-val">${{fmtRub(selEval.contribution)}} (${{fmtNum(selEval.contributionRate * 100, "%", 1)}})</div>
+        <div style="margin-top:4px;"><span class="${{statusCls}}">${{statusTxt}}</span></div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Полные прямые затраты / мес.</div>
+        <div class="k-val">${{fmtRub(selEval.directCost)}}</div>
+        <div class="node-meta">OPEX ${{fmtRub(selEval.recurring)}} + CAC/мес. ${{fmtRub(selEval.amortUpfront)}}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Запас до потолка затрат (headroom)</div>
+        <div class="k-val" style="color:${{selEval.costHeadroom >= 0 ? 'var(--accent)' : 'var(--alert)'}};">${{selEval.costHeadroom >= 0 ? '+' : ''}}${{fmtRub(selEval.costHeadroom)}}</div>
+        <div class="node-meta">Потолок прямых затрат: ${{fmtRub(selEval.maxAllowableCost)}}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Окупаемость CAC (операционная)</div>
+        <div class="k-val">${{paybackTxt}}</div>
+        <div class="node-meta">При удержании ${{selEval.retention}} мес.</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Границы безубыточности к цели</div>
+        <div class="k-val" style="font-size:12px;">CAC &lt;= ${{fmtRub(selEval.maxUpfrontCac)}}</div>
+        <div class="node-meta">Удерж. &gt;= ${{fmtNum(selEval.minRetention, " мес.")}} · Цена &gt;= ${{fmtRub(selEval.minMonthlyPrice)}}</div>
+      </div>`;
+  }}
+
+  const tbody = document.getElementById("whatif-table-body");
+  if (tbody) {{
+    tbody.innerHTML = ECON_MODEL.plans.map(p => {{
+      const cur = WHATIF_STATE.overrides[p.id];
+      const ev = evaluatePlanExact(cur.price, cur.recurring, cur.cac, cur.retention, minM);
+      const isSel = p.id === WHATIF_STATE.selectedId;
+      const badge = ev.meetsTarget
+        ? '<span class="tag tag-ok">проходит</span>'
+        : '<span class="tag tag-alert">ниже порога</span>';
+      const priceBasis = Math.abs(cur.price - p.price) > 1e-6 ? "what-if" : p.basis_label;
+      const beLine = ev.maxUpfrontCac !== null
+        ? `CAC &lt;= ${{fmtRub(ev.maxUpfrontCac)}} · удерж. &gt;= ${{fmtNum(ev.minRetention, " мес.")}}`
+        : `рекуррентные затраты выше потолка ${{fmtRub(ev.maxAllowableCost)}} (CAC не спасает)`;
+      return `<tr class="${{isSel ? 'whatif-selected-row' : ''}}" style="cursor:pointer;" onclick="selectWhatIfPlan('${{p.id}}')">
+        <td><span class="mono">${{p.id}}</span><div class="node-meta">${{p.title}}</div></td>
+        <td>${{fmtRub(ev.price)}} <span class="node-meta">(${{priceBasis}})</span></td>
+        <td>${{fmtRub(ev.recurring)}}</td>
+        <td>${{fmtRub(ev.cac)}}</td>
+        <td>${{ev.retention}} мес.</td>
+        <td>${{fmtRub(ev.directCost)}}</td>
+        <td><strong>${{fmtNum(ev.contributionRate * 100, "%", 1)}}</strong> (${{fmtRub(ev.contribution)}}) ${{badge}}</td>
+        <td style="font-size:12px;">${{beLine}}</td>
+      </tr>`;
+    }}).join("");
+  }}
+}}
+
+updateAcceptCommand();
+initWhatIf();
 </script>
 </body>
 </html>
 """
 
 
-def write_dashboard(case: Path, state: dict, sources_health: dict, output: Path | None = None) -> Path:
-    html = render_dashboard_html(case, state, sources_health)
+def write_dashboard(
+    case: Path,
+    state: dict,
+    sources_health: dict,
+    output: Path | None = None,
+    *,
+    db=None,
+) -> Path:
+    html = render_dashboard_html(case, state, sources_health, db=db)
     target = output.resolve() if output else (case / "dashboard.html")
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(html, encoding="utf-8")
     return target
+
+
+def serve_dashboard(
+    case: Path,
+    *,
+    load_fn,
+    source_health_fn,
+    accept_fn,
+    host: str = "127.0.0.1",
+    port: int = 8765,
+) -> None:
+    """Serve interactive passport over 127.0.0.1 with 1-click committee accept writeback to case.sqlite3."""
+    if host not in {"127.0.0.1", "localhost", "::1"}:
+        raise ValueError("Dashboard server may only bind to loopback (127.0.0.1)")
+    token = secrets.token_urlsafe(24)
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, fmt, *args):
+            return
+
+        def do_GET(self):
+            if self.path not in {"/", "/index.html", "/decision-passport.html"}:
+                self.send_error(404)
+                return
+            with load_fn(case, write=False) as (st, db_conn):
+                srcs = source_health_fn(case, st["sources"])
+                body = render_dashboard_html(case, st, srcs, db=db_conn, live_api_token=token).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_POST(self):
+            if self.path != "/api/accept":
+                self.send_error(404)
+                return
+            if self.headers.get("X-Ledger-Token") != token:
+                self._json(403, {"ok": False, "error": "Invalid session token"})
+                return
+            length = int(self.headers.get("Content-Length") or 0)
+            if length <= 0 or length > 65536:
+                self._json(400, {"ok": False, "error": "Invalid payload size"})
+                return
+            try:
+                payload = json.loads(self.rfile.read(length).decode("utf-8"))
+                decision = accept_fn(
+                    case,
+                    option=str(payload.get("option") or ""),
+                    expect=str(payload.get("expect") or ""),
+                    by=str(payload.get("by") or ""),
+                    reason=str(payload.get("reason") or ""),
+                )
+                self._json(200, {"ok": True, "decision": decision})
+            except Exception as err:  # noqa: BLE001
+                self._json(400, {"ok": False, "error": str(err)})
+
+        def _json(self, code: int, obj: dict):
+            raw = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+
+    server = ThreadingHTTPServer((host, port), Handler)
+    actual_port = server.server_address[1]
+    print(json.dumps({"serving": f"http://{host}:{actual_port}/", "case": str(case)}, ensure_ascii=False), flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()

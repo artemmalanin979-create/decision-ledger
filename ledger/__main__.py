@@ -14,7 +14,8 @@ from urllib.parse import urlsplit
 
 from .claims import audit_claims, scan_untrusted_text
 from .cost import append_cost_entry, import_cost_from_logs, summarize_case_cost
-from .dashboard import write_dashboard
+from .dashboard import serve_dashboard, write_dashboard
+from .draft_template import compile_draft_template, generate_draft_template
 from .economics import evaluate_economics_file, render_assumptions_markdown
 from .kb import ingest_case_into_kb, link_entries, retract_entry, search_kb, upsert_entry
 from .mcp_server import serve_mcp
@@ -25,6 +26,7 @@ from .store import case_file, digest, dumps, init, load, now
 from .strategies import export_strategies
 from .table import summarize_rates
 from .web_fetch import fetch_open_webpage
+from .xlsx import extract_xlsx_text, read_xlsx_records, render_xlsx_markdown
 
 SOURCE_KINDS = ["document", "table", "web", "synthetic", "interview", "ux"]
 
@@ -79,7 +81,13 @@ def register(args, case, state, db):
     relative = Path(args.file).as_posix()
     record.pop("retired", None)
     inj_flags = []
-    if path.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".pdf"}:
+    suffix_lower = path.suffix.lower()
+    if suffix_lower == ".xlsx":
+        try:
+            inj_flags = scan_untrusted_text(extract_xlsx_text(content))
+        except ValueError:
+            inj_flags = []
+    elif suffix_lower not in {".png", ".jpg", ".jpeg", ".webp", ".mp4", ".pdf", ".zip"}:
         try:
             inj_flags = scan_untrusted_text(content.decode("utf-8", errors="ignore"))
         except OSError:
@@ -191,9 +199,14 @@ def parse_args():
 
     command("evidence", "Read an archived snapshot by SHA-256").add_argument("sha")
 
-    propose = command("propose", "Check and stage a recommendation")
+    propose = command("propose", "Check and stage a recommendation (.json or .yaml/.yml template)")
     propose.add_argument("file")
     propose.add_argument("--strict-claims", action="store_true")
+
+    draft_cmd = command("draft", "Generate a concise YAML draft template or compile a YAML draft to JSON")
+    draft_cmd.add_argument("--template", action="store_true", help="Emit pre-populated YAML draft template")
+    draft_cmd.add_argument("--compile", type=Path, help="Compile a YAML draft file into canonical proposal JSON")
+    draft_cmd.add_argument("-o", "--output", type=Path, help="Write generated template or compiled JSON to file")
 
     accept = command("accept", "Record explicit approval of the drafted option")
     accept.add_argument("option")
@@ -262,8 +275,10 @@ def parse_args():
 
     command("audit-claims", "Audit communication promises against product bounds and evidence kinds")
 
-    dash = command("dashboard", "Generate a self-contained interactive HTML decision dashboard")
+    dash = command("dashboard", "Generate or serve a self-contained interactive HTML decision dashboard")
     dash.add_argument("-o", "--output", type=Path)
+    dash.add_argument("--serve", action="store_true", help="Serve dashboard on 127.0.0.1 with 1-click accept")
+    dash.add_argument("--port", type=int, default=8765, help="Loopback port for --serve (default: 8765)")
 
     exp_strat = command(
         "export-strategies",
@@ -276,7 +291,7 @@ def parse_args():
     exp_strat.add_argument("--prefix", default="strategy", help="Filename prefix (default: strategy -> strategy-product.md/.pdf)")
     exp_strat.add_argument("--no-pdf", action="store_true", help="Write Markdown files only without rendering PDFs")
 
-    rates = sub.add_parser("rates", help="Compute auditable weighted rates and Wilson CIs from CSV")
+    rates = sub.add_parser("rates", help="Compute auditable weighted rates and Wilson CIs from CSV/TSV/XLSX")
     rates.add_argument("file", type=Path)
     rates.add_argument("--group", required=True)
     rates.add_argument("--segment")
@@ -284,6 +299,12 @@ def parse_args():
     rates.add_argument("--numerators", nargs="+", required=True)
     rates.add_argument("--ci", action="store_true")
     rates.add_argument("--guardrail", dest="guardrails", action="append")
+    rates.add_argument("--sheet", help="Worksheet name or 0-based index when reading .xlsx")
+
+    xlsx_cmd = sub.add_parser("xlsx", help="Inspect worksheets and records of an OpenXML (.xlsx) workbook")
+    xlsx_cmd.add_argument("file", type=Path)
+    xlsx_cmd.add_argument("--sheet", help="Worksheet name or 0-based index")
+    xlsx_cmd.add_argument("--format", choices=["json", "md"], default="json")
 
     econ = sub.add_parser("economics", help="Compute unit economics, cost headroom, and stress bounds")
     econ.add_argument("file", type=Path)
@@ -512,8 +533,30 @@ def run_case(args):
                 raise ValueError("Case has neither draft nor approved decision to audit")
             return audit_claims(target, sources)
         if cmd == "dashboard":
-            out = write_dashboard(case, state, sources, args.output)
-            return {"dashboard": str(out)}
+            if getattr(args, "serve", False):
+                pass
+            else:
+                out = write_dashboard(case, state, sources, args.output, db=db)
+                return {"dashboard": str(out)}
+        if cmd == "draft":
+            if args.compile is not None:
+                src_p = args.compile if args.compile.is_absolute() else case_file(case, str(args.compile))
+                compiled = compile_draft_template(src_p.read_text(encoding="utf-8-sig"), sources)
+                validate(compiled, sources)
+                if args.output:
+                    out_p = args.output.resolve()
+                    out_p.parent.mkdir(parents=True, exist_ok=True)
+                    out_p.write_text(dumps(compiled) + "\n", encoding="utf-8")
+                    return {"compiled": str(out_p), "findings": len(compiled["findings"]), "options": len(compiled["options"])}
+                return compiled
+            tpl_text = generate_draft_template(case, state, sources)
+            if args.output:
+                out_p = args.output if args.output.is_absolute() else (case / args.output)
+                out_p = out_p.resolve()
+                out_p.parent.mkdir(parents=True, exist_ok=True)
+                out_p.write_text(tpl_text, encoding="utf-8")
+                return {"template": str(out_p), "active_sources": len([s for s in sources.values() if s["health"] != "retired"])}
+            return tpl_text
         if cmd == "export-strategies":
             return export_strategies(
                 case,
@@ -529,7 +572,11 @@ def run_case(args):
         if cmd == "propose":
             path = case_file(case, args.file)
             _, content = digest(path)
-            proposal = json.loads(content.decode("utf-8-sig"))
+            raw_text = content.decode("utf-8-sig")
+            if path.suffix.lower() in {".yaml", ".yml"}:
+                proposal = compile_draft_template(raw_text, sources)
+            else:
+                proposal = json.loads(raw_text)
             validate(proposal, sources)
             claims = audit_claims(proposal, sources)
             if args.strict_claims and not claims["passed"]:
@@ -545,37 +592,75 @@ def run_case(args):
                 "claim_warnings": claims["total_warnings"],
             }
 
-        # cmd == "accept"
-        if not draft or draft["recommended"] != args.option:
-            raise ValueError("Option must match the current draft")
-        if args.expect != fingerprint(draft, state.get("draft_sequence", 0)):
-            raise ValueError("Draft differs from the recommendation that was reviewed")
-        if outstanding(draft, sources):
-            raise ValueError("Evidence changed. Review the case status before accepting.")
-        pre_accept_claims = audit_claims(draft, sources)
-        if not pre_accept_claims["passed"] and not args.allow_claim_warnings:
-            msgs = "; ".join(w["message"] for w in pre_accept_claims["warnings"] if w["severity"] == "high")
-            raise ValueError(f"Pre-accept hook blocked approval due to claim warnings: {msgs}")
-        if not args.by.strip() or not args.reason.strip():
-            raise ValueError("Approver and reason are required")
-        decision = {
-            "revision": len(decisions) + 1,
-            "option": args.option,
-            "by": args.by,
-            "reason": args.reason,
-            "at": now(),
-            "sha": args.expect,
-            "proposal": draft,
+        if cmd != "dashboard":
+            return _apply_accept_in_state(
+                state,
+                sources,
+                option=args.option,
+                expect=args.expect,
+                by=args.by,
+                reason=args.reason,
+                allow_claim_warnings=args.allow_claim_warnings,
+            )
+
+    # cmd == "dashboard" with --serve (runs outside read transaction)
+    def _live_accept(target_case: Path, *, option: str, expect: str, by: str, reason: str) -> dict:
+        with load(target_case, write=True) as (st, _):
+            srcs = source_health(target_case, st["sources"])
+            return _apply_accept_in_state(st, srcs, option=option, expect=expect, by=by, reason=reason)
+
+    serve_dashboard(
+        case,
+        load_fn=load,
+        source_health_fn=source_health,
+        accept_fn=_live_accept,
+        port=args.port,
+    )
+    return {"served": str(case)}
+
+
+def _apply_accept_in_state(
+    state: dict,
+    sources: dict,
+    *,
+    option: str,
+    expect: str,
+    by: str,
+    reason: str,
+    allow_claim_warnings: bool = False,
+) -> dict:
+    decisions = state["decisions"]
+    draft = state["draft"]
+    if not draft or draft["recommended"] != option:
+        raise ValueError("Option must match the current draft")
+    if expect != fingerprint(draft, state.get("draft_sequence", 0)):
+        raise ValueError("Draft differs from the recommendation that was reviewed")
+    if outstanding(draft, sources):
+        raise ValueError("Evidence changed. Review the case status before accepting.")
+    pre_accept_claims = audit_claims(draft, sources)
+    if not pre_accept_claims["passed"] and not allow_claim_warnings:
+        msgs = "; ".join(w["message"] for w in pre_accept_claims["warnings"] if w["severity"] == "high")
+        raise ValueError(f"Pre-accept hook blocked approval due to claim warnings: {msgs}")
+    if not by.strip() or not reason.strip():
+        raise ValueError("Approver and reason are required")
+    decision = {
+        "revision": len(decisions) + 1,
+        "option": option,
+        "by": by,
+        "reason": reason,
+        "at": now(),
+        "sha": expect,
+        "proposal": draft,
+    }
+    decisions.append(decision)
+    state["draft"] = None
+    if state.get("checkpoint", {}).get("stage") == "review":
+        state["checkpoint"] = {
+            "stage": "follow-up",
+            "next": f"Сопровождение Решения №{decision['revision']} ({option}) и контроль триггеров пересмотра",
+            "at": decision["at"],
         }
-        decisions.append(decision)
-        state["draft"] = None
-        if state.get("checkpoint", {}).get("stage") == "review":
-            state["checkpoint"] = {
-                "stage": "follow-up",
-                "next": f"Сопровождение Решения №{decision['revision']} ({args.option}) и контроль триггеров пересмотра",
-                "at": decision["at"],
-            }
-        return {k: v for k, v in decision.items() if k != "proposal"}
+    return {k: v for k, v in decision.items() if k != "proposal"}
 
 
 def main():
@@ -596,7 +681,12 @@ def main():
                 numerators=args.numerators,
                 ci=args.ci,
                 guardrails=args.guardrails,
+                sheet=args.sheet,
             )
+        elif args.command == "xlsx":
+            result = read_xlsx_records(args.file, sheet=args.sheet)
+            if args.format == "md":
+                result = render_xlsx_markdown(result)
         elif args.command == "economics":
             result = evaluate_economics_file(args.file)
             if args.format == "md":

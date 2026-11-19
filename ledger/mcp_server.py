@@ -10,13 +10,15 @@ import sys
 from .claims import audit_claims
 from .cost import append_cost_entry, import_cost_from_logs, summarize_case_cost
 from .dashboard import write_dashboard
+from .draft_template import compile_draft_template, generate_draft_template
 from .economics import evaluate_economics
 from .kb import ingest_case_into_kb, search_kb
-from .review import render
+from .review import render, validate
 from .router import route_next_step
 from .store import dumps, load
 from .strategies import export_strategies
 from .table import summarize_rates
+from .xlsx import read_xlsx_records, render_xlsx_markdown
 
 SERVER_INFO = {"name": "decision-ledger", "version": "2.0.0"}
 
@@ -46,7 +48,7 @@ TOOLS = [
     },
     {
         "name": "ledger_rates",
-        "description": "Compute auditable cohort rates, 95% Wilson confidence intervals, guardrail checks, and Simpson reversal alerts from CSV.",
+        "description": "Compute auditable cohort rates, 95% Wilson confidence intervals, guardrail checks, and Simpson reversal alerts from CSV/TSV/XLSX.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -56,8 +58,22 @@ TOOLS = [
                 "denominator": {"type": "string"},
                 "numerators": {"type": "array", "items": {"type": "string"}},
                 "guardrails": {"type": "array", "items": {"type": "string"}},
+                "sheet": {"type": "string", "description": "Optional worksheet name or 0-based index for .xlsx"},
             },
             "required": ["file", "group", "denominator", "numerators"],
+        },
+    },
+    {
+        "name": "ledger_xlsx",
+        "description": "Inspect worksheet names and structured records from an OpenXML (.xlsx) workbook using Python stdlib.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "file": {"type": "string"},
+                "sheet": {"type": "string"},
+                "format": {"type": "string", "enum": ["json", "md"], "default": "json"},
+            },
+            "required": ["file"],
         },
     },
     {
@@ -160,6 +176,18 @@ TOOLS = [
             "required": ["case"],
         },
     },
+    {
+        "name": "ledger_draft_template",
+        "description": "Generate a concise YAML draft template for a case (auto-linking SHA-256 sources) or compile YAML draft text into validated proposal JSON.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "case": {"type": "string"},
+                "yaml_text": {"type": "string", "description": "Optional YAML draft text to compile and validate"},
+            },
+            "required": ["case"],
+        },
+    },
 ]
 
 
@@ -173,7 +201,11 @@ def _dispatch_tool(name: str, arguments: dict, *, source_health_fn, decision_sta
             numerators=list(arguments["numerators"]),
             ci=True,
             guardrails=arguments.get("guardrails"),
+            sheet=arguments.get("sheet"),
         )
+    if name == "ledger_xlsx":
+        rep = read_xlsx_records(Path(arguments["file"]).resolve(), sheet=arguments.get("sheet"))
+        return render_xlsx_markdown(rep) if arguments.get("format") == "md" else rep
     if name == "ledger_economics":
         return evaluate_economics(arguments["spec"])
     if name == "ledger_kb_search":
@@ -247,9 +279,15 @@ def _dispatch_tool(name: str, arguments: dict, *, source_health_fn, decision_sta
                 prefix=arguments.get("prefix", "strategy"),
                 include_pdf=bool(arguments.get("include_pdf", True)),
             )
+        if name == "ledger_draft_template":
+            if arguments.get("yaml_text"):
+                compiled = compile_draft_template(arguments["yaml_text"], sources)
+                validate(compiled, sources)
+                return compiled
+            return generate_draft_template(case, state, sources)
         if name == "ledger_view":
             if arguments.get("dashboard"):
-                out = write_dashboard(case, state, sources)
+                out = write_dashboard(case, state, sources, db=db)
                 return {"dashboard": str(out)}
             cs = summarize_case_cost(case, state.get("telemetry", []))
             decisions = state["decisions"]
