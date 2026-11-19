@@ -1,0 +1,44 @@
+{
+  "kind": "economics_inputs",
+  "currency": "RUB",
+  "as_of": "2026-11-19",
+  "note": "Открытые публичные цены контентных подписок (факты с URL и датой снимка 2026-11-19) отдельно от сценарных модельных допущений партнёрских роялти, CVM/платного CAC и удержания (не управленческая отчётность ПАО МегаФон).",
+  "public_facts": [
+    {
+      "id": "megakino_price",
+      "monthly_price_rub": 399,
+      "extra_switch_fee_rub": 30,
+      "free_switches_per_30d": 3,
+      "source_url": "https://moscow.megafon.ru/services/megakino/"
+    },
+    {
+      "id": "yandex_plus_market_price",
+      "monthly_price_rub": 449,
+      "source_url": "https://3dnews.ru/1131783/stoimost-podpiski-yandeks-plyus-uvelichitsya-s-1-dekabrya"
+    },
+    {
+      "id": "icmr_penetration_2025q4",
+      "urban_penetration_pct": 51,
+      "paying_share_pct": 38,
+      "source_url": "https://www.cnews.ru/news/line/2026-03-26_issledovanie_icmr_bolee_poloviny"
+    }
+  ],
+  "model_assumptions": {
+    "status": "assumption",
+    "basis": "Сценарные модельные допущения для расчёта чувствительности и порогов безубыточности; подлежат сверке с партнёрскими договорами и полевым пилотом Q1 2027.",
+    "partner_royalty_and_cdn_rub_per_month": {
+      "megakino_5_cinemas_rotational": 195,
+      "partner_resale_bundle_449": 330,
+      "hybrid_megasily_lite_tier_249": 115
+    },
+    "support_and_billing_ops_rub_per_month": 18,
+    "acquisition_cac_rub": {
+      "own_cvm_channels_app_sms_lk": 25,
+      "paid_external_digital_traffic": 290
+    },
+    "average_retention_months": {
+      "standalone_paid_promo_cohort": 4,
+      "tariff_embedded_or_transparent_consent_cohort": 8
+    }
+  }
+}

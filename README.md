@@ -19,13 +19,14 @@
 
 <p align="center">
   <a href="https://github.com/artemmalanin979-create/decision-ledger/actions/workflows/ci.yml"><img src="https://github.com/artemmalanin979-create/decision-ledger/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-  <img src="https://img.shields.io/badge/tests-35%20passing-0d9488" alt="35 tests passing" />
-  <img src="https://img.shields.io/badge/audit--repo-0%20secrets%20%26%20PII%20(git%20%2B%20.gz)-0d9488" alt="0 secrets and PII" />
-  <img src="https://img.shields.io/badge/demo%20data-100%25%20open%20sources%20(SHA--256)-0f766e" alt="100% open sources" />
+  <img src="https://img.shields.io/badge/tests-39%20passing-0d9488" alt="39 tests passing" />
+  <img src="https://img.shields.io/badge/audit--repo-0%20secrets%20%26%20PII%20(git%20%2B%20.gz%20%2B%20.xlsx)-0d9488" alt="0 secrets and PII" />
+  <img src="https://img.shields.io/badge/demo%20data-2%20real%20open%20cases%20(SHA--256)-0f766e" alt="2 real open cases" />
 </p>
 
 <p align="center">
-  <a href="demo/antifraud-subscription/README.md"><b>Основное демо (МегаФон)</b></a> ·
+  <a href="demo/antifraud-subscription/README.md"><b>Основное демо (Безопасность)</b></a> ·
+  <a href="demo/megakino-plus-2027/README.md"><b>2-й открытый кейс (МегаКино / 376-ФЗ)</b></a> ·
   <a href="demo/antifraud-subscription/strategy-product.pdf"><b>Продуктовая стратегия (PDF)</b></a> ·
   <a href="demo/antifraud-subscription/strategy-comms.pdf"><b>Коммуникационная стратегия (PDF)</b></a> ·
   <a href="demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/HONESTY.md"><b>Живой прогон 18.11 (Grok CLI)</b></a> ·
@@ -88,16 +89,17 @@
 | [`demo/antifraud-subscription/README.md`](demo/antifraud-subscription/README.md) | **Витрина основного демо-кейса**: постановка, таблица 18 открытых источников с `SHA-256`, ход 3 шагов и телеметрия | `СТРАТЕГИЯ` |
 | [`demo/antifraud-subscription/strategy-product.md`](demo/antifraud-subscription/strategy-product.md) · [`.pdf`](demo/antifraud-subscription/strategy-product.pdf) | **Итоговая продуктовая стратегия 2027 (Решение №2)**: резюме комитета, JTBD, дерево OST, 5 альтернатив, пороги смены выбора, Pre-mortem, пилот Q1 | `СТРАТЕГИЯ` |
 | [`demo/antifraud-subscription/strategy-comms.md`](demo/antifraud-subscription/strategy-comms.md) · [`.pdf`](demo/antifraud-subscription/strategy-comms.pdf) | **Итоговая коммуникационная стратегия 2027 (Решение №2)**: разбор живых лендингов «Было → Стало», офферы 3 когорт, CVM-триггеры, матрица обещаний и стоп-лист | `СТРАТЕГИЯ` |
-| [`demo/antifraud-subscription/decision-passport.html`](demo/antifraud-subscription/decision-passport.html) | Самодостаточный интерактивный HTML-паспорт Решения №2 (подсветка графа оснований, OST, матрицы обещаний, поручений и истории ревизий) | `СТРАТЕГИЯ` |
+| [`demo/antifraud-subscription/decision-passport.html`](demo/antifraud-subscription/decision-passport.html) | Самодостаточный интерактивный HTML-паспорт Решения №2 (трассировка графа оснований, **ползунки чувствительности `what-if`** CVM vs платный `CAC` по формулам `economics.py`, **панель гейта `accept`**, OST, матрица обещаний) | `СТРАТЕГИЯ` |
+| [`demo/megakino-plus-2027/`](demo/megakino-plus-2027/README.md) · [`examples/megakino-plus-2027/`](examples/megakino-plus-2027/README.md) | **Второй реальный открытый кейс вне антифрода** («МегаКино» `399 ₽` / «МегаФон Плюс» `345–460 ₽` / `376-ФЗ`): живые веб-снимки от `19.11.2026`, книга `.xlsx`, черновики `draft.yaml` (`20,7 мин` 1-й проход), верифицированные логи `logs/*.jsonl.gz`, паспорт и `strategy-*.pdf` | `СТРАТЕГИЯ` |
 | [`demo/antifraud-subscription/04-impact-after-20261029.json`](demo/antifraud-subscription/04-impact-after-20261029.json) | Детерминированный расчёт области пересмотра после новости МегаФона от `29.10.2026` (`6` из `16` узлов устарели, `10` сохранены) | `ПРОТОКОЛ` |
 | [`demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/`](demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/) | **Чистый живой прогон в 3 новых чатах (`grok-4.7`)**: `turns.jsonl`, `logs/*.stream.jsonl.gz`, `casts/*.cast.gz`, выгруженные стратегии `case/strategy-*.pdf`, верифицированный `cost.jsonl` (`--from-log`) и [`HONESTY.md`](demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/HONESTY.md) | `ПРОТОКОЛ` |
 | [`examples/antifraud-subscription/`](examples/antifraud-subscription/) | Входные материалы открытого кейса: `brief.md`, рамки `manager.md` (без списка вариантов), 9 веб-снимков, таблица тарифов, data-only `economics_2027.json`, 2 скриншота лендингов, гайд интервью и 6 ИИ-персон | `ДАННЫЕ` |
 | [`AGENTS.md`](AGENTS.md) · [`CLAUDE.md`](CLAUDE.md) · [`.cursor/`](.cursor/) · [`.mcp.json`](.mcp.json) | Корневой системный контракт эпистемики и безопасности + нативные правила и конфигурации `stdio MCP` для IDE | `КОНТРАКТ` |
 | [`.agents/skills/`](.agents/skills/) · [`agents/`](agents/) · [`playbook/`](playbook/) | 6 процедурных навыков по шагам, 3 ролевых субагента (`evidence-extractor`, `synthetic-respondent`, `skeptic-reviewer`) и 8 методичек (`JTBD`, `OST`, `Pre-mortem`, `Promise Matrix`) | `КОНТРАКТ` |
-| [`ledger/`](ledger/) | Детерминированное ядро: SQLite-реестр `store.py`, граф `review.py`, ДИ Вильсона и Симпсон `stats.py`/`table.py`, экономика `economics.py`, лог-телеметрия `cost.py`, экспорт MD/PDF стратегий `strategies.py`, чекер `claims.py`, FTS5 БЗ `kb.py`, `mcp_server.py`, `repo_audit.py` | `ЯДРО` |
+| [`ledger/`](ledger/) | Детерминированное ядро: SQLite-реестр `store.py`, граф `review.py`, ДИ Вильсона и Симпсон `stats.py`/`table.py`, `.xlsx`-ридер `xlsx.py`, YAML-компилятор `draft_template.py`, экономика `economics.py`, лог-телеметрия `cost.py`, паспорт с `what-if` и `accept` `dashboard.py`, экспорт MD/PDF `strategies.py`, чекер `claims.py`, FTS5 БЗ `kb.py`, `mcp_server.py` (`12` тулов), `repo_audit.py` | `ЯДРО` |
 | [`docs/architecture.md`](docs/architecture.md) · [`docs/benchmark.md`](docs/benchmark.md) · [`docs/portability.md`](docs/portability.md) · [`docs/live-run.md`](docs/live-run.md) | Внутреннее устройство, методика полной стоимости и 6-осевого бенчмарка, матрица переносимости между IDE и протокол живого прогона | `КОНТРАКТ` |
 | [`demo/retail-continuity/`](demo/retail-continuity/README.md) · [`examples/call-filter/`](examples/call-filter/scenario-notes.md) | Два **вымышленных учебных кейса на синтетических данных** для проверки доменной переносимости ядра (включая `export-strategies`) без правки кода | `ДАННЫЕ` |
-| [`tests/`](tests/) · [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | 35 модульных и сквозных автотестов (`unittest`, `0` внешних пакетов) + матричный CI на Python `3.11 / 3.12 / 3.13` со сканом всей истории git | `ЯДРО` |
+| [`tests/`](tests/) · [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | 39 модульных и сквозных автотестов (`unittest`, `0` внешних пакетов) + матричный CI на Python `3.11 / 3.12 / 3.13` со сканом всей истории git, `.gz` и `.xlsx` | `ЯДРО` |
 
 ---
 
@@ -120,7 +122,7 @@
 </p>
 
 - **Нулевые внешние зависимости (`Python 3.11+ stdlib`, `SQLite 3`)**: чистый клон работает на `Linux`, `macOS` и `Windows` без `pip install`, Docker-контейнеров, внешних векторных БД и зашитых API-ключей.
-- **Двойная шина инструментов (`CLI` + `stdio MCP`)**: терминальные агенты (`Codex CLI`, `Antigravity`, `Grok Build CLI`, `OpenCode`) вызывают 18 команд `python3 -m ledger <cmd>` (включая `cost --from-log` и `export-strategies`), а IDE с поддержкой Model Context Protocol (`Cursor`, `Claude Code`, `Windsurf`) поднимают локальный JSON-RPC 2.0 сервер `python3 -m ledger mcp` (`10` инструментов чтения, расчёта, экспорта стратегий, аудита и поиска по БЗ с поддержкой `NDJSON` и `Content-Length`).
+- **Двойная шина инструментов (`CLI` + `stdio MCP`)**: терминальные агенты (`Codex CLI`, `Antigravity`, `Grok Build CLI`, `OpenCode`) вызывают 20 команд `python3 -m ledger <cmd>` (включая `xlsx`, `draft --template`, `propose draft.yaml`, `cost --from-log`, `export-strategies` и `dashboard --serve`), а IDE с поддержкой Model Context Protocol (`Cursor`, `Claude Code`, `Windsurf`) поднимают локальный JSON-RPC 2.0 сервер `python3 -m ledger mcp` (`12` инструментов чтения, `.xlsx`, расчёта, YAML-шаблона, экспорта стратегий, аудита и поиска по БЗ с поддержкой `NDJSON` и `Content-Length`).
 - **Эпистемическая защита памяти (`SQLite FTS5`)**: межсессионная база `.kb/knowledge.sqlite3` индексирует источники и решения с поддержкой русских словоформ; прошлые выводы агента (`prior_conclusion`) и синтетические персоны (`synthetic_probe`) помечаются `can_cite_as_fact = false`, а при пересмотре старая ревизия переводится в `superseded`.
 - **Карантин `prompt injection` и аудит истории git**: текст внешних веб-страниц сканируется `scan_untrusted_text` и никогда не повышается до системных правил; команда `python3 -m ledger audit-repo . --history` и `hooks/pre-commit` проверяют рабочее дерево, сжатые `.gz` логи и все блобы истории коммитов на секреты (`sk-*`, `sk-ant-*`, `xai-*`, `ghp_*`, `AKIA*`) и мобильные номера ПДн.
 
@@ -230,12 +232,18 @@
 ### Шаг 1. Проверка чистого клона из терминала (30 секунд, без модели)
 
 ```bash
-# Запуск 35 модульных и сквозных автотестов + скан секретов и ПДн по всей истории git (включая .gz логи)
+# Запуск 39 модульных и сквозных автотестов + скан секретов и ПДн по всей истории git, .gz и .xlsx
 make check
 
 # Или напрямую через стандартный интерпретатор Python 3.11+:
 python3 -W error::ResourceWarning -m unittest discover -s tests -v
 python3 -m ledger audit-repo . --history
+
+# Чтение многолистовой рабочей книги Excel (.xlsx) на чистом stdlib (0 pip-пакетов)
+python3 -m ledger xlsx examples/megakino-plus-2027/initial/tables/subscription_benchmarks_2026.xlsx --format md
+
+# Быстрая генерация шаблонного YAML-черновика с автоподстановкой SHA-256 (reviewed: auto)
+python3 -m ledger draft .cases/megakino --template -o .cases/megakino/draft.yaml
 
 # Пересборка cost.jsonl напрямую из сырых логов рантайма CLI (Grok CLI / Antigravity / Codex)
 python3 -m ledger cost .cases/antifraud --from-log demo/antifraud-subscription/runs/2026-11-18-live-grok-cli
@@ -299,33 +307,35 @@ decision-ledger/
 ├── playbook/                        # Методички: contract, research, decision, follow-up, jtbd, ost, premortem, promise-matrix
 ├── ledger/                          # Детерминированное ядро на Python 3.11+ stdlib (0 pip-пакетов):
 │   ├── store.py, review.py          #   транзакционный SQLite со снимками SHA-256 и графом impact (--updates)
-│   ├── stats.py, table.py           #   95% ДИ Вильсона, guardrails, детекция парадокса Симпсона
+│   ├── stats.py, table.py, xlsx.py  #   95% ДИ Вильсона, guardrails, Симпсон и чтение/запись .xlsx на stdlib
+│   ├── draft_template.py            #   генератор и компилятор YAML-шаблона черновика (reviewed: auto)
 │   ├── economics.py, cost.py        #   юнит-экономика с порогами + импорт логов CLI (--from-log) в cost.jsonl
-│   ├── strategies.py, dashboard.py  #   экспорт 2 стратегий (MD/PDF) из case.sqlite3 + интерактивный HTML-паспорт
+│   ├── strategies.py, dashboard.py  #   экспорт MD/PDF из case.sqlite3 + HTML-паспорт с ползунками what-if и гейтом accept
 │   ├── claims.py, web_fetch.py      #   аудит обещаний, карантин инъекций и HTTPS-снимки открытых страниц
 │   ├── kb.py, router.py             #   SQLite FTS5 база знаний (can_cite_as_fact) и маршрутизатор сбоев
-│   ├── mcp_server.py                #   JSON-RPC 2.0 MCP-сервер (10 тулов, включая ledger_export_strategies)
-│   └── repo_audit.py, benchmark_eval.py # скан секретов/ПДн по истории git и .gz + рубрика бенчмарка
+│   ├── mcp_server.py                #   JSON-RPC 2.0 MCP-сервер (12 тулов, включая ledger_xlsx и ledger_draft_template)
+│   └── repo_audit.py, benchmark_eval.py # скан секретов/ПДн по истории git, .gz и .xlsx + рубрика бенчмарка
 ├── demo/
 │   ├── antifraud-subscription/      # Основной демо-проект на открытых данных (стратегии MD/PDF, паспорт, runs/)
+│   ├── megakino-plus-2027/          # Второй реальный открытый кейс вне антифрода (МегаКино, 376-ФЗ, .xlsx, draft.yaml)
 │   └── retail-continuity/           # Вымышленный учебный кейс для проверки переносимости (B2B резерв касс)
-├── examples/                        # Входные данные: antifraud (открытые источники); retail-backup и call-filter (учебные)
+├── examples/                        # Входные данные: antifraud и megakino-plus-2027 (открытые); retail-backup и call-filter (учебные)
 ├── scripts/render_antifraud_pdfs.py # Воспроизводимая сборка PDF-стратегий и скриншотов паспорта (headless Chrome)
 ├── docs/                            # Спецификации: architecture.md, benchmark.md, portability.md, live-run.md, assets/
-└── tests/                           # 35 модульных и сквозных автотестов
+└── tests/                           # 39 модульных и сквозных автотестов
 ```
 
 ---
 
 ## Что доказано и честные границы системы
 
-**Проверено программно и задокументировано (35 автотестов + сырые логи):**
-- **Целостность доказательств и гейта человека**: побайтные снимки `SHA-256` в таблице `evidence`, уникальность подтверждения через `draft_sequence` и блокировка `accept` хуком `pre-accept` при обнаружении безусловных обещаний («100% защита», «от любых мошенников»).
-- **Точность количественных расчётов вне LLM**: 95% доверительные интервалы Вильсона на малых выборках, автоматическая детекция парадокса Симпсона, расчёт запаса по костам и аналитических порогов переключения между альтернативами.
-- **Реальная переносимость между средами и сеансами**: один и тот же формат кейса прошёл прогоны в **Grok Build CLI (`grok-4.7`)**, **Antigravity** и **Codex CLI (`gpt-6.1-sol`)**, а также проверку чтения через `stdio MCP`; ядро без правок кода отработало на открытом B2C-кейсе телекома и двух учебных задачах.
+**Проверено программно и задокументировано (39 автотестов + сырые логи):**
+- **Целостность доказательств и гейта человека**: побайтные снимки `SHA-256` в таблице `evidence`, уникальность подтверждения через `draft_sequence`, панель копирования/локального вызова `accept` в веб-паспорте и блокировка `accept` хуком `pre-accept` при обнаружении безусловных обещаний («100% защита», «от любых мошенников»).
+- **Точность количественных расчётов вне LLM**: 95% доверительные интервалы Вильсона на малых выборках, автоматическая детекция парадокса Симпсона, чтение многолистовых книг `.xlsx` на `stdlib`, интерактивный `what-if` пересчёт чувствительности (`CVM CAC` vs платный внешний трафик, `Retention`) прямо в `decision-passport.html` по точным формулам `economics.py`.
+- **Реальная переносимость между средами, сеансами и доменами**: один и тот же формат кейса прошёл прогоны в **Grok Build CLI (`grok-4.7`)**, **Antigravity** и **Codex CLI (`gpt-6.1-sol`)**, проверку чтения через `stdio MCP`, а также отработал на **двух независимых реальных открытых кейсах ПАО «МегаФон»** (линейка безопасности и контентные подписки «МегаКино» / «МегаФон Плюс» по `376-ФЗ`, где первый проход с `ledger draft --template` занял по логам `20,7 мин = 1 239 с`) и двух учебных стендах.
 
 **Честные ограничения (чего система намеренно не обещает):**
 - **Смысловой выбор остаётся за руководителем продукта**: ядро гарантирует связность ссылок, чистоту арифметики и соблюдение стоп-листа обещаний, но полноту продуктовых гипотез и финальное решение оценивает человек на гейте `accept`.
 - **Модельные респонденты не измеряют спрос**: ответы 6 синтетических персон (`synthetic: true`, `can_cite_as_fact: false`) служат только для поиска барьеров восприятия и стресс-теста формулировок; фактическую конверсию и удержание измеряет полевой пилот со стоп-правилами.
-- **Реактивное сопровождение без фонового демона**: проверка просроченных поручений `actions` и изменившихся источников выполняется при обращении к кейсу (`status` / `route` / `fetch`). Для графических окон `Cursor` и `Claude Code` подготовлены конфигурации `.cursor/` и `.mcp.json` (протокол `stdio MCP` верифицирован из терминала и автотестом, ручной запуск в GUI не проводился).
+- **Реактивное сопровождение и отсутствие Cursor GUI на стенде**: проверка просроченных поручений `actions` и изменившихся источников выполняется при обращении к кейсу (`status` / `route` / `fetch`). На рабочей Linux-машине графическое приложение Cursor IDE не установлено (только CLI-шим), поэтому протокол `stdio MCP` (`12` тулов) верифицирован из терминала и автотестами без видеозаписи окна GUI Cursor; `human_minutes` секундомером не фиксировались (`null`).
 - **Когда агент избыточен**: для разовых пятиминутных вопросов без таблиц, внешних источников и возврата к решению обычный чат быстрее; `Decision Ledger` создан для защищаемых решений комитета, которые живут и пересматриваются во времени.

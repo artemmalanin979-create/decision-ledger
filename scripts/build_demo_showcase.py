@@ -449,6 +449,7 @@ def main() -> None:
         run_ledger("checkpoint", str(case), "follow-up", "Контроль набора 20 точек direct_pos до 2026-11-30 и диагностика legacy_gateway до 2026-11-24.")
         (showcase / "05-decision-v2.md").write_text(run_ledger("view", str(case), "--decision", "2"), encoding="utf-8")
         run_ledger("dashboard", str(case), "-o", str(showcase / "05-dashboard-v2.html"))
+        run_ledger("export-strategies", str(case), "-o", str(showcase))
 
         # Ingest into Knowledge Base and save sample search showing epistemic separation
         run_ledger("kb", "--kb-dir", str(kb_dir), "ingest", str(case))

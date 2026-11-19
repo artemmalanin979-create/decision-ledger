@@ -23,11 +23,12 @@
   body {
     margin: 0;
     padding: 32px 40px 56px;
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg);
     color: var(--ink);
     line-height: 1.5;
     font-size: 14px;
+    font-variant-numeric: tabular-nums;
   }
   .container { max-width: 1360px; margin: 0 auto; }
   .topbar {
@@ -38,8 +39,16 @@
     font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--accent); margin-bottom: 6px;
   }
-  h1 { margin: 0 0 8px; font-size: 26px; line-height: 1.2; letter-spacing: -0.02em; }
-  h2 { margin: 28px 0 12px; font-size: 16px; letter-spacing: -0.01em; }
+  h1 {
+    margin: 0 0 8px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 26px; line-height: 1.2; letter-spacing: -0.02em;
+  }
+  h2 {
+    margin: 28px 0 12px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px; letter-spacing: -0.01em;
+  }
   h3 { margin: 0; font-size: 14px; }
   .summary { margin: 0; color: var(--muted); max-width: 840px; font-size: 14px; }
   .status-pill {
@@ -50,7 +59,7 @@
   .status-warn { border-color: #FDE68A; background: var(--warn-soft); color: var(--warn); }
   .status-alert { border-color: #FECACA; background: var(--alert-soft); color: var(--alert); }
   .meta-strip {
-    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px;
   }
   .metric-card {
     background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
@@ -59,9 +68,83 @@
   .metric-value { font-size: 14px; font-weight: 600; margin-top: 4px; }
   .impact-banner {
     background: var(--alert-soft); border: 1px solid #FECACA; border-radius: 8px;
-    padding: 14px 16px; margin-bottom: 20px; color: #7F1D1D;
+    padding: 14px 16px; margin-bottom: 18px; color: #7F1D1D;
   }
   .impact-banner p { margin: 4px 0 0; font-size: 13px; }
+  .accept-panel, .whatif-panel {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 20px;
+  }
+  .accept-grid {
+    display: grid; grid-template-columns: 1.2fr 0.8fr 1.4fr; gap: 12px; align-items: end;
+  }
+  .field-label {
+    display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--subtle);
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .field-input {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font-size: 13px; font-family: inherit; color: var(--ink); background: #F8FAFC;
+  }
+  .cmd-box {
+    margin-top: 10px; padding: 9px 12px; background: #0F172A; color: #E2E8F0;
+    border-radius: 6px; overflow-x: auto; font-size: 12px;
+  }
+  .accept-actions {
+    margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+  .action-btn {
+    padding: 7px 13px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .action-btn-primary {
+    background: var(--accent); border-color: var(--accent); color: #FFFFFF;
+  }
+  .action-btn-primary:hover { background: #115E59; color: #FFFFFF; }
+  .accept-feedback { font-size: 12px; font-weight: 600; color: var(--accent); }
+  .whatif-header {
+    display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }
+  .preset-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset-btn {
+    padding: 5px 11px; border-radius: 6px; border: 1px solid var(--line); background: #F8FAFC;
+    color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+  .preset-btn.active-preset {
+    border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  }
+  .whatif-controls-top {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 12px 0;
+  }
+  .checkbox-inline {
+    display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); padding-bottom: 6px; cursor: pointer;
+  }
+  .sliders-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px;
+  }
+  .slider-card {
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #F8FAFC;
+  }
+  .slider-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; margin-bottom: 8px;
+  }
+  .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+  .num-input {
+    width: 72px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--surface); font-size: 12px; text-align: right;
+  }
+  .whatif-kpi-strip {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px;
+  }
+  .kpi-mini {
+    border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px; background: var(--surface);
+  }
+  .kpi-mini .k-lbl { font-size: 11px; color: var(--subtle); }
+  .kpi-mini .k-val { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  tr.whatif-selected-row td { background: var(--accent-soft); }
   .lineage-grid {
     display: grid; grid-template-columns: 0.85fr 1.25fr 1.1fr; gap: 16px; align-items: start;
   }
@@ -106,7 +189,7 @@
     background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px;
     display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; font-size: 13px;
   }
-  .mono { font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; font-size: 12px; }
+  .mono { font-family: "Source Code Pro", "DejaVu Sans Mono", monospace; font-size: 12px; }
   .reset-btn {
     border: 1px solid var(--line); background: var(--surface); color: var(--muted);
     border-radius: 5px; padding: 2px 8px; font-size: 11px; cursor: pointer;
@@ -138,12 +221,45 @@
       <div class="metric-value">9 источников · 1 утверждённое решение</div>
     </div>
     <div class="metric-card">
-      <div class="metric-label">Телеметрия сеансов</div>
-      <div class="metric-value">1 шаг · 38.4 с · 5 вызовов CLI</div>
+      <div class="metric-label">Затраты и участие человека · ОЦЕНКА (ESTIMATED)</div>
+      <div class="metric-value">14 200 вх. (4 600 нов. + 9 600 кэш) / 1 150 вых. токенов · 38.4 с · Оценка API: 0.45 ₽ ($0.005) · чел: не измерялось</div>
+      <div class="node-meta" style="margin-top:5px;"><span class="tag tag-alert" style="margin-right:6px;">Самоотчёт модели (не верифицировано)</span>[НЕ ВЕРИФИЦИРОВАНО · самоотчёт модели] Оценка эквивалента токенов по публичному прайсу (Google Gemini 2.5 Flash, https://ai.google.dev/gemini-api/docs/pricing)</div>
     </div>
   </section>
 
   <section class="impact-banner"><div><strong>Обнаружено обновление входных данных после Решения №1</strong><p>Изменившиеся источники: <span class="mono">pilot</span> · Новые источники: <span class="mono">нет</span> · Затронуто транзитивно: 4 основания, 3 варианта, 3 блока стратегии.</p></div></section>
+  
+  <section class="accept-panel" id="accept-gate-panel">
+    <div class="node-head" style="margin-bottom:10px;">
+      <div>
+        <span class="eyebrow" style="margin-bottom:2px;display:block;">Гейт человека (Human-in-the-loop)</span>
+        <h3 style="font-size:15px;">Утверждение решения комитетом (<span class="mono">ledger accept</span>)</h3>
+      </div>
+      <span class="tag tag-ok">Решение №1 зафиксировано · Продуктовый комитет</span>
+    </div>
+    <div class="accept-grid">
+      <label class="field-label"><span>Вариант решения</span>
+        <select id="accept-option" class="field-input" onchange="updateAcceptCommand()"><option value="keep_stand">keep_stand — Оставить текущую схему и провести только стендовую досверку</option><option value="self_service_kit">self_service_kit — Запустить коробку SIM + LTE-роутер для самостоятельного переключения</option><option value="managed_failover" selected>managed_failover — Подготовить платный пилот настроенного резерва для direct_pos (допуск после сверки)</option><option value="close_initiative">close_initiative — Закрыть инициативу и переключить команду на другой продукт портфеля</option></select>
+      </label>
+      <label class="field-label"><span>Кто утверждает (<span class="mono">--by</span>)</span>
+        <input id="accept-by" type="text" class="field-input" value="Продуктовый комитет" oninput="updateAcceptCommand()"/>
+      </label>
+      <label class="field-label"><span>Основание (<span class="mono">--reason</span>)</span>
+        <input id="accept-reason" type="text" class="field-input" value="Одобрена подготовка пилота только для direct_pos; допуск после финальной сверки чеков." oninput="updateAcceptCommand()"/>
+      </label>
+    </div>
+    <div id="accept-mismatch-note" class="claim-warn" style="display:none;margin-top:8px;border-top:none;padding-top:0;">
+      Выбранный вариант отличается от <span class="mono">managed_failover</span> в черновике: <span class="mono">ledger accept</span> заблокирует подмену без обновления черновика через <span class="mono">propose</span>.
+    </div>
+    <div class="cmd-box">
+      <code id="accept-cmd-preview" class="mono"></code>
+    </div>
+    <div class="accept-actions">
+      <button type="button" class="action-btn" id="accept-copy-btn" onclick="copyAcceptCommand()">Скопировать команду accept</button>
+      <span class="node-meta" style="align-self:center;">Зафиксировано 2026-11-19T13:14:23+00:00 · SHA <span class="mono">064a7662b47b8357…</span></span>
+      <span id="accept-feedback" class="accept-feedback" aria-live="polite"></span>
+    </div>
+  </section>
 
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <h2>Трассировка оснований (кликните узел для подсветки зависимостей)</h2>
@@ -166,8 +282,107 @@
 
   <h2>Согласованная продуктовая и коммуникационная стратегия</h2>
   <section class="strategy-grid">
-    <div class="strategy-card stale" data-node="strategy:product" onclick="selectNode('strategy:product')"><div class="node-head"><h3>Продуктовая стратегия</h3><span class="mono">gate_recommendation, unit_economics_headroom, cashier_friction_hypothesis</span></div><p>Целевой сегмент первой волны: независимые магазины с 1–2 кассами только на схеме direct_pos (до 20 точек). Осознанные отказы: кассы с legacy_gateway не допускаются в пилот до сверки и разбора UX-окна очереди; коробочный роутер параллельно не запускаем. Состав услуги за 2 490 ₽/мес (без НДС): проверка сигнала LTE в помещении, настройка автопереключения, обязательная контрольная оплата с выходом фискального чека при выдернутом кабеле, памятка кассиру и повторная приёмка при смене кассового ПО. Экономическая граница: держать прямые затраты &lt;=1 369,50 ₽/мес на точку (базовый план 1 200 ₽/мес).</p></div><div class="strategy-card stale" data-node="strategy:communication" onclick="selectNode('strategy:communication')"><div class="node-head"><h3>Коммуникационная стратегия</h3><span class="mono">market_mechanisms, ux_and_promo_barrier, gate_recommendation</span></div><p>Снять черновик баннера про бесперебойную работу любой кассы. Ключевое сообщение владельцу магазина перед подключением (при условии совместимой кассы direct_pos, подтверждённого LTE в помещении, рабочего питания и доступности платёжного сервиса): «Настроим автоматический переход на LTE на случай обрыва проводного интернета и при подключении вместе проверим на вашей кассе, что проходит контрольная оплата и печатается чек. Оставим короткую инструкцию кассиру, как проверить статус операции перед повторным списанием». Канал: прямой пресейл-звонок по квалифицированной базе + карточка приёмки на кассе.</p><div class="claim-ok">Аудит обещаний: границы применимости согласованы с продуктом</div></div><div class="strategy-card stale" data-node="strategy:experiment" onclick="selectNode('strategy:experiment')"><div class="node-head"><h3>План проверки и стоп-правила</h3><span class="mono">scope_and_thresholds, direct_pos_preliminary, unit_economics_headroom, field_demand_and_recount_unknown</span></div><p>Шаг 1 (гейт допуска, 2 рабочих дня): получить финальную сверку логов касс, эквайера и чеков. Критерий открытия пилота для direct_pos: &gt;=90% завершённых покупок и &lt;=3% ложных успехов. Шаг 2 (полевой платный пилот, до 30.11.2026): предложить подключение до 20 магазинам direct_pos, замерить конверсию в оплату (ориентир продолжения &gt;=5 платящих точек из 20), фактическое время выезда/поддержки и прямые затраты на точку. Стоп-правило: при любом подтверждённом ложном успехе на живой кассе или превышении потолка затрат 1 369,50 ₽/мес без пути снижения — остановить новые подключения и вынести пересмотр на комитет.</p></div>
+    <div class="strategy-card stale" data-node="strategy:product" onclick="selectNode('strategy:product')"><div class="node-head"><h3>Продуктовая стратегия</h3><span class="tag" title="gate_recommendation, unit_economics_headroom, cashier_friction_hypothesis">3 основания</span></div><p>Целевой сегмент первой волны: независимые магазины с 1–2 кассами только на схеме direct_pos (до 20 точек). Осознанные отказы: кассы с legacy_gateway не допускаются в пилот до сверки и разбора UX-окна очереди; коробочный роутер параллельно не запускаем. Состав услуги за 2 490 ₽/мес (без НДС): проверка сигнала LTE в помещении, настройка автопереключения, обязательная контрольная оплата с выходом фискального чека при выдернутом кабеле, памятка кассиру и повторная приёмка при смене кассового ПО. Экономическая граница: держать прямые затраты &lt;=1 369,50 ₽/мес на точку (базовый план 1 200 ₽/мес).</p><div class="node-meta" style="margin-top:8px;">Основания: gate_recommendation, unit_economics_headroom, cashier_friction_hypothesis</div></div><div class="strategy-card stale" data-node="strategy:communication" onclick="selectNode('strategy:communication')"><div class="node-head"><h3>Коммуникационная стратегия</h3><span class="tag" title="market_mechanisms, ux_and_promo_barrier, gate_recommendation">3 основания</span></div><p>Снять черновик баннера про бесперебойную работу любой кассы. Ключевое сообщение владельцу магазина перед подключением (при условии совместимой кассы direct_pos, подтверждённого LTE в помещении, рабочего питания и доступности платёжного сервиса): «Настроим автоматический переход на LTE на случай обрыва проводного интернета и при подключении вместе проверим на вашей кассе, что проходит контрольная оплата и печатается чек. Оставим короткую инструкцию кассиру, как проверить статус операции перед повторным списанием». Канал: прямой пресейл-звонок по квалифицированной базе + карточка приёмки на кассе.</p><div class="node-meta" style="margin-top:8px;">Основания: market_mechanisms, ux_and_promo_barrier, gate_recommendation</div><div class="claim-ok">Аудит обещаний: границы применимости согласованы с продуктом</div></div><div class="strategy-card stale" data-node="strategy:experiment" onclick="selectNode('strategy:experiment')"><div class="node-head"><h3>План проверки и стоп-правила</h3><span class="tag" title="scope_and_thresholds, direct_pos_preliminary, unit_economics_headroom, field_demand_and_recount_unknown">4 основания</span></div><p>Шаг 1 (гейт допуска, 2 рабочих дня): получить финальную сверку логов касс, эквайера и чеков. Критерий открытия пилота для direct_pos: &gt;=90% завершённых покупок и &lt;=3% ложных успехов. Шаг 2 (полевой платный пилот, до 30.11.2026): предложить подключение до 20 магазинам direct_pos, замерить конверсию в оплату (ориентир продолжения &gt;=5 платящих точек из 20), фактическое время выезда/поддержки и прямые затраты на точку. Стоп-правило: при любом подтверждённом ложном успехе на живой кассе или превышении потолка затрат 1 369,50 ₽/мес без пути снижения — остановить новые подключения и вынести пересмотр на комитет.</p><div class="node-meta" style="margin-top:8px;">Основания: scope_and_thresholds, direct_pos_preliminary, unit_economics_headroom, field_demand_and_recount_unknown</div></div>
   </section>
+
+  
+  <h2>Интерактивный калькулятор чувствительности юнит-экономики (what-if)</h2>
+  <section class="whatif-panel" id="whatif-panel">
+    <div class="whatif-header">
+      <div>
+        <div class="node-meta" style="font-size:12px;color:var(--muted);">
+          Порог комитета: <strong>маржинальный вклад &gt;= 45%</strong> (источник модели: <span class="mono">economics</span>).
+          Цены с витрин — публичные факты или рыночные ориентиры; <strong>CAC, срок удержания и рекуррентные затраты — сценарные допущения (what-if)</strong>,
+          пересчитываемые в браузере строго по формулам <span class="mono">ledger/economics.py</span> без внешних зависимостей.
+        </div>
+      </div>
+      <div class="preset-bar">
+        <button type="button" class="preset-btn active-preset" data-preset="base" onclick="applyEconPreset('base', this)">База спецификации</button>
+        <button type="button" class="preset-btn" data-preset="cvm" onclick="applyEconPreset('cvm', this)">Собственные CVM-каналы (CAC 25 ₽)</button>
+        <button type="button" class="preset-btn" data-preset="paid" onclick="applyEconPreset('paid', this)">Платный внешний трафик (CAC +25%)</button>
+        <button type="button" class="preset-btn" data-preset="stress" onclick="applyEconPreset('stress', this)">Стресс затрат (+15%) и оттока (-2 мес.)</button>
+      </div>
+    </div>
+
+    <div class="whatif-controls-top">
+      <label class="field-label" style="flex:1;min-width:260px;">Вариант для настройки ползунками
+        <select id="whatif-plan-select" class="field-input" onchange="selectWhatIfPlan(this.value)"><option value="self_service">self_service — Комплект SIM + LTE-роутер (самостоятельное переключение)</option><option value="managed_failover">managed_failover — Настроенный LTE-резерв с проверкой оплаты и чека на кассе</option></select>
+      </label>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="whatif-apply-all" checked onchange="recomputeAllWhatIf()"/>
+        <span>Применять пресет канала привлечения (CVM / платный / стресс) сразу ко всем вариантам сравнения</span>
+      </label>
+    </div>
+
+    <div class="sliders-grid">
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Цена / 30 дн. (₽)</span>
+          <span id="badge-price-basis" class="tag">факт витрины</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-price" min="29" max="600" step="1" oninput="onSliderInput('price', this.value)"/>
+          <input type="number" id="num-price" min="1" max="50000" step="1" class="num-input mono" oninput="onSliderInput('price', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-price"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>CAC привлечения (₽)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-cac" min="0" max="800" step="5" oninput="onSliderInput('cac', this.value)"/>
+          <input type="number" id="num-cac" min="0" max="100000" step="5" class="num-input mono" oninput="onSliderInput('cac', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-cac"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Срок удержания (мес.)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-retention" min="1" max="36" step="1" oninput="onSliderInput('retention', this.value)"/>
+          <input type="number" id="num-retention" min="1" max="120" step="1" class="num-input mono" oninput="onSliderInput('retention', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-retention"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Рекуррентные затраты / мес. (₽)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-recurring" min="0" max="300" step="1" oninput="onSliderInput('recurring', this.value)"/>
+          <input type="number" id="num-recurring" min="0" max="50000" step="1" class="num-input mono" oninput="onSliderInput('recurring', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-recurring"></div>
+      </div>
+    </div>
+
+    <div class="whatif-kpi-strip" id="whatif-kpi-strip"></div>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Вариант</th>
+          <th>Цена / 30 дн.</th>
+          <th>Рекуррентные (допущ.)</th>
+          <th>CAC (допущ.)</th>
+          <th>Удержание (допущ.)</th>
+          <th>Прямые затраты / мес.</th>
+          <th>Маржинальный вклад</th>
+          <th>Пороги безубыточности к цели 45%</th>
+        </tr>
+      </thead>
+      <tbody id="whatif-table-body"></tbody>
+    </table>
+  </section>
+  
 
   <h2>Обязательства команды и триггеры пересмотра</h2>
   <table>
@@ -181,11 +396,14 @@
 
   <h2>История принятых решений</h2>
   <section class="history-list">
-    <div class="history-item"><span class="mono">Решение №1</span><strong>managed_failover</strong><span>Утвердил: Продуктовый комитет · 2026-11-15T22:41:27+00:00</span><div class="node-meta">Одобрена подготовка пилота только для direct_pos; допуск после финальной сверки чеков. · снимок <span class="mono">064a7662b47b</span></div></div>
+    <div class="history-item"><span class="mono">Решение №1</span><strong>managed_failover</strong><span>Утвердил: Продуктовый комитет · 2026-11-19T13:14:23+00:00</span><div class="node-meta">Одобрена подготовка пилота только для direct_pos; допуск после финальной сверки чеков. · снимок <span class="mono">064a7662b47b</span></div></div>
   </section>
 </div>
 <script>
 const GRAPH = {"sources": {}, "findings": {"scope_and_thresholds": {"sources": ["brief", "manager"], "depends_on": []}, "market_mechanisms": {"sources": ["market"], "depends_on": []}, "direct_pos_preliminary": {"sources": ["pilot", "dictionary"], "depends_on": []}, "legacy_gateway_wilson_risk": {"sources": ["pilot"], "depends_on": []}, "ux_and_promo_barrier": {"sources": ["ux_mockup", "ux_notes"], "depends_on": []}, "cashier_friction_hypothesis": {"sources": ["synth_probe", "pilot"], "depends_on": []}, "unit_economics_headroom": {"sources": ["economics"], "depends_on": ["scope_and_thresholds"]}, "field_demand_and_recount_unknown": {"sources": ["dictionary", "manager"], "depends_on": []}, "gate_recommendation": {"sources": [], "depends_on": ["scope_and_thresholds", "market_mechanisms", "direct_pos_preliminary", "legacy_gateway_wilson_risk", "ux_and_promo_barrier", "unit_economics_headroom", "field_demand_and_recount_unknown"]}}, "targets": {"option:keep_stand": ["direct_pos_preliminary", "field_demand_and_recount_unknown"], "option:self_service_kit": ["cashier_friction_hypothesis", "scope_and_thresholds"], "option:managed_failover": ["gate_recommendation", "unit_economics_headroom"], "option:close_initiative": ["scope_and_thresholds", "field_demand_and_recount_unknown"], "strategy:product": ["gate_recommendation", "unit_economics_headroom", "cashier_friction_hypothesis"], "strategy:communication": ["market_mechanisms", "ux_and_promo_barrier", "gate_recommendation"], "strategy:experiment": ["scope_and_thresholds", "direct_pos_preliminary", "unit_economics_headroom", "field_demand_and_recount_unknown"]}};
+const ACCEPT_META = {"has_draft": false, "case_cli": "retail-continuity", "recommended": "managed_failover", "expect_sha": "064a7662b47b8357d693d4c35f5db97d0a4032e4c71c9e8af5d328f11efdbe56", "live_enabled": false, "live_token": ""};
+const ECON_MODEL = {"source_id": "economics", "currency": "RUB", "min_margin_rate": 0.45, "note": "", "plans": [{"id": "self_service", "title": "Комплект SIM + LTE-роутер (самостоятельное переключение)", "basis_code": "scenario_assumptions", "basis_label": "допущение", "price": 1290.0, "recurring": 350.0, "cac": 2400.0, "retention": 12, "assumptions": {}}, {"id": "managed_failover", "title": "Настроенный LTE-резерв с проверкой оплаты и чека на кассе", "basis_code": "scenario_assumptions", "basis_label": "допущение", "price": 2490.0, "recurring": 700.0, "cac": 6000.0, "retention": 12, "assumptions": {}}]};
+
 function relatedSet(nodeId) {
   const rel = new Set([nodeId]);
   if (nodeId.startsWith("source:")) {
@@ -206,7 +424,6 @@ function relatedSet(nodeId) {
     }
   } else if (nodeId.startsWith("finding:")) {
     const start = nodeId.slice(8);
-    // Upstream
     const up = [start];
     while (up.length) {
       const cur = up.pop();
@@ -215,7 +432,6 @@ function relatedSet(nodeId) {
       f.sources.forEach(s => rel.add("source:" + s));
       f.depends_on.forEach(d => { if (!rel.has("finding:" + d)) { rel.add("finding:" + d); up.push(d); } });
     }
-    // Downstream
     const down = new Set([start]);
     let changed = true;
     while (changed) {
@@ -256,6 +472,318 @@ function resetSelection() {
     el.classList.remove("active-link", "dimmed");
   });
 }
+
+/* --- Committee Accept Gate (Item 4) --- */
+function shQuote(val) {
+  const s = String(val || "").trim();
+  return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+}
+function buildAcceptCommand() {
+  const optEl = document.getElementById("accept-option");
+  if (!optEl) return "";
+  const opt = optEl.value;
+  const by = (document.getElementById("accept-by")?.value || "Продуктовый комитет").trim();
+  const reason = (document.getElementById("accept-reason")?.value || "Согласовано").trim();
+  const sha = ACCEPT_META.expect_sha || "<draft_sha256>";
+  return `python3 -m ledger accept ${ACCEPT_META.case_cli} ${opt} --expect ${sha} --by ${shQuote(by)} --reason ${shQuote(reason)}`;
+}
+function updateAcceptCommand() {
+  const preview = document.getElementById("accept-cmd-preview");
+  if (!preview) return;
+  preview.textContent = buildAcceptCommand();
+  const opt = document.getElementById("accept-option")?.value || "";
+  const warn = document.getElementById("accept-mismatch-note");
+  if (warn) {
+    warn.style.display = (ACCEPT_META.recommended && opt !== ACCEPT_META.recommended) ? "block" : "none";
+  }
+}
+function copyAcceptCommand() {
+  const cmd = buildAcceptCommand();
+  const fb = document.getElementById("accept-feedback");
+  const showOk = (msg) => {
+    if (!fb) return;
+    fb.textContent = msg;
+    setTimeout(() => { if (fb.textContent === msg) fb.textContent = ""; }, 3200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(cmd).then(() => showOk("Команда скопирована в буфер обмена")).catch(() => fallbackCopy(cmd, showOk));
+  } else {
+    fallbackCopy(cmd, showOk);
+  }
+}
+function fallbackCopy(text, cb) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand("copy"); cb("Команда скопирована в буфер обмена"); }
+  catch (e) { cb("Выделите строку выше и скопируйте (Ctrl+C)"); }
+  document.body.removeChild(ta);
+}
+async function triggerLiveAccept() {
+  if (!ACCEPT_META.live_enabled) return;
+  const fb = document.getElementById("accept-feedback");
+  const btn = document.getElementById("accept-live-btn");
+  const payload = {
+    option: document.getElementById("accept-option").value,
+    expect: ACCEPT_META.expect_sha,
+    by: document.getElementById("accept-by").value,
+    reason: document.getElementById("accept-reason").value
+  };
+  if (btn) btn.disabled = true;
+  if (fb) fb.textContent = "Запись решения в case.sqlite3…";
+  try {
+    const res = await fetch("/api/accept", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Ledger-Token": ACCEPT_META.live_token },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      if (fb) fb.textContent = "Ошибка гейта: " + (data.error || res.statusText);
+      if (btn) btn.disabled = false;
+      return;
+    }
+    if (fb) fb.textContent = `Утверждено: Решение №${data.decision.revision} (${data.decision.option})`;
+    setTimeout(() => window.location.reload(), 700);
+  } catch (err) {
+    if (fb) fb.textContent = "Сбой соединения с локальным сервером: " + err;
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* --- Interactive What-If Unit Economics (Item 1 · exact ledger/economics.py formulas) --- */
+const WHATIF_STATE = { selectedId: null, preset: "base", overrides: {} };
+
+function fmtRub(val, digits = 2) {
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  const parts = rounded.toFixed(digits).split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const dec = (digits > 0 && parts[1] !== "00" && parts[1] !== "0") ? ("," + parts[1]) : "";
+  return parts[0] + dec + " ₽";
+}
+function fmtNum(val, suffix = "", digits = 2) {
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  let s = rounded.toFixed(digits).replace(".", ",");
+  if (s.endsWith(",00")) s = s.slice(0, -3);
+  return s + suffix;
+}
+function evaluatePlanExact(price, recurring, cac, retention, minMargin) {
+  const rev = Math.max(0.01, Number(price));
+  const rec = Math.max(0, Number(recurring));
+  const upf = Math.max(0, Number(cac));
+  const ret = Math.max(1, Math.round(Number(retention)));
+  const amortUpfront = upf > 0 ? (upf / ret) : 0.0;
+  const directCost = rec + amortUpfront;
+  const contribution = rev - directCost;
+  const contributionRate = contribution / rev;
+  const maxAllowableCost = rev * (1.0 - minMargin);
+  const costHeadroom = maxAllowableCost - directCost;
+  const cashMarginBeforeCapex = rev - rec;
+  const paybackMonths = (upf > 0 && cashMarginBeforeCapex > 0)
+    ? Number((upf / cashMarginBeforeCapex).toFixed(2))
+    : (upf === 0 ? 0.0 : null);
+  let maxUpfrontCac = Number(((maxAllowableCost - rec) * ret).toFixed(2));
+  if (maxUpfrontCac < 0) maxUpfrontCac = null;
+  const monthlyRoom = maxAllowableCost - rec;
+  let minRetention = null;
+  if (upf === 0) {
+    minRetention = monthlyRoom >= 0 ? 1 : null;
+  } else if (monthlyRoom > 0) {
+    minRetention = Number((upf / monthlyRoom).toFixed(2));
+  }
+  const minMonthlyPrice = minMargin < 1.0 ? Number((directCost / (1.0 - minMargin)).toFixed(2)) : null;
+  const meetsTarget = (contributionRate + 1e-12) >= minMargin;
+  return {
+    price: rev, recurring: rec, cac: upf, retention: ret,
+    amortUpfront, directCost, contribution, contributionRate,
+    maxAllowableCost, costHeadroom, paybackMonths,
+    maxUpfrontCac, minRetention, minMonthlyPrice, meetsTarget
+  };
+}
+function presetParamsForPlan(plan, preset) {
+  if (preset === "cvm") {
+    return { price: plan.price, recurring: plan.recurring, cac: plan.cac > 0 ? 25 : 0, retention: plan.retention };
+  }
+  if (preset === "paid") {
+    const paidCac = plan.cac > 0 ? Math.round(plan.cac * 1.25) : 260;
+    return { price: plan.price, recurring: plan.recurring, cac: paidCac, retention: plan.retention };
+  }
+  if (preset === "stress") {
+    return {
+      price: plan.price,
+      recurring: Number((plan.recurring * 1.15).toFixed(2)),
+      cac: plan.cac,
+      retention: Math.max(1, plan.retention - 2)
+    };
+  }
+  return { price: plan.price, recurring: plan.recurring, cac: plan.cac, retention: plan.retention };
+}
+function initWhatIf() {
+  if (!ECON_MODEL || !ECON_MODEL.plans || !ECON_MODEL.plans.length) return;
+  ECON_MODEL.plans.forEach(p => {
+    WHATIF_STATE.overrides[p.id] = { price: p.price, recurring: p.recurring, cac: p.cac, retention: p.retention };
+  });
+  WHATIF_STATE.selectedId = ECON_MODEL.plans[0].id;
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function syncSlidersToSelected() {
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  const setPair = (key, val, maxHint) => {
+    const sl = document.getElementById("sl-" + key);
+    const nm = document.getElementById("num-" + key);
+    if (sl) {
+      if (val > Number(sl.max)) sl.max = String(Math.ceil(val * 1.5));
+      sl.value = String(val);
+    }
+    if (nm) nm.value = String(val);
+  };
+  setPair("price", cur.price);
+  setPair("cac", cur.cac);
+  setPair("retention", cur.retention);
+  setPair("recurring", cur.recurring);
+}
+function selectWhatIfPlan(planId) {
+  WHATIF_STATE.selectedId = planId;
+  const sel = document.getElementById("whatif-plan-select");
+  if (sel && sel.value !== planId) sel.value = planId;
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function applyEconPreset(preset, btnEl) {
+  WHATIF_STATE.preset = preset;
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active-preset", b === btnEl));
+  const applyAll = document.getElementById("whatif-apply-all")?.checked;
+  ECON_MODEL.plans.forEach(p => {
+    if (applyAll || p.id === WHATIF_STATE.selectedId || preset === "base") {
+      WHATIF_STATE.overrides[p.id] = presetParamsForPlan(p, preset);
+    }
+  });
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function recomputeAllWhatIf() {
+  if (WHATIF_STATE.preset !== "base") {
+    const activeBtn = document.querySelector(`.preset-btn[data-preset="${WHATIF_STATE.preset}"]`);
+    applyEconPreset(WHATIF_STATE.preset, activeBtn);
+  } else {
+    renderWhatIf();
+  }
+}
+function onSliderInput(field, rawVal) {
+  const num = Number(rawVal);
+  if (Number.isNaN(num)) return;
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  cur[field] = field === "retention" ? Math.max(1, Math.round(num)) : Math.max(0, num);
+  const sl = document.getElementById("sl-" + field);
+  const nm = document.getElementById("num-" + field);
+  if (sl && document.activeElement !== sl) {
+    if (cur[field] > Number(sl.max)) sl.max = String(Math.ceil(cur[field] * 1.5));
+    sl.value = String(cur[field]);
+  }
+  if (nm && document.activeElement !== nm) nm.value = String(cur[field]);
+  renderWhatIf();
+}
+function renderWhatIf() {
+  if (!ECON_MODEL) return;
+  const minM = ECON_MODEL.min_margin_rate;
+  const selPlan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId) || ECON_MODEL.plans[0];
+  const selCur = WHATIF_STATE.overrides[selPlan.id];
+  const selEval = evaluatePlanExact(selCur.price, selCur.recurring, selCur.cac, selCur.retention, minM);
+
+  const basisBadge = document.getElementById("badge-price-basis");
+  if (basisBadge) {
+    const priceChanged = Math.abs(selCur.price - selPlan.price) > 1e-6;
+    basisBadge.textContent = priceChanged ? "допущение (what-if)" : selPlan.basis_label;
+    basisBadge.className = priceChanged ? "tag tag-warn" : "tag tag-ok";
+  }
+  const showDelta = (id, baseV, curV, unit) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (Math.abs(curV - baseV) < 1e-6) {
+      el.textContent = `База спецификации: ${fmtNum(baseV, unit)}`;
+    } else {
+      const sign = curV > baseV ? "+" : "";
+      el.textContent = `База: ${fmtNum(baseV, unit)} → изменено (${sign}${fmtNum(curV - baseV, unit)})`;
+    }
+  };
+  showDelta("delta-price", selPlan.price, selCur.price, " ₽");
+  showDelta("delta-cac", selPlan.cac, selCur.cac, " ₽");
+  showDelta("delta-retention", selPlan.retention, selCur.retention, " мес.");
+  showDelta("delta-recurring", selPlan.recurring, selCur.recurring, " ₽");
+
+  const kpiStrip = document.getElementById("whatif-kpi-strip");
+  if (kpiStrip) {
+    const statusCls = selEval.meetsTarget ? "tag tag-ok" : "tag tag-alert";
+    const statusTxt = selEval.meetsTarget ? "Проходит порог комитета" : "Ниже порога комитета";
+    const paybackTxt = selEval.paybackMonths === null ? "не окупается" : fmtNum(selEval.paybackMonths, " мес.");
+    kpiStrip.innerHTML = `
+      <div class="kpi-mini">
+        <div class="k-lbl">Маржинальный вклад (расчёт на допущениях)</div>
+        <div class="k-val">${fmtRub(selEval.contribution)} (${fmtNum(selEval.contributionRate * 100, "%", 1)})</div>
+        <div style="margin-top:4px;"><span class="${statusCls}">${statusTxt}</span></div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Полные прямые затраты / мес.</div>
+        <div class="k-val">${fmtRub(selEval.directCost)}</div>
+        <div class="node-meta">OPEX ${fmtRub(selEval.recurring)} + CAC/мес. ${fmtRub(selEval.amortUpfront)}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Запас до потолка затрат (headroom)</div>
+        <div class="k-val" style="color:${selEval.costHeadroom >= 0 ? 'var(--accent)' : 'var(--alert)'};">${selEval.costHeadroom >= 0 ? '+' : ''}${fmtRub(selEval.costHeadroom)}</div>
+        <div class="node-meta">Потолок прямых затрат: ${fmtRub(selEval.maxAllowableCost)}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Окупаемость CAC (операционная)</div>
+        <div class="k-val">${paybackTxt}</div>
+        <div class="node-meta">При удержании ${selEval.retention} мес.</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Границы безубыточности к цели</div>
+        <div class="k-val" style="font-size:12px;">CAC &lt;= ${fmtRub(selEval.maxUpfrontCac)}</div>
+        <div class="node-meta">Удерж. &gt;= ${fmtNum(selEval.minRetention, " мес.")} · Цена &gt;= ${fmtRub(selEval.minMonthlyPrice)}</div>
+      </div>`;
+  }
+
+  const tbody = document.getElementById("whatif-table-body");
+  if (tbody) {
+    tbody.innerHTML = ECON_MODEL.plans.map(p => {
+      const cur = WHATIF_STATE.overrides[p.id];
+      const ev = evaluatePlanExact(cur.price, cur.recurring, cur.cac, cur.retention, minM);
+      const isSel = p.id === WHATIF_STATE.selectedId;
+      const badge = ev.meetsTarget
+        ? '<span class="tag tag-ok">проходит</span>'
+        : '<span class="tag tag-alert">ниже порога</span>';
+      const priceBasis = Math.abs(cur.price - p.price) > 1e-6 ? "what-if" : p.basis_label;
+      const beLine = ev.maxUpfrontCac !== null
+        ? `CAC &lt;= ${fmtRub(ev.maxUpfrontCac)} · удерж. &gt;= ${fmtNum(ev.minRetention, " мес.")}`
+        : `рекуррентные затраты выше потолка ${fmtRub(ev.maxAllowableCost)} (CAC не спасает)`;
+      return `<tr class="${isSel ? 'whatif-selected-row' : ''}" style="cursor:pointer;" onclick="selectWhatIfPlan('${p.id}')">
+        <td><span class="mono">${p.id}</span><div class="node-meta">${p.title}</div></td>
+        <td>${fmtRub(ev.price)} <span class="node-meta">(${priceBasis})</span></td>
+        <td>${fmtRub(ev.recurring)}</td>
+        <td>${fmtRub(ev.cac)}</td>
+        <td>${ev.retention} мес.</td>
+        <td>${fmtRub(ev.directCost)}</td>
+        <td><strong>${fmtNum(ev.contributionRate * 100, "%", 1)}</strong> (${fmtRub(ev.contribution)}) ${badge}</td>
+        <td style="font-size:12px;">${beLine}</td>
+      </tr>`;
+    }).join("");
+  }
+}
+
+updateAcceptCommand();
+initWhatIf();
 </script>
 </body>
 </html>

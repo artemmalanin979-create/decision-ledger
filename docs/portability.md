@@ -22,10 +22,10 @@
 
 Что реально запускалось:
 1. **Codex CLI (`0.166.0`, `gpt-6.1-sol`)** — старт и замер учебного кейса `retail-backup`.
-2. **Antigravity** — разработка и трёхшаговый витринный прогон открытого кейса МегаФона (субагентами одной сессии поверх общего `case.sqlite3`).
-3. **Grok Build CLI (`v1.0.77`, `grok-4.7`)** — чистый 3-сессионный прогон открытого кейса от `18.11.2026` с новыми сеансами и `--resume` поверх `case.sqlite3` ([HONESTY.md](../demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/HONESTY.md)).
+2. **Antigravity** — трёхшаговый витринный прогон открытого кейса безопасности МегаФона и **полный двухсессионный прогон второго независимого открытого кейса вне антифрода** ([`demo/megakino-plus-2027/`](../demo/megakino-plus-2027/README.md): контентные мультиподписки «МегаКино» / «МегаФон Плюс», `376-ФЗ`, чтение `.xlsx` и шаблонный ввод `draft.yaml`, сырые логи в `demo/megakino-plus-2027/logs/`).
+3. **Grok Build CLI (`v1.0.77`, `grok-4.7`)** — чистый 3-сессионный прогон открытого кейса безопасности от `18.11.2026` с новыми сеансами и `--resume` поверх `case.sqlite3` ([HONESTY.md](../demo/antifraud-subscription/runs/2026-11-18-live-grok-cli/HONESTY.md)).
 
-Протокол `stdio MCP` (9 инструментов чтения, расчёта, аудита обещаний, БЗ и выпуска паспорта) проверен вызовом `python3 -m ledger mcp` из терминала ([02-mcp-portability-check.json](../demo/antifraud-subscription/02-mcp-portability-check.json)) и автотестом `test_mcp_server_handles_ndjson_and_framed_requests`. **В графических окнах Cursor и Claude Code ручного запуска пока не проводилось**: конфиги `.cursor/` и `.mcp.json`/`CLAUDE.md` лежат в репозитории, регламент проверки — в [docs/live-run.md](live-run.md), раздел 5.
+Протокол `stdio MCP` (`12` инструментов чтения, `.xlsx`, расчёта, YAML-шаблона, аудита обещаний, БЗ, экспорта стратегий и выпуска паспорта) проверен вызовом `python3 -m ledger mcp` из терминала ([02-mcp-portability-check.json](../demo/antifraud-subscription/02-mcp-portability-check.json)) и автотестами (`test_mcp_server_handles_ndjson_and_framed_requests`, `test_mcp_exposes_xlsx_and_draft_template_tools`). **На рабочей Linux-машине графическое приложение Cursor IDE не установлено** (присутствует только CLI-шим `~/.local/bin/cursor`), поэтому запись экрана внутри графического окна Cursor и Claude Code не проводилась: конфиги `.cursor/` и `.mcp.json`/`CLAUDE.md` лежат в репозитории, регламент проверки — в [docs/live-run.md](live-run.md), раздел 5.
 
 | Среда | Статус проверки |
 | --- | --- |

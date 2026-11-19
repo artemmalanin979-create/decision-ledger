@@ -1,0 +1,44 @@
+{
+  "sources": [
+    "economics_plans",
+    "subscription_benchmarks_2026"
+  ],
+  "unreviewed": [
+    "megafon_plus_20260604"
+  ],
+  "findings": [
+    "f10_two_tier_cvm_hypothesis",
+    "f11_billing_retention_and_contracts_unknown",
+    "f3_yandex_plus_449_indexation",
+    "f4_megakino_rules_and_limits",
+    "f5_megafon_yandex_plus_ux_gap",
+    "f6_megasily_tariff_mechanics",
+    "f8_econ_cvm_vs_paid_cac",
+    "f9_econ_resale_449_structural_deficit"
+  ],
+  "options": [
+    "opt_change_cvm_twotier",
+    "opt_change_resale_push",
+    "opt_close_standalone",
+    "opt_keep_status_quo"
+  ],
+  "strategy": [
+    "communication",
+    "experiment",
+    "product"
+  ],
+  "methodology": [
+    "jtbd",
+    "ost:opp_channel_cac",
+    "ost:opp_price_entry_gap",
+    "ost:opp_resale_margin_trap",
+    "ost:opp_trust_and_376fz",
+    "premortem:1",
+    "premortem:2",
+    "premortem:3",
+    "premortem:4",
+    "promise_matrix:1",
+    "promise_matrix:2",
+    "promise_matrix:3"
+  ]
+}

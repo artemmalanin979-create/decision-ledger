@@ -1,0 +1,128 @@
+{
+  "currency": "RUB",
+  "unit": "paying_subscriber_month",
+  "min_margin_rate": 0.35,
+  "note": "Сценарная юнит-экономика контентных мультиподписок ПАО МегаФон на 2027 год (критерий комитета min_margin_rate = 0.35). Публичные цены витрин 399 ₽ и 449 ₽ зафиксированы по открытым веб-снимкам от 2026-11-19; партнёрские роялти, операционные затраты биллинга/поддержки, CAC и среднее удержание взяты как сценарные допущения из economics_inputs_2027.json.",
+  "facts_vs_assumptions": {
+    "public_facts": [
+      "МегаКино (5 основных кинотеатров с ротацией): 399 ₽ за 30 дней, 3 бесплатных переключения за 30 дней, далее 30 ₽ за смену, Иви оплачивается отдельно (https://moscow.megafon.ru/services/megakino/)",
+      "Яндекс Плюс МегаФон / базовая цена Яндекс Плюс в РФ с 01.12.2025: 449 ₽/мес после 30 дней промо (https://moscow.megafon.ru/services/joy/yandex_plus/, https://3dnews.ru/1131783/stoimost-podpiski-yandeks-plyus-uvelichitsya-s-1-dekabrya)",
+      "МегаСилы в тарифах МегаФон 3.0: 0 ₽ за слоты внутри тарифа, включая безлимит трафика на кинотеатры и базовую коллекцию START (https://moscow.megafon.ru/services/megapowers/megasily/)"
+    ],
+    "model_assumptions": [
+      "Роялти и CDN: 195 ₽/мес (МегаКино 399 ₽), 330 ₽/мес (партнёрский ресейл 449 ₽), 115 ₽/мес (облегчённый гибридный пакет 249 ₽ с МегаСилами)",
+      "Биллинг и клиентская поддержка: 18 ₽/мес на активную подписку",
+      "CAC привлечения: 25 ₽ в собственных CVM-каналах (МП МегаФон / ЛК / SMS) против 290 ₽ во внешнем платном digital-трафике",
+      "Средний срок жизни платящей когорты: 4 мес. для внешнего промо-трафика против 8 мес. для тарифно-встроенной или CVM-когорты с прозрачным согласием"
+    ],
+    "unknowns": [
+      "Фактическая активная платящая база и Retention 90d в биллинге МегаФона публично не раскрыты и подлежат замеру в пилоте Q1 2027"
+    ]
+  },
+  "plans": {
+    "megakino_399_paid_traffic": {
+      "title": "МегаКино 399 ₽ — платный внешний трафик (промо-когорта)",
+      "epistemic_basis": "public_price_plus_model_assumptions",
+      "monthly_revenue": 399,
+      "recurring_costs": {
+        "partner_royalty_and_cdn": 195,
+        "support_and_billing_ops": 18
+      },
+      "upfront_costs": {
+        "paid_external_digital_cac": 290
+      },
+      "amortize_months": 4,
+      "assumptions": {
+        "channel": "Внешний платный digital-трафик с агрессивным промо",
+        "retention_basis": "4 месяца (standalone_paid_promo_cohort)"
+      },
+      "unknowns": [
+        "Фактический отток после 1-го платного списания при действии 376-ФЗ",
+        "Доля абонентов, совершающих платные переключения свыше 3 раз за 30 дней"
+      ]
+    },
+    "megakino_399_own_cvm": {
+      "title": "МегаКино 399 ₽ — собственные CVM-каналы с прозрачным согласием",
+      "epistemic_basis": "public_price_plus_model_assumptions",
+      "monthly_revenue": 399,
+      "recurring_costs": {
+        "partner_royalty_and_cdn": 195,
+        "support_and_billing_ops": 18
+      },
+      "upfront_costs": {
+        "own_cvm_cac": 25
+      },
+      "amortize_months": 8,
+      "assumptions": {
+        "channel": "МП МегаФон, Личный кабинет и целевые CVM-коммуникации по базе",
+        "retention_basis": "8 месяцев (tariff_embedded_or_transparent_consent_cohort)"
+      },
+      "unknowns": [
+        "Фактический Retention 90d в биллинге МегаФона",
+        "Конверсия в платную подписку при честном показе лимита 3 переключений до клика"
+      ]
+    },
+    "partner_resale_449_cvm": {
+      "title": "Партнёрский ресейл 449 ₽ (витрина типа Яндекс Плюс МегаФон, CVM)",
+      "epistemic_basis": "public_price_plus_model_assumptions",
+      "monthly_revenue": 449,
+      "recurring_costs": {
+        "partner_royalty_and_cdn": 330,
+        "support_and_billing_ops": 18
+      },
+      "upfront_costs": {
+        "own_cvm_cac": 25
+      },
+      "amortize_months": 8,
+      "assumptions": {
+        "channel": "Собственная CVM-витрина для допродажи сторонней экосистемной подписки",
+        "retention_basis": "8 месяцев при прозрачном оформлении"
+      },
+      "unknowns": [
+        "Точная шкала агентской комиссии/роялти в действующем договоре с ООО Яндекс Плюс",
+        "Доля абонентов МегаФона, уже оплачивающих Яндекс Плюс напрямую (пересечение с 23% горожан)"
+      ]
+    },
+    "megasily_hybrid_lite_249_cvm": {
+      "title": "МегаКино Лайт 249 ₽ — апгрейд слота МегаСил через CVM (МегаФон 3.0)",
+      "epistemic_basis": "scenario_hypothesis_assumptions",
+      "monthly_revenue": 249,
+      "recurring_costs": {
+        "partner_royalty_and_cdn": 115,
+        "support_and_billing_ops": 18
+      },
+      "upfront_costs": {
+        "own_cvm_cac": 25
+      },
+      "amortize_months": 8,
+      "assumptions": {
+        "channel": "Апсейл внутри конструктора МегаСилы (МП / ЛК) для абонентов МегаФон 3.0",
+        "retention_basis": "8 месяцев (встроенность в тарифный цикл оплаты связи)"
+      },
+      "unknowns": [
+        "Готовность правообладателей зафиксировать оптовый минимум 115 ₽/мес за однослотовый/облегчённый пакет",
+        "Каннибализация текущей базы МегаКино 399 ₽ при появлении ступени 249 ₽"
+      ]
+    },
+    "megasily_hybrid_lite_249_paid_traffic": {
+      "title": "МегаКино Лайт 249 ₽ — при масштабировании платным внешним трафиком",
+      "epistemic_basis": "scenario_hypothesis_assumptions",
+      "monthly_revenue": 249,
+      "recurring_costs": {
+        "partner_royalty_and_cdn": 115,
+        "support_and_billing_ops": 18
+      },
+      "upfront_costs": {
+        "paid_external_digital_cac": 290
+      },
+      "amortize_months": 4,
+      "assumptions": {
+        "channel": "Внешний платный digital-трафик на низкий чек 249 ₽",
+        "retention_basis": "4 месяца (промо-когорта)"
+      },
+      "unknowns": [
+        "Конверсия холодного трафика с учётом необходимости оформления SIM/eSIM МегаФона"
+      ]
+    }
+  }
+}

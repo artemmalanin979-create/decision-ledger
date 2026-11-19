@@ -24,11 +24,11 @@
     margin: 0;
     padding: 32px 40px 56px;
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-variant-numeric: tabular-nums;
     background: var(--bg);
     color: var(--ink);
     line-height: 1.5;
     font-size: 14px;
+    font-variant-numeric: tabular-nums;
   }
   .container { max-width: 1360px; margin: 0 auto; }
   .topbar {
@@ -39,8 +39,16 @@
     font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--accent); margin-bottom: 6px;
   }
-  h1 { margin: 0 0 8px; font-family: "Inter Display", "Inter", -apple-system, sans-serif; font-size: 26px; line-height: 1.2; letter-spacing: -0.02em; }
-  h2 { margin: 28px 0 12px; font-family: "Inter Display", "Inter", -apple-system, sans-serif; font-size: 16px; letter-spacing: -0.01em; }
+  h1 {
+    margin: 0 0 8px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 26px; line-height: 1.2; letter-spacing: -0.02em;
+  }
+  h2 {
+    margin: 28px 0 12px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px; letter-spacing: -0.01em;
+  }
   h3 { margin: 0; font-size: 14px; }
   .summary { margin: 0; color: var(--muted); max-width: 840px; font-size: 14px; }
   .status-pill {
@@ -51,7 +59,7 @@
   .status-warn { border-color: #FDE68A; background: var(--warn-soft); color: var(--warn); }
   .status-alert { border-color: #FECACA; background: var(--alert-soft); color: var(--alert); }
   .meta-strip {
-    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px;
   }
   .metric-card {
     background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
@@ -60,9 +68,83 @@
   .metric-value { font-size: 14px; font-weight: 600; margin-top: 4px; }
   .impact-banner {
     background: var(--alert-soft); border: 1px solid #FECACA; border-radius: 8px;
-    padding: 14px 16px; margin-bottom: 20px; color: #7F1D1D;
+    padding: 14px 16px; margin-bottom: 18px; color: #7F1D1D;
   }
   .impact-banner p { margin: 4px 0 0; font-size: 13px; }
+  .accept-panel, .whatif-panel {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 20px;
+  }
+  .accept-grid {
+    display: grid; grid-template-columns: 1.2fr 0.8fr 1.4fr; gap: 12px; align-items: end;
+  }
+  .field-label {
+    display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--subtle);
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .field-input {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font-size: 13px; font-family: inherit; color: var(--ink); background: #F8FAFC;
+  }
+  .cmd-box {
+    margin-top: 10px; padding: 9px 12px; background: #0F172A; color: #E2E8F0;
+    border-radius: 6px; overflow-x: auto; font-size: 12px;
+  }
+  .accept-actions {
+    margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+  .action-btn {
+    padding: 7px 13px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .action-btn-primary {
+    background: var(--accent); border-color: var(--accent); color: #FFFFFF;
+  }
+  .action-btn-primary:hover { background: #115E59; color: #FFFFFF; }
+  .accept-feedback { font-size: 12px; font-weight: 600; color: var(--accent); }
+  .whatif-header {
+    display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }
+  .preset-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset-btn {
+    padding: 5px 11px; border-radius: 6px; border: 1px solid var(--line); background: #F8FAFC;
+    color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+  .preset-btn.active-preset {
+    border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  }
+  .whatif-controls-top {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 12px 0;
+  }
+  .checkbox-inline {
+    display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); padding-bottom: 6px; cursor: pointer;
+  }
+  .sliders-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px;
+  }
+  .slider-card {
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #F8FAFC;
+  }
+  .slider-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; margin-bottom: 8px;
+  }
+  .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+  .num-input {
+    width: 72px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--surface); font-size: 12px; text-align: right;
+  }
+  .whatif-kpi-strip {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px;
+  }
+  .kpi-mini {
+    border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px; background: var(--surface);
+  }
+  .kpi-mini .k-lbl { font-size: 11px; color: var(--subtle); }
+  .kpi-mini .k-val { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  tr.whatif-selected-row td { background: var(--accent-soft); }
   .lineage-grid {
     display: grid; grid-template-columns: 0.85fr 1.25fr 1.1fr; gap: 16px; align-items: start;
   }
@@ -147,6 +229,38 @@
 
   
 
+  <section class="accept-panel" id="accept-gate-panel">
+    <div class="node-head" style="margin-bottom:10px;">
+      <div>
+        <span class="eyebrow" style="margin-bottom:2px;display:block;">Гейт человека (Human-in-the-loop)</span>
+        <h3 style="font-size:15px;">Утверждение решения комитетом (<span class="mono">ledger accept</span>)</h3>
+      </div>
+      <span class="tag tag-ok">Решение №2 зафиксировано · Продуктовый комитет Фабрики продуктов</span>
+    </div>
+    <div class="accept-grid">
+      <label class="field-label"><span>Вариант решения</span>
+        <select id="accept-option" class="field-input" onchange="updateAcceptCommand()"><option value="opt0_keep_status_quo">opt0_keep_status_quo — (0) Оставить линейку как есть</option><option value="opt1_bundle_all_tariffs">opt1_bundle_all_tariffs — (1) Включить базовую защиту во все тарифы + премиум 299 ₽</option><option value="opt2_family_parents_shield" selected>opt2_family_parents_shield — (2) 3-ступенчатая семейная лестница (0 / 99 / 249 ₽ с delta +150 ₽)</option><option value="opt3_b2b2c_bank_antifrod">opt3_b2b2c_bank_antifrod — (3) B2B2C антифрод с банками</option><option value="opt4_close_paid_b2c">opt4_close_paid_b2c — (4) Закрыть платную B2C-подписку</option></select>
+      </label>
+      <label class="field-label"><span>Кто утверждает (<span class="mono">--by</span>)</span>
+        <input id="accept-by" type="text" class="field-input" value="Продуктовый комитет" oninput="updateAcceptCommand()"/>
+      </label>
+      <label class="field-label"><span>Основание (<span class="mono">--reason</span>)</span>
+        <input id="accept-reason" type="text" class="field-input" value="Утверждён пересмотр после репрайсинга 09.11.2026 (delta-апгрейд +150 ₽ и 1-кликовый даунгрейд)" oninput="updateAcceptCommand()"/>
+      </label>
+    </div>
+    <div id="accept-mismatch-note" class="claim-warn" style="display:none;margin-top:8px;border-top:none;padding-top:0;">
+      Выбранный вариант отличается от <span class="mono">opt2_family_parents_shield</span> в черновике: <span class="mono">ledger accept</span> заблокирует подмену без обновления черновика через <span class="mono">propose</span>.
+    </div>
+    <div class="cmd-box">
+      <code id="accept-cmd-preview" class="mono"></code>
+    </div>
+    <div class="accept-actions">
+      <button type="button" class="action-btn" id="accept-copy-btn" onclick="copyAcceptCommand()">Скопировать команду accept</button>
+      <span class="node-meta" style="align-self:center;">Зафиксировано 2026-11-17T00:18:10+00:00 · SHA <span class="mono">9bc8fe51c047285d…</span></span>
+      <span id="accept-feedback" class="accept-feedback" aria-live="polite"></span>
+    </div>
+  </section>
+
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <h2>Трассировка оснований (кликните узел для подсветки зависимостей)</h2>
     <button class="reset-btn" onclick="resetSelection()">Сбросить фильтр</button>
@@ -171,6 +285,102 @@
     <div class="strategy-card" data-node="strategy:product" onclick="selectNode('strategy:product')"><div class="node-head"><h3>Продуктовая стратегия</h3><span class="tag" title="f01_cbr_operations_2025, f02_vedomosti_seniors_2026, f03_megafon_h1_2026, f05_megafon_eva_individual_terms, f06_megafon_family_terms, f08_committee_targets_and_guardrails, f11_econ_individual_insurance_and_b2b2c, f12_econ_family_shield_margin_and_headroom, f13_hyp_privacy_and_soft_interrupt, f14_hyp_cross_operator_and_messenger_gap, f17_family_repriced_99_and_deli_tariff">11 оснований</span></div><p>1) Пересборка продуктовой архитектуры в 3-ступенчатую семейную лестницу после изменений 29.10.2026: Уровень А — «Семейная безопасность База» (0 ₽ внутри «Дели Тариф» и 99 ₽ / 30 дн. вне «Дели Тариф»): оставляем только базовую сетевую фильтрацию спам- и фрод-звонков внутри сети МегаФона без семейных риск-алертов и мессенджер-детекции; критическая продуктовая правка — отменяем требование удалять всех участников семейной группы при отказе от 99 ₽ в ЛК, вводя безопасный 1-кликовый даунгрейд с полным сохранением состава семьи. Уровень Б (главный флагман 2027 года) — «Защити родителей Плюс» на базе «Семейной безопасности +» (249 ₽ / 30 дн. и абонемент 2 499 ₽/год, до 5 близких; маржинальный вклад 59,8% = 148,82 ₽ &gt;= 55%): эксклюзивно включает приватный риск-алерт взрослому ребёнку только при попытке мошенничества (без чтения личных разговоров родителя), мягкий режим предупреждения без обрыва звонков врачей и курьеров, антифишинг ссылок и детекцию голосовых/видео-дипфейков в мессенджерах, лёгкий контур проверки ссылок для второго родителя на SIM другого оператора (с бесшовным MNP-мостом) и приоритетное подключение к будущему контуру банковских антифрод-сигналов.<br/>2) Бесшовная механика апгрейда и ликвидация ценовой инверсии: для семей на базе 99 ₽ внедряем прозрачный delta-апгрейд +150 ₽ (99 ₽ -&gt; 249 ₽) с автоматическим зачётом уже списанных 99 ₽ в текущем расчётном периоде; для участников «Дели Тариф» (где база стоит 0 ₽) формируем целевой семейный апгрейд «Защити родителей Плюс» (0 ₽ -&gt; 249 ₽).<br/>3) Осознанные отказы: индивидуальную подписку «Моя безопасность +» (149 ₽ за 1 номер, маржа 39,6% &lt; 55%), попавшую в прямую ценовую инверсию с семейным тиром 99 ₽, полностью убираем с главных витрин и из платного трафика (оставляя только как нишевую архивную допродажу к «Секретарю +» для одиночных SIM); отложим индивидуальный страховой пакет 299 ₽ (маржа 28,4%); исключаем токсичные автоподключения. Параллельно R&amp;D-треком готовим B2B2C API риск-сигналов с банками на H2 2027.</p></div><div class="strategy-card" data-node="strategy:communication" onclick="selectNode('strategy:communication')"><div class="node-head"><h3>Коммуникационная стратегия</h3><span class="tag" title="f01_cbr_operations_2025, f02_vedomosti_seniors_2026, f05_megafon_eva_individual_terms, f06_megafon_family_terms, f08_committee_targets_and_guardrails, f09_ux_eva_first_screen_cannibalization, f10_ux_family_landing_and_onboarding, f13_hyp_privacy_and_soft_interrupt, f16_unknown_price_elasticity_and_mixed_sim, f17_family_repriced_99_and_deli_tariff">10 оснований</span></div><p>1) Прозрачная визуализация лестницы «0 ₽ / 99 ₽ / 249 ₽» вместо самоканнибализации: на первом экране «Евы» и семейного лендинга вводим чёткую сравнительную матрицу — «Базовая Ева / Семейная безопасность в Дели Тариф (0 ₽) и База вне Дели Тариф (99 ₽): сетевой определитель и фильтр звонков» против «Защити родителей Плюс (249 ₽ / 30 дн., или доплата +150 ₽ к базе 99 ₽): защита до 5 близких, мгновенный приватный риск-алерт взрослому ребёнку, антифишинг ссылок и распознавание голосовых/видео-дипфейков в мессенджерах + бот проверки ссылок для второго родителя на другом операторе».<br/>2) Сегментированные сообщения по 3 когортам и смена визуального якоря: убираем детский бейдж «Атака на номер „Доченька“» в пользу сценария заботы взрослых детей 30–50 лет о родителях 60+. Для когорты «Дели Тариф (0 ₽)» акцент: «Базовая защита звонков у вас уже бесплатна — добавьте защиту родителей в мессенджерах и приватный сигнал о риске за 249 ₽». Для когорты «База 99 ₽»: «Зачтём ваши 99 ₽: расширьте базовый фильтр звонков до полной защиты родителей от фишинга и дипфейков за +150 ₽, а при желании отключите платную опцию в 1 клик без удаления участников семьи».<br/>3) Честные условия применимости и границы обещаний: до оплаты открыто указываем цену (249 ₽ или +150 ₽ при автозачёте) и условия сетевой совместимости — фильтрация и мягкое предупреждение в телефонных вызовах действуют при условии использования номеров МегаФона, а проверка ссылок и медиа в мессенджерах работает после пересылки подозрительного сообщения в семейный бот «Евы». Прямо проговариваем исключения: сервис действует в рамках технологических возможностей сети, не покрывает ручную установку ВПО и не гарантирует отмену переводов, самостоятельно подтверждённых в банке.</p><div class="claim-ok">Аудит обещаний: границы применимости согласованы с продуктом</div></div><div class="strategy-card" data-node="strategy:experiment" onclick="selectNode('strategy:experiment')"><div class="node-head"><h3>План проверки и стоп-правила</h3><span class="tag" title="f06_megafon_family_terms, f08_committee_targets_and_guardrails, f10_ux_family_landing_and_onboarding, f12_econ_family_shield_margin_and_headroom, f13_hyp_privacy_and_soft_interrupt, f15_forecast_q1_2027_family_pilot, f16_unknown_price_elasticity_and_mixed_sim, f17_family_repriced_99_and_deli_tariff">8 оснований</span></div><p>В Q1 2027 (8 недель + домер Retention 90d) запускаем стратифицированный когортный A/B-эксперимент на 60 000 семейных организаторов 30–50 лет в приложении и веб-витрине МегаФона, разделённый на два равных рукава по 30 000 семей: Когорта А — участники «Дели Тариф» (текущая база 0 ₽, оффер прямого апгрейда 0 -&gt; 249 ₽ «Защити родителей Плюс»); Когорта Б — семейные группы вне «Дели Тариф» (текущая база 99 ₽, оффер прозрачного delta-апгрейда +150 ₽ с автозачётом 99 ₽ и кнопкой безопасного 1-кликового даунгрейда без удаления участников семьи). Контроль в обеих когортах — текущая витрина «Семейная безопасность +» с бейджем «Доченька» без таблицы разведения уровней. Критерии успеха: прирост конверсии в уровень 249 ₽ не менее +35% к контролю, среднее число подключённых номеров родителей &gt;= 1,6 на семью, Retention 90d &gt;= 68%, снижение распада семейных групп при отказе от платной опции минимум в 3 раза к контролю и маржинальный вклад когорты &gt;= 55%. Защитные метрики и жёсткие стоп-правила:<br/>1) если доля жалоб на непонятные или двойные списания (99 + 249 ₽) превышает порог 0,25% от подключений — немедленная остановка трафика апгрейда до исправления биллингового зачёта;<br/>2) если доля добровольных отключений со стороны родителей 60+ превышает лимит 10% за 30 дней или жалобы на ложный обрыв звонков превышают 0,5% — автоматический откат авторазъединения в мягкое голосовое предупреждение;<br/>3) если прямые затраты (ИИ-скоринг + онбординг) превышают порог 110 ₽ на платящую семью в месяц (маржа ниже 55%) — пересмотр каскада инференса до масштабирования.</p></div>
   </section>
 
+  <h2>Интерактивный калькулятор чувствительности юнит-экономики (what-if)</h2>
+  <section class="whatif-panel" id="whatif-panel">
+    <div class="whatif-header">
+      <div>
+        <div class="node-meta" style="font-size:12px;color:var(--muted);">
+          Порог комитета: <strong>маржинальный вклад &gt;= 55%</strong> (источник модели: <span class="mono">01-economics-spec</span>).
+          Цены с витрин — публичные факты или рыночные ориентиры; <strong>CAC, срок удержания и рекуррентные затраты — сценарные допущения (what-if)</strong>,
+          пересчитываемые в браузере строго по формулам <span class="mono">ledger/economics.py</span> без внешних зависимостей.
+        </div>
+      </div>
+      <div class="preset-bar">
+        <button type="button" class="preset-btn active-preset" data-preset="base" onclick="applyEconPreset('base', this)">База спецификации</button>
+        <button type="button" class="preset-btn" data-preset="cvm" onclick="applyEconPreset('cvm', this)">Собственные CVM-каналы (CAC 25 ₽)</button>
+        <button type="button" class="preset-btn" data-preset="paid" onclick="applyEconPreset('paid', this)">Платный внешний трафик (CAC +25%)</button>
+        <button type="button" class="preset-btn" data-preset="stress" onclick="applyEconPreset('stress', this)">Стресс затрат (+15%) и оттока (-2 мес.)</button>
+      </div>
+    </div>
+
+    <div class="whatif-controls-top">
+      <label class="field-label" style="flex:1;min-width:260px;">Вариант для настройки ползунками
+        <select id="whatif-plan-select" class="field-input" onchange="selectWhatIfPlan(this.value)"><option value="opt0_keep_individual_149">opt0_keep_individual_149 — (0) Текущая индивидуальная «Моя безопасность +» (149 ₽ / 30 дн.)</option><option value="opt1_bundle_heavy_premium_299">opt1_bundle_heavy_premium_299 — (1) База бесплатно во всех тарифах + индивидуальный премиум со страховкой до 1,5 млн ₽ (299 ₽ / 30 дн.)</option><option value="opt2_family_parents_shield_249">opt2_family_parents_shield_249 — (2) Семейный флагман «Защити родителей» (до 5 номеров + приватный алерт + антифишинг мессенджеров, 249 ₽ / 30 дн.)</option><option value="opt3_b2b2c_bank_coantifraud_180">opt3_b2b2c_bank_coantifraud_180 — (3) B2B2C совместный антифрод-контур с банками (оптовый revenue-share за защищённого клиента, 180 ₽ / 30 дн.)</option></select>
+      </label>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="whatif-apply-all" checked onchange="recomputeAllWhatIf()"/>
+        <span>Применять пресет канала привлечения (CVM / платный / стресс) сразу ко всем вариантам сравнения</span>
+      </label>
+    </div>
+
+    <div class="sliders-grid">
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Цена / 30 дн. (₽)</span>
+          <span id="badge-price-basis" class="tag">факт витрины</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-price" min="29" max="600" step="1" oninput="onSliderInput('price', this.value)"/>
+          <input type="number" id="num-price" min="1" max="50000" step="1" class="num-input mono" oninput="onSliderInput('price', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-price"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>CAC привлечения (₽)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-cac" min="0" max="800" step="5" oninput="onSliderInput('cac', this.value)"/>
+          <input type="number" id="num-cac" min="0" max="100000" step="5" class="num-input mono" oninput="onSliderInput('cac', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-cac"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Срок удержания (мес.)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-retention" min="1" max="36" step="1" oninput="onSliderInput('retention', this.value)"/>
+          <input type="number" id="num-retention" min="1" max="120" step="1" class="num-input mono" oninput="onSliderInput('retention', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-retention"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Рекуррентные затраты / мес. (₽)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-recurring" min="0" max="300" step="1" oninput="onSliderInput('recurring', this.value)"/>
+          <input type="number" id="num-recurring" min="0" max="50000" step="1" class="num-input mono" oninput="onSliderInput('recurring', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-recurring"></div>
+      </div>
+    </div>
+
+    <div class="whatif-kpi-strip" id="whatif-kpi-strip"></div>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Вариант</th>
+          <th>Цена / 30 дн.</th>
+          <th>Рекуррентные (допущ.)</th>
+          <th>CAC (допущ.)</th>
+          <th>Удержание (допущ.)</th>
+          <th>Прямые затраты / мес.</th>
+          <th>Маржинальный вклад</th>
+          <th>Пороги безубыточности к цели 55%</th>
+        </tr>
+      </thead>
+      <tbody id="whatif-table-body"></tbody>
+    </table>
+  </section>
   <h2>Продуктовая методология и контроль рисков</h2><div class="strategy-card" style="margin-bottom:14px;"><div class="node-head"><h3>JTBD: Покупатель vs Пользователь</h3><span class="tag" title="f01_cbr_operations_2025, f02_vedomosti_seniors_2026, f06_megafon_family_terms, f09_ux_eva_first_screen_cannibalization, f13_hyp_privacy_and_soft_interrupt, f14_hyp_cross_operator_and_messenger_gap, f17_family_repriced_99_and_deli_tariff">7 оснований</span></div><p><strong>Задача плательщика:</strong> Когда я узнаю о новых схемах обмана пенсионеров на суммы свыше 1 млн ₽ или вижу в своей семейной группе («Дели Тариф» за 0 ₽ либо базовой «Семейной безопасности» за 99 ₽), что базовая защита покрывает только обычные звонки, я хочу в один клик поднять защиту родителей 60+ до полного семейного контура (за 249 ₽ или с честной доплатой +150 ₽ поверх 99 ₽) и получать приватный сигнал только при реальной угрозе, не вторгаясь в их личные разговоры и не рискуя развалить семейную группу при управлении подпиской.<br/><strong>Задача пользователя:</strong> Когда мне поступает незнакомый звонок якобы из поликлиники, доставки или ведомства либо приходит подозрительная ссылка/голосовое в мессенджере, я хочу получить спокойное и понятное предупреждение об опасности без блокировки настоящих звонков врача или курьера и без ощущения слежки со стороны детей, чтобы не потерять деньги и сохранить самостоятельность.</p><div class="node-meta" style="margin-top:8px;"><strong>Толчок:</strong> Пенсионеры чаще других теряют свыше 1 млн ₽ (возврат банков — лишь 5,9%), ВПО и фишинговые ссылки в мессенджерах вдвое опаснее звонков, а базовая «Семейная безопасность» (0 ₽ в «Дели Тариф» / 99 ₽ вне него) не закрывает мессенджеры, кросс-SIM второго родителя и тревожные оповещения взрослым детям. · <strong>Притяжение:</strong> Прозрачная лестница до «Защити родителей Плюс» (249 ₽ / 30 дн., либо автозачётный delta-апгрейд +150 ₽ с базы 99 ₽): приватный риск-алерт ребёнку, антифишинг ссылок и детекция голосовых/видео-дипфейков в мессенджерах, лёгкий контур для родителя на другом операторе и отключение без удаления участников семьи. · <strong>Тревога:</strong> Страх родителя перед «надзором» и ложным обрывом звонка врача, опасение плательщика столкнуться с двойным списанием (99 ₽ + 249 ₽ вместо доплаты +150 ₽) и боязнь случайно распустить всю семейную группу в ЛК при отказе от платной опции. · <strong>Инерция:</strong> Инерция «у нас в „Дели Тариф“ уже бесплатно работает базовая Семейная безопасность за 0 ₽ (или списывается базовая за 99 ₽ с ИИ-защитой), зачем переходить на 249 ₽, если мы и так пишем родителям памятки в семейном чате».</div></div><div style="margin-bottom:14px;"><div class="col-title"><span>Opportunity Solution Tree · Исход: Увеличить чистый прирост платящей семейной базы и довести Retention 90d флагмана 249 ₽ до &gt;= 68% в 2027 году при маржинальном вкладе направления &gt;= 55%, доле жалоб на списания/отключение &lt;= 0,25% и сохранении целостности семейных групп.</span></div><div class="strategy-grid"><div class="node-card"><div class="node-head"><span class="mono">opp1_free_antispam_commoditization</span><span class="tag">4 основания</span></div><div class="node-body"><strong>Индивидуальный абонент не понимает, зачем доплачивать 149 ₽ / 30 дн., когда базовый голосовой антиспам бесплатен на всём рынке, а первый экран «Евы» уже обещает защиту близких и распознавание дипфейков бесплатно.</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt0_keep_status_quo</span> — тест допущения: A/B-тест обновлённых баннеров для тира 149 ₽ с явной таблицей «Ева 0 ₽ vs Плюс 149 ₽»: способна ли смена креатива снизить CAC с 260 ₽ до &lt;= 145 ₽ и поднять средний срок жизни с 5 до &gt;= 8 мес.</li><li><span class="mono">opt1_bundle_all_tariffs</span> — тест допущения: Тендер со страховыми партнёрами и ценовой сплит-тест пакета 299 ₽: возможно ли снизить стоимость андеррайтинга страховки на 1,5 млн ₽ с 92 ₽ до &lt;= 30 ₽/мес. без токсичных отказов в выплатах.</li><li><span class="mono">opt4_close_paid_b2c</span> — тест допущения: Когортный замер оттока основной базы связи (Churn 180d) при переводе антифрод-функций исключительно в бесплатный удерживающий контур тарифа.</li></ul><div class="node-meta">Опора: f05_megafon_eva_individual_terms, f07_competitors_mts_beeline_benchmark, f09_ux_eva_first_screen_cannibalization, f11_econ_individual_insurance_and_b2b2c</div></div><div class="node-card"><div class="node-head"><span class="mono">opp2_seniors_high_severity_and_privacy</span><span class="tag">6 оснований</span></div><div class="node-body"><strong>Взрослые дети боятся потерь родителей 60+ (&gt;1 млн ₽), но витрина показывает детский бейдж «Доченька», не снимает страх родителя перед слежкой, а после 29.10.2026 создаёт ценовую инверсию (99 ₽ семья vs 149 ₽ один номер) и риск разрушения семейной группы при отказе от 99 ₽ в ЛК.</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt2_family_parents_shield</span> — тест допущения: Стратифицированный сплит-тест Q1 2027 на когортах «Дели Тариф (0 ₽)» и «База (99 ₽)»: проверка прироста конверсии в 249 ₽ (через прямой апгрейд и delta-доплату +150 ₽) &gt;= +35%, жалоб на списания &lt;= 0,25% и снижения распада семейных групп при 1-кликовом даунгрейде.</li></ul><div class="node-meta">Опора: f02_vedomosti_seniors_2026, f06_megafon_family_terms, f10_ux_family_landing_and_onboarding, f12_econ_family_shield_margin_and_headroom, f13_hyp_privacy_and_soft_interrupt, f17_family_repriced_99_and_deli_tariff</div></div><div class="node-card"><div class="node-head"><span class="mono">opp3_messenger_phishing_and_mixed_sim</span><span class="tag">5 оснований</span></div><div class="node-body"><strong>Базовая «Семейная безопасность» (0 ₽ в «Дели Тариф» / 99 ₽ вне него) не закрывает главный вектор атак — фишинговые ссылки, угон аккаунтов и дипфейки в мессенджерах, а ограничение «только номера МегаФона» режет конверсию семей со вторым родителем на другой SIM.</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt2_family_parents_shield</span> — тест допущения: Эксклюзивная привязка мессенджер-антифишинга, детекции аудио/видео-дипфейков и кросс-операторского проверочного бота к уровню 249 ₽ с замером конверсии семей со смешанными SIM и удержанием прямых затрат &lt;= 105 ₽/мес.</li></ul><div class="node-meta">Опора: f01_cbr_operations_2025, f03_megafon_h1_2026, f14_hyp_cross_operator_and_messenger_gap, f16_unknown_price_elasticity_and_mixed_sim, f17_family_repriced_99_and_deli_tariff</div></div><div class="node-card"><div class="node-head"><span class="mono">opp4_bank_transfer_blind_spot</span><span class="tag">3 основания</span></div><div class="node-body"><strong>Крупнейшие суммы хищений уходят через самостоятельные переводы жертвы со счетов (10,63 млрд ₽) и по СБП (9,98 млрд ₽), где банку в секунду платежа не хватает телеком-сигнала об активном мошенническом звонке или ВПО.</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt3_b2b2c_bank_antifrod</span> — тест допущения: Совместный технико-коммерческий пилот API риск-сигналов (активный подозрительный вызов / смена SIM / фишинг-сессия) с 1–2 крупными банками в H1 2027 на выборке согласившихся клиентов с проверкой SLA отклика &lt; 150 мс и готовности банка к модели revenue-share.</li></ul><div class="node-meta">Опора: f01_cbr_operations_2025, f02_vedomosti_seniors_2026, f11_econ_individual_insurance_and_b2b2c</div></div></div></div><div style="margin-bottom:14px;"><div class="col-title"><span>Матрица «Обещание коммуникации ↔ Возможность продукта»</span></div><table><thead><tr><th>Обещание аудитории</th><th>Механизм продукта</th><th>Основания</th><th>Честная граница</th><th>Канал</th></tr></thead><tbody><tr><td><strong>Понятная семейная лестница: базовая голосовая защита за 0 ₽ в «Дели Тариф» (99 ₽ вне него) и полный пакет «Защити родителей Плюс» за 249 ₽ на 30 дней — или честная доплата +150 ₽ с автозачётом уже оплаченных 99 ₽.</strong></td><td>Трёхуровневый биллинг семейной группы (до 5 близких) с автоматическим зачётом списанных 99 ₽ при переходе на уровень 249 ₽ в рамках текущего 30-дневного периода и единой оплатой со счёта организатора.</td><td class="mono">f06_megafon_family_terms, f12_econ_family_shield_margin_and_headroom, f17_family_repriced_99_and_deli_tariff</td><td>Сетевая фильтрация и разъединение телефонных вызовов действуют только для номеров ПАО «МегаФон» в зоне покрытия сети; для второго родителя на SIM другого оператора в пакете 249 ₽ доступен проверочный бот ссылок/медиа в мессенджере либо перенос номера (MNP).</td><td>Первый экран витрины «Защити родителей Плюс», карточка «Дели Тариф» и экран апгрейда «+150 ₽» в приложении «МегаФон».</td></tr><tr><td><strong>Получите мгновенный приватный сигнал на уровне «Защити родителей Плюс», если номеру родителя поступит звонок с признаками мошенничества — без чтения его личных разговоров и контактов.</strong></td><td>Эксклюзивная для уровня 249 ₽ отправка push/SMS-риск-алерта организатору семьи при блокировке фрод-номера или срабатывании ИИ-детектора в приватном режиме (без передачи записей и детализации обычных вызовов).</td><td class="mono">f02_vedomosti_seniors_2026, f06_megafon_family_terms, f17_family_repriced_99_and_deli_tariff</td><td>В базовый уровень 0 ₽ («Дели Тариф») и 99 ₽ семейные риск-алерты организатору не входят; алерт на уровне 249 ₽ требует добровольного SMS-согласия родителя и не фиксирует исходящие звонки близкого через сторонние интернет-мессенджеры.</td><td>SMS-приглашение близкому при онбординге, экран апгрейда для когорт «Дели Тариф 0 ₽» / «База 99 ₽» и тревожный push-алерт с кнопкой «Позвонить родителю».</td></tr><tr><td><strong>Защитим родителей в мессенджерах на уровне «Плюс»: проверим подозрительную ссылку на фишинг и предупредим о признаках синтезированного голоса или видео-дипфейка.</strong></td><td>Нейросетевое распознавание синтезированной речи во время вызова и семейный антифишинг-контур проверки пересланных ссылок, голосовых и видеосообщений (включая доступ для второго родителя на другом операторе).</td><td class="mono">f01_cbr_operations_2025, f03_megafon_h1_2026, f05_megafon_eva_individual_terms, f06_megafon_family_terms</td><td>Проверка ссылок и аудио/видео в сторонних мессенджерах срабатывает после пересылки подозрительного сообщения в семейный бот «Евы» и не блокирует вредоносные приложения (APK / удалённый доступ), установленные пользователем вручную.</td><td>Сравнительная таблица «0 ₽ Дели Тариф / 99 ₽ База / 249 ₽ Защити родителей Плюс» и семейный проверочный бот.</td></tr><tr><td><strong>Управляйте подпиской в один клик без разрушения семейной группы: никаких скрытых списаний, мягкий режим без обрыва звонков врачей и отключение платной опции с сохранением всех участников семьи.</strong></td><td>Безопасный 1-кликовый даунгрейд/отключение платной опции в Личном кабинете без удаления участников группы, пречек до списания и переключатель «Мягкое голосовое предупреждение».</td><td class="mono">f01_cbr_operations_2025, f08_committee_targets_and_guardrails, f17_family_repriced_99_and_deli_tariff</td><td>Сервис снижает риск социальной инженерии в канале связи в рамках технических возможностей оператора, но не заменяет банковский антифрод и не гарантирует отмену или возврат переводов, самостоятельно подтверждённых клиентом в банке.</td><td>Экран управления семейной группой в Личном кабинете, пречек оплаты/апгрейда и сервисное SMS.</td></tr></tbody></table></div><div style="margin-bottom:14px;"><div class="col-title"><span>Pre-mortem выбранного варианта (через 6 месяцев)</span></div><table><thead><tr><th>Сценарий провала</th><th>Вероятность</th><th>Влияние</th><th>Предотвратимость</th><th>Защитная мера / стоп-правило</th></tr></thead><tbody><tr><td>Через 6 месяцев маржинальный вклад флагмана 249 ₽ падает ниже 52% (&lt; 55%), а обращения в КЦ пробивают лимит жалоб 0,25% из-за коллизий двойного списания (99 ₽ + 249 ₽ вместо зачёта +150 ₽) и перерасхода на ИИ-скоринг мессенджеров свыше буфера +11,85% (11,87 ₽).</td><td class="mono">medium</td><td class="mono">high</td><td class="mono">high</td><td>Атомарный биллинговый автозачёт оплаченных 99 ₽ при delta-апгрейде +150 ₽ с пречеком одной суммой, двухступенчатый каскад инференса (URL/хеши до запуска голосовой модели) и стоп-правило пилота при прямых затратах &gt; 110 ₽ на платящую семью.</td></tr><tr><td>Всплеск протестного оттока и разрушение семейных групп: клиенты вне «Дели Тариф», недовольные платой 99 ₽, или родители, испугавшиеся «слежки» и обрыва звонка врача, при попытке отключить защиту удаляют всех участников семейной группы в ЛК по правилам от 29.10.2026.</td><td class="mono">high</td><td class="mono">high</td><td class="mono">high</td><td>Немедленная замена механики отказа в ЛК на 1-кликовый даунгрейд платной опции без удаления участников семейной группы, приватный режим риск-алерта без логов личных звонков по умолчанию и настройка мягкого голосового предупреждения без разрыва связи.</td></tr><tr><td>Низкая конверсия апгрейда в 249 ₽ внутри когорт «Дели Тариф» (база 0 ₽) и «Семейная безопасность» (база 99 ₽): плательщики уверены, что «ИИ-защита от мошенников» в базе уже закрывает все риски, либо уходят с воронки из-за SIM другого оператора у второго родителя.</td><td class="mono">high</td><td class="mono">medium</td><td class="mono">high</td><td>Жёсткое продуктовое и визуальное разведение ступеней (0/99 ₽ — только базовый голосовой фильтр; 249 ₽ «Защити родителей Плюс» — приватный алерт ребёнку, антифишинг ссылок и детекция аудио/видео-дипфейков в мессенджерах + проверочный бот для второго родителя на любой SIM и курьерский MNP).</td></tr><tr><td>Репутационный конфликт и всплеск претензий (&gt; 0,25%): после фишингового СМС о «взломе Госуслуг» родитель сам перезванивает мошенникам и переводит сбережения через СБП, а плательщик обвиняет оператора в несработавшей «защите».</td><td class="mono">medium</td><td class="mono">high</td><td class="mono">high</td><td>Исключение любых безусловных формулировок из рекламы, явная памятка границ защиты на экране подключения, кнопка экстренного звонка родителю внутри риск-алерта и запуск во втором контуре пилота обмена телеком-сигналами с банками.</td></tr></tbody></table></div>
 
   <h2>Экономика: факты, допущения и пороги смены решения</h2><div class="strategy-card" style="margin-bottom:14px;"><p>Порог комитета — маржинальный вклад <span class="mono">&gt;= 55%</span>. Цена подписки — публичный факт или рыночный ориентир; прямые затраты, CAC и срок удержания — <strong>допущения</strong> сценарной модели (<span class="mono">examples/antifraud-subscription/initial/economics_2027.json</span>), а не данные управленческой отчётности. Поэтому маржа каждого варианта — расчёт на допущениях, а не измеренный факт.</p><table><thead><tr><th>Вариант</th><th>Цена / 30 дн. (основание)</th><th>Рекуррентные затраты / мес. (<strong>допущение</strong>)</th><th>CAC (<strong>допущение</strong>)</th><th>Удержание, мес. (<strong>допущение</strong>)</th><th>Маржа (расчёт на допущениях)</th></tr></thead><tbody><tr><td><span class="mono">opt0_keep_individual_149</span></td><td>149 ₽ (факт витрины)</td><td>38 ₽</td><td>260 ₽</td><td>5</td><td>39,6% (ниже порога)</td></tr><tr><td><span class="mono">opt1_bundle_heavy_premium_299</span></td><td>299 ₽ (ориентир рынка)</td><td>144 ₽</td><td>420 ₽</td><td>6</td><td>28,4% (ниже порога)</td></tr><tr><td><span class="mono">opt2_family_parents_shield_249</span></td><td>249 ₽ (факт витрины)</td><td>72 ₽</td><td>310 ₽</td><td>11</td><td>59,8% (проходит порог)</td></tr><tr><td><span class="mono">opt3_b2b2c_bank_coantifraud_180</span></td><td>180 ₽ (<strong>допущение</strong>)</td><td>54 ₽</td><td>190 ₽</td><td>14</td><td>62,5% (проходит порог)</td></tr></tbody></table><p><strong>Пороги смены решения</strong> (каждый параметр меняется отдельно, остальные зафиксированы):</p><table><thead><tr><th>Вариант</th><th>Статус сейчас</th><th>CAC</th><th>Удержание</th><th>Полные прямые затраты / мес. (рекуррентные + CAC в месяц)</th><th>Цена / 30 дн.</th></tr></thead><tbody><tr><td><span class="mono">opt0_keep_individual_149</span></td><td>ниже порога</td><td>проходит, если <span class="mono">&lt;= 145,25 ₽</span></td><td>проходит, если <span class="mono">&gt;= 8,95 мес.</span></td><td>проходит, если <span class="mono">&lt;= 67,05 ₽</span></td><td>проходит, если <span class="mono">&gt;= 200 ₽</span></td></tr><tr><td><span class="mono">opt1_bundle_heavy_premium_299</span></td><td>ниже порога</td><td>не спасает (рекуррентные затраты выше допустимых)</td><td>не спасает</td><td>проходит, если <span class="mono">&lt;= 134,55 ₽</span></td><td>проходит, если <span class="mono">&gt;= 475,56 ₽</span></td></tr><tr><td><span class="mono">opt2_family_parents_shield_249</span></td><td>проходит</td><td>выпадает, если <span class="mono">&gt; 440,55 ₽</span></td><td>выпадает, если <span class="mono">&lt; 7,74 мес.</span></td><td>выпадает, если <span class="mono">&gt; 112,05 ₽</span></td><td>выпадает, если <span class="mono">&lt; 222,63 ₽</span></td></tr><tr><td><span class="mono">opt3_b2b2c_bank_coantifraud_180</span></td><td>проходит</td><td>выпадает, если <span class="mono">&gt; 378 ₽</span></td><td>выпадает, если <span class="mono">&lt; 7,04 мес.</span></td><td>выпадает, если <span class="mono">&gt; 81 ₽</span></td><td>выпадает, если <span class="mono">&lt; 150,16 ₽</span></td></tr></tbody></table><p><strong>Что меняет выбор.</strong> Флагман <span class="mono">opt2</span> перестаёт проходить порог <span class="mono">55%</span>, если по итогам пилота CAC окажется выше <span class="mono">440,55 ₽</span>, удержание — короче <span class="mono">7,74 мес.</span>, полные прямые затраты — выше <span class="mono">112,05 ₽/мес.</span> или фактическая цена — ниже <span class="mono">222,63 ₽</span> (каждое условие отдельно). Тогда единственным вариантом выше порога остаётся B2B2C <span class="mono">opt3</span> (если подтвердятся его собственные допущения), а индивидуальный тир <span class="mono">opt0</span> возвращается в рассмотрение, только если CAC <span class="mono">&lt;= 145,25 ₽</span>, удержание <span class="mono">&gt;= 8,95 мес.</span> или цена <span class="mono">&gt;= 200 ₽</span>. Премиум со страховкой <span class="mono">opt1</span> не проходит ни при каком CAC или удержании — только при цене от <span class="mono">475,56 ₽</span>.</p></div>
@@ -190,6 +400,387 @@
   </section>
 </div>
 <script>
+const ACCEPT_META = {"has_draft": false, "case_cli": "antifraud-subscription", "recommended": "opt2_family_parents_shield", "expect_sha": "9bc8fe51c047285d1a904e71e44903f58a40f82a0214957e8a9c5b22e3017d14", "live_enabled": false, "live_token": ""};
+const ECON_MODEL = {"source_id": "01-economics-spec", "currency": "RUB", "min_margin_rate": 0.55, "note": "Сценарная постатейная модель юнит-экономики на 1 платящую подписку (30 дней). Разделяет публичные цены с открытых витрин операторов (факты) и модельные параметры затрат/CAC/удержания (допущения сценария, не данные закрытой управленческой отчётности).", "plans": [{"id": "opt0_keep_individual_149", "title": "(0) Текущая индивидуальная «Моя безопасность +» (149 ₽ / 30 дн.)", "basis_code": "public_price_plus_model_assumptions", "basis_label": "факт витрины", "price": 149.0, "recurring": 38.0, "cac": 260.0, "retention": 5, "assumptions": {"monthly_revenue": "Публичный факт витрины МегаФона (149 ₽ / 30 дн.)", "recurring_costs": "Допущение модели (38 ₽/мес суммарно на инференс, пуши и поддержку)", "upfront_cac": "Допущение модели (260 ₽ на платное привлечение индивидуального VAS на коммодитизированном рынке)", "amortize_months": "Допущение модели (5 мес. среднего удержания из-за конкуренции с бесплатной базовой «Евой»)"}}, {"id": "opt1_bundle_heavy_premium_299", "title": "(1) База бесплатно во всех тарифах + индивидуальный премиум со страховкой до 1,5 млн ₽ (299 ₽ / 30 дн.)", "basis_code": "benchmark_price_plus_model_assumptions", "basis_label": "ориентир рынка", "price": 299.0, "recurring": 144.0, "cac": 420.0, "retention": 6, "assumptions": {"monthly_revenue": "Рыночный ориентир верхнего тира с финансовой защитой (299 ₽/мес по аналогии с Защитник+)", "recurring_costs": "Допущение модели (144 ₽/мес, где ключевой драйвер — оптовая страховая премия 92 ₽/мес за лимит 1,5 млн ₽)", "upfront_cac": "Допущение модели (420 ₽ CAC холодного привлечения дорогого индивидуального тира)", "amortize_months": "Допущение модели (6 мес. среднего удержания)"}}, {"id": "opt2_family_parents_shield_249", "title": "(2) Семейный флагман «Защити родителей» (до 5 номеров + приватный алерт + антифишинг мессенджеров, 249 ₽ / 30 дн.)", "basis_code": "public_price_plus_model_assumptions", "basis_label": "факт витрины", "price": 249.0, "recurring": 72.0, "cac": 310.0, "retention": 11, "assumptions": {"monthly_revenue": "Публичный факт витрины МегаФона «Семейная безопасность +» (249 ₽ / 30 дн.)", "recurring_costs": "Допущение модели (72 ₽/мес на семейную группу из 2–4 активных номеров)", "upfront_cac": "Допущение модели (310 ₽ CAC при таргетинге на тёплую базу семейных групп и плательщиков за близких)", "amortize_months": "Допущение модели (11 мес. удержания за счёт высокой инерции семейной связки «взрослые дети — родители»)"}}, {"id": "opt3_b2b2c_bank_coantifraud_180", "title": "(3) B2B2C совместный антифрод-контур с банками (оптовый revenue-share за защищённого клиента, 180 ₽ / 30 дн.)", "basis_code": "scenario_hypothesis_assumptions", "basis_label": "допущение", "price": 180.0, "recurring": 54.0, "cac": 190.0, "retention": 14, "assumptions": {"monthly_revenue": "Допущение модели (180 ₽/мес оптовой выручки на защищённого банковского клиента в модели B2B2C)", "recurring_costs": "Допущение модели (54 ₽/мес на API риск-сигналов и SLA)", "upfront_cac": "Допущение модели (190 ₽ удельных затрат на интеграцию/активацию в канале банка)", "amortize_months": "Допущение модели (14 мес. удержания внутри банковского пакета)"}}]};
+
+function relatedSet(nodeId) {
+  const rel = new Set([nodeId]);
+  if (nodeId.startsWith("source:")) {
+    const sid = nodeId.slice(7);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [fid, f] of Object.entries(GRAPH.findings)) {
+        const key = "finding:" + fid;
+        if (rel.has(key)) continue;
+        if (f.sources.includes(sid) || f.depends_on.some(d => rel.has("finding:" + d))) {
+          rel.add(key); changed = true;
+        }
+      }
+    }
+    for (const [tid, deps] of Object.entries(GRAPH.targets)) {
+      if (deps.some(d => rel.has("finding:" + d))) rel.add(tid);
+    }
+  } else if (nodeId.startsWith("finding:")) {
+    const start = nodeId.slice(8);
+    const up = [start];
+    while (up.length) {
+      const cur = up.pop();
+      const f = GRAPH.findings[cur];
+      if (!f) continue;
+      f.sources.forEach(s => rel.add("source:" + s));
+      f.depends_on.forEach(d => { if (!rel.has("finding:" + d)) { rel.add("finding:" + d); up.push(d); } });
+    }
+    const down = new Set([start]);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [fid, f] of Object.entries(GRAPH.findings)) {
+        if (!down.has(fid) && f.depends_on.some(d => down.has(d))) {
+          down.add(fid); rel.add("finding:" + fid); changed = true;
+        }
+      }
+    }
+    for (const [tid, deps] of Object.entries(GRAPH.targets)) {
+      if (deps.some(d => down.has(d))) rel.add(tid);
+    }
+  } else {
+    const deps = GRAPH.targets[nodeId] || [];
+    const stack = [...deps];
+    stack.forEach(d => rel.add("finding:" + d));
+    while (stack.length) {
+      const cur = stack.pop();
+      const f = GRAPH.findings[cur];
+      if (!f) continue;
+      f.sources.forEach(s => rel.add("source:" + s));
+      f.depends_on.forEach(d => { if (!rel.has("finding:" + d)) { rel.add("finding:" + d); stack.push(d); } });
+    }
+  }
+  return rel;
+}
+function selectNode(nodeId) {
+  const rel = relatedSet(nodeId);
+  document.querySelectorAll("[data-node]").forEach(el => {
+    const id = el.getAttribute("data-node");
+    el.classList.toggle("active-link", rel.has(id));
+    el.classList.toggle("dimmed", !rel.has(id));
+  });
+}
+function resetSelection() {
+  document.querySelectorAll("[data-node]").forEach(el => {
+    el.classList.remove("active-link", "dimmed");
+  });
+}
+
+/* --- Committee Accept Gate (Item 4) --- */
+function shQuote(val) {
+  const s = String(val || "").trim();
+  return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+}
+function buildAcceptCommand() {
+  const optEl = document.getElementById("accept-option");
+  if (!optEl) return "";
+  const opt = optEl.value;
+  const by = (document.getElementById("accept-by")?.value || "Продуктовый комитет").trim();
+  const reason = (document.getElementById("accept-reason")?.value || "Согласовано").trim();
+  const sha = ACCEPT_META.expect_sha || "<draft_sha256>";
+  return `python3 -m ledger accept ${ACCEPT_META.case_cli} ${opt} --expect ${sha} --by ${shQuote(by)} --reason ${shQuote(reason)}`;
+}
+function updateAcceptCommand() {
+  const preview = document.getElementById("accept-cmd-preview");
+  if (!preview) return;
+  preview.textContent = buildAcceptCommand();
+  const opt = document.getElementById("accept-option")?.value || "";
+  const warn = document.getElementById("accept-mismatch-note");
+  if (warn) {
+    warn.style.display = (ACCEPT_META.recommended && opt !== ACCEPT_META.recommended) ? "block" : "none";
+  }
+}
+function copyAcceptCommand() {
+  const cmd = buildAcceptCommand();
+  const fb = document.getElementById("accept-feedback");
+  const showOk = (msg) => {
+    if (!fb) return;
+    fb.textContent = msg;
+    setTimeout(() => { if (fb.textContent === msg) fb.textContent = ""; }, 3200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(cmd).then(() => showOk("Команда скопирована в буфер обмена")).catch(() => fallbackCopy(cmd, showOk));
+  } else {
+    fallbackCopy(cmd, showOk);
+  }
+}
+function fallbackCopy(text, cb) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand("copy"); cb("Команда скопирована в буфер обмена"); }
+  catch (e) { cb("Выделите строку выше и скопируйте (Ctrl+C)"); }
+  document.body.removeChild(ta);
+}
+async function triggerLiveAccept() {
+  if (!ACCEPT_META.live_enabled) return;
+  const fb = document.getElementById("accept-feedback");
+  const btn = document.getElementById("accept-live-btn");
+  const payload = {
+    option: document.getElementById("accept-option").value,
+    expect: ACCEPT_META.expect_sha,
+    by: document.getElementById("accept-by").value,
+    reason: document.getElementById("accept-reason").value
+  };
+  if (btn) btn.disabled = true;
+  if (fb) fb.textContent = "Запись решения в case.sqlite3…";
+  try {
+    const res = await fetch("/api/accept", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Ledger-Token": ACCEPT_META.live_token },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      if (fb) fb.textContent = "Ошибка гейта: " + (data.error || res.statusText);
+      if (btn) btn.disabled = false;
+      return;
+    }
+    if (fb) fb.textContent = `Утверждено: Решение №${data.decision.revision} (${data.decision.option})`;
+    setTimeout(() => window.location.reload(), 700);
+  } catch (err) {
+    if (fb) fb.textContent = "Сбой соединения с локальным сервером: " + err;
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* --- Interactive What-If Unit Economics (Item 1 · exact ledger/economics.py formulas) --- */
+const WHATIF_STATE = { selectedId: null, preset: "base", overrides: {} };
+
+function fmtRub(val, digits = 2) {
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  const parts = rounded.toFixed(digits).split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const dec = (digits > 0 && parts[1] !== "00" && parts[1] !== "0") ? ("," + parts[1]) : "";
+  return parts[0] + dec + " ₽";
+}
+function fmtNum(val, suffix = "", digits = 2) {
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  let s = rounded.toFixed(digits).replace(".", ",");
+  if (s.endsWith(",00")) s = s.slice(0, -3);
+  return s + suffix;
+}
+function evaluatePlanExact(price, recurring, cac, retention, minMargin) {
+  const rev = Math.max(0.01, Number(price));
+  const rec = Math.max(0, Number(recurring));
+  const upf = Math.max(0, Number(cac));
+  const ret = Math.max(1, Math.round(Number(retention)));
+  const amortUpfront = upf > 0 ? (upf / ret) : 0.0;
+  const directCost = rec + amortUpfront;
+  const contribution = rev - directCost;
+  const contributionRate = contribution / rev;
+  const maxAllowableCost = rev * (1.0 - minMargin);
+  const costHeadroom = maxAllowableCost - directCost;
+  const cashMarginBeforeCapex = rev - rec;
+  const paybackMonths = (upf > 0 && cashMarginBeforeCapex > 0)
+    ? Number((upf / cashMarginBeforeCapex).toFixed(2))
+    : (upf === 0 ? 0.0 : null);
+  let maxUpfrontCac = Number(((maxAllowableCost - rec) * ret).toFixed(2));
+  if (maxUpfrontCac < 0) maxUpfrontCac = null;
+  const monthlyRoom = maxAllowableCost - rec;
+  let minRetention = null;
+  if (upf === 0) {
+    minRetention = monthlyRoom >= 0 ? 1 : null;
+  } else if (monthlyRoom > 0) {
+    minRetention = Number((upf / monthlyRoom).toFixed(2));
+  }
+  const minMonthlyPrice = minMargin < 1.0 ? Number((directCost / (1.0 - minMargin)).toFixed(2)) : null;
+  const meetsTarget = (contributionRate + 1e-12) >= minMargin;
+  return {
+    price: rev, recurring: rec, cac: upf, retention: ret,
+    amortUpfront, directCost, contribution, contributionRate,
+    maxAllowableCost, costHeadroom, paybackMonths,
+    maxUpfrontCac, minRetention, minMonthlyPrice, meetsTarget
+  };
+}
+function presetParamsForPlan(plan, preset) {
+  if (preset === "cvm") {
+    return { price: plan.price, recurring: plan.recurring, cac: plan.cac > 0 ? 25 : 0, retention: plan.retention };
+  }
+  if (preset === "paid") {
+    const paidCac = plan.cac > 0 ? Math.round(plan.cac * 1.25) : 260;
+    return { price: plan.price, recurring: plan.recurring, cac: paidCac, retention: plan.retention };
+  }
+  if (preset === "stress") {
+    return {
+      price: plan.price,
+      recurring: Number((plan.recurring * 1.15).toFixed(2)),
+      cac: plan.cac,
+      retention: Math.max(1, plan.retention - 2)
+    };
+  }
+  return { price: plan.price, recurring: plan.recurring, cac: plan.cac, retention: plan.retention };
+}
+function initWhatIf() {
+  if (!ECON_MODEL || !ECON_MODEL.plans || !ECON_MODEL.plans.length) return;
+  ECON_MODEL.plans.forEach(p => {
+    WHATIF_STATE.overrides[p.id] = { price: p.price, recurring: p.recurring, cac: p.cac, retention: p.retention };
+  });
+  WHATIF_STATE.selectedId = ECON_MODEL.plans[0].id;
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function syncSlidersToSelected() {
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  const setPair = (key, val, maxHint) => {
+    const sl = document.getElementById("sl-" + key);
+    const nm = document.getElementById("num-" + key);
+    if (sl) {
+      if (val > Number(sl.max)) sl.max = String(Math.ceil(val * 1.5));
+      sl.value = String(val);
+    }
+    if (nm) nm.value = String(val);
+  };
+  setPair("price", cur.price);
+  setPair("cac", cur.cac);
+  setPair("retention", cur.retention);
+  setPair("recurring", cur.recurring);
+}
+function selectWhatIfPlan(planId) {
+  WHATIF_STATE.selectedId = planId;
+  const sel = document.getElementById("whatif-plan-select");
+  if (sel && sel.value !== planId) sel.value = planId;
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function applyEconPreset(preset, btnEl) {
+  WHATIF_STATE.preset = preset;
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active-preset", b === btnEl));
+  const applyAll = document.getElementById("whatif-apply-all")?.checked;
+  ECON_MODEL.plans.forEach(p => {
+    if (applyAll || p.id === WHATIF_STATE.selectedId || preset === "base") {
+      WHATIF_STATE.overrides[p.id] = presetParamsForPlan(p, preset);
+    }
+  });
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function recomputeAllWhatIf() {
+  if (WHATIF_STATE.preset !== "base") {
+    const activeBtn = document.querySelector(`.preset-btn[data-preset="${WHATIF_STATE.preset}"]`);
+    applyEconPreset(WHATIF_STATE.preset, activeBtn);
+  } else {
+    renderWhatIf();
+  }
+}
+function onSliderInput(field, rawVal) {
+  const num = Number(rawVal);
+  if (Number.isNaN(num)) return;
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  cur[field] = field === "retention" ? Math.max(1, Math.round(num)) : Math.max(0, num);
+  const sl = document.getElementById("sl-" + field);
+  const nm = document.getElementById("num-" + field);
+  if (sl && document.activeElement !== sl) {
+    if (cur[field] > Number(sl.max)) sl.max = String(Math.ceil(cur[field] * 1.5));
+    sl.value = String(cur[field]);
+  }
+  if (nm && document.activeElement !== nm) nm.value = String(cur[field]);
+  renderWhatIf();
+}
+function renderWhatIf() {
+  if (!ECON_MODEL) return;
+  const minM = ECON_MODEL.min_margin_rate;
+  const selPlan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId) || ECON_MODEL.plans[0];
+  const selCur = WHATIF_STATE.overrides[selPlan.id];
+  const selEval = evaluatePlanExact(selCur.price, selCur.recurring, selCur.cac, selCur.retention, minM);
+
+  const basisBadge = document.getElementById("badge-price-basis");
+  if (basisBadge) {
+    const priceChanged = Math.abs(selCur.price - selPlan.price) > 1e-6;
+    basisBadge.textContent = priceChanged ? "допущение (what-if)" : selPlan.basis_label;
+    basisBadge.className = priceChanged ? "tag tag-warn" : "tag tag-ok";
+  }
+  const showDelta = (id, baseV, curV, unit) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (Math.abs(curV - baseV) < 1e-6) {
+      el.textContent = `База спецификации: ${fmtNum(baseV, unit)}`;
+    } else {
+      const sign = curV > baseV ? "+" : "";
+      el.textContent = `База: ${fmtNum(baseV, unit)} → изменено (${sign}${fmtNum(curV - baseV, unit)})`;
+    }
+  };
+  showDelta("delta-price", selPlan.price, selCur.price, " ₽");
+  showDelta("delta-cac", selPlan.cac, selCur.cac, " ₽");
+  showDelta("delta-retention", selPlan.retention, selCur.retention, " мес.");
+  showDelta("delta-recurring", selPlan.recurring, selCur.recurring, " ₽");
+
+  const kpiStrip = document.getElementById("whatif-kpi-strip");
+  if (kpiStrip) {
+    const statusCls = selEval.meetsTarget ? "tag tag-ok" : "tag tag-alert";
+    const statusTxt = selEval.meetsTarget ? "Проходит порог комитета" : "Ниже порога комитета";
+    const paybackTxt = selEval.paybackMonths === null ? "не окупается" : fmtNum(selEval.paybackMonths, " мес.");
+    kpiStrip.innerHTML = `
+      <div class="kpi-mini">
+        <div class="k-lbl">Маржинальный вклад (расчёт на допущениях)</div>
+        <div class="k-val">${fmtRub(selEval.contribution)} (${fmtNum(selEval.contributionRate * 100, "%", 1)})</div>
+        <div style="margin-top:4px;"><span class="${statusCls}">${statusTxt}</span></div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Полные прямые затраты / мес.</div>
+        <div class="k-val">${fmtRub(selEval.directCost)}</div>
+        <div class="node-meta">OPEX ${fmtRub(selEval.recurring)} + CAC/мес. ${fmtRub(selEval.amortUpfront)}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Запас до потолка затрат (headroom)</div>
+        <div class="k-val" style="color:${selEval.costHeadroom >= 0 ? 'var(--accent)' : 'var(--alert)'};">${selEval.costHeadroom >= 0 ? '+' : ''}${fmtRub(selEval.costHeadroom)}</div>
+        <div class="node-meta">Потолок прямых затрат: ${fmtRub(selEval.maxAllowableCost)}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Окупаемость CAC (операционная)</div>
+        <div class="k-val">${paybackTxt}</div>
+        <div class="node-meta">При удержании ${selEval.retention} мес.</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Границы безубыточности к цели</div>
+        <div class="k-val" style="font-size:12px;">CAC &lt;= ${fmtRub(selEval.maxUpfrontCac)}</div>
+        <div class="node-meta">Удерж. &gt;= ${fmtNum(selEval.minRetention, " мес.")} · Цена &gt;= ${fmtRub(selEval.minMonthlyPrice)}</div>
+      </div>`;
+  }
+
+  const tbody = document.getElementById("whatif-table-body");
+  if (tbody) {
+    tbody.innerHTML = ECON_MODEL.plans.map(p => {
+      const cur = WHATIF_STATE.overrides[p.id];
+      const ev = evaluatePlanExact(cur.price, cur.recurring, cur.cac, cur.retention, minM);
+      const isSel = p.id === WHATIF_STATE.selectedId;
+      const badge = ev.meetsTarget
+        ? '<span class="tag tag-ok">проходит</span>'
+        : '<span class="tag tag-alert">ниже порога</span>';
+      const priceBasis = Math.abs(cur.price - p.price) > 1e-6 ? "what-if" : p.basis_label;
+      const beLine = ev.maxUpfrontCac !== null
+        ? `CAC &lt;= ${fmtRub(ev.maxUpfrontCac)} · удерж. &gt;= ${fmtNum(ev.minRetention, " мес.")}`
+        : `рекуррентные затраты выше потолка ${fmtRub(ev.maxAllowableCost)} (CAC не спасает)`;
+      return `<tr class="${isSel ? 'whatif-selected-row' : ''}" style="cursor:pointer;" onclick="selectWhatIfPlan('${p.id}')">
+        <td><span class="mono">${p.id}</span><div class="node-meta">${p.title}</div></td>
+        <td>${fmtRub(ev.price)} <span class="node-meta">(${priceBasis})</span></td>
+        <td>${fmtRub(ev.recurring)}</td>
+        <td>${fmtRub(ev.cac)}</td>
+        <td>${ev.retention} мес.</td>
+        <td>${fmtRub(ev.directCost)}</td>
+        <td><strong>${fmtNum(ev.contributionRate * 100, "%", 1)}</strong> (${fmtRub(ev.contribution)}) ${badge}</td>
+        <td style="font-size:12px;">${beLine}</td>
+      </tr>`;
+    }).join("");
+  }
+}
+
 const GRAPH = {"sources": {}, "findings": {"f01_cbr_operations_2025": {"sources": ["cbr_2025"], "depends_on": []}, "f02_vedomosti_seniors_2026": {"sources": ["vedomosti_2026"], "depends_on": []}, "f03_megafon_h1_2026": {"sources": ["megafon_h1_2026"], "depends_on": []}, "f04_megafon_annual_2025": {"sources": ["megafon_annual_2025"], "depends_on": []}, "f05_megafon_eva_individual_terms": {"sources": ["megafon_eva", "tariffs_table"], "depends_on": []}, "f06_megafon_family_terms": {"sources": ["megafon_family", "megafon_change_20261029"], "depends_on": ["f17_family_repriced_99_and_deli_tariff"]}, "f07_competitors_mts_beeline_benchmark": {"sources": ["mts_cnews", "beeline_cnews", "tariffs_table"], "depends_on": []}, "f08_committee_targets_and_guardrails": {"sources": ["brief", "manager"], "depends_on": []}, "f09_ux_eva_first_screen_cannibalization": {"sources": ["eva_ux_png", "ux_notes"], "depends_on": []}, "f10_ux_family_landing_and_onboarding": {"sources": ["family_ux_png", "ux_notes", "megafon_family", "megafon_change_20261029"], "depends_on": ["f17_family_repriced_99_and_deli_tariff"]}, "f11_econ_individual_insurance_and_b2b2c": {"sources": ["economics_spec"], "depends_on": ["f05_megafon_eva_individual_terms", "f07_competitors_mts_beeline_benchmark", "f08_committee_targets_and_guardrails", "f09_ux_eva_first_screen_cannibalization"]}, "f12_econ_family_shield_margin_and_headroom": {"sources": ["economics_spec"], "depends_on": ["f06_megafon_family_terms", "f08_committee_targets_and_guardrails", "f11_econ_individual_insurance_and_b2b2c", "f17_family_repriced_99_and_deli_tariff"]}, "f13_hyp_privacy_and_soft_interrupt": {"sources": ["synth_personas", "interview_guide"], "depends_on": ["f02_vedomosti_seniors_2026"]}, "f14_hyp_cross_operator_and_messenger_gap": {"sources": ["synth_personas", "ux_notes"], "depends_on": ["f03_megafon_h1_2026", "f06_megafon_family_terms", "f10_ux_family_landing_and_onboarding", "f17_family_repriced_99_and_deli_tariff"]}, "f15_forecast_q1_2027_family_pilot": {"sources": [], "depends_on": ["f02_vedomosti_seniors_2026", "f12_econ_family_shield_margin_and_headroom", "f13_hyp_privacy_and_soft_interrupt", "f17_family_repriced_99_and_deli_tariff"]}, "f16_unknown_price_elasticity_and_mixed_sim": {"sources": ["interview_guide"], "depends_on": ["f06_megafon_family_terms", "f17_family_repriced_99_and_deli_tariff"]}, "f17_family_repriced_99_and_deli_tariff": {"sources": ["megafon_change_20261029"], "depends_on": []}}, "targets": {"option:opt0_keep_status_quo": ["f05_megafon_eva_individual_terms", "f06_megafon_family_terms", "f09_ux_eva_first_screen_cannibalization", "f11_econ_individual_insurance_and_b2b2c", "f17_family_repriced_99_and_deli_tariff"], "option:opt1_bundle_all_tariffs": ["f03_megafon_h1_2026", "f07_competitors_mts_beeline_benchmark", "f08_committee_targets_and_guardrails", "f11_econ_individual_insurance_and_b2b2c"], "option:opt2_family_parents_shield": ["f01_cbr_operations_2025", "f02_vedomosti_seniors_2026", "f06_megafon_family_terms", "f10_ux_family_landing_and_onboarding", "f12_econ_family_shield_margin_and_headroom", "f13_hyp_privacy_and_soft_interrupt", "f14_hyp_cross_operator_and_messenger_gap", "f15_forecast_q1_2027_family_pilot", "f16_unknown_price_elasticity_and_mixed_sim", "f17_family_repriced_99_and_deli_tariff"], "option:opt3_b2b2c_bank_antifrod": ["f01_cbr_operations_2025", "f02_vedomosti_seniors_2026", "f03_megafon_h1_2026", "f08_committee_targets_and_guardrails", "f11_econ_individual_insurance_and_b2b2c"], "option:opt4_close_paid_b2c": ["f04_megafon_annual_2025", "f07_competitors_mts_beeline_benchmark", "f09_ux_eva_first_screen_cannibalization", "f11_econ_individual_insurance_and_b2b2c"], "strategy:product": ["f01_cbr_operations_2025", "f02_vedomosti_seniors_2026", "f03_megafon_h1_2026", "f05_megafon_eva_individual_terms", "f06_megafon_family_terms", "f08_committee_targets_and_guardrails", "f11_econ_individual_insurance_and_b2b2c", "f12_econ_family_shield_margin_and_headroom", "f13_hyp_privacy_and_soft_interrupt", "f14_hyp_cross_operator_and_messenger_gap", "f17_family_repriced_99_and_deli_tariff"], "strategy:communication": ["f01_cbr_operations_2025", "f02_vedomosti_seniors_2026", "f05_megafon_eva_individual_terms", "f06_megafon_family_terms", "f08_committee_targets_and_guardrails", "f09_ux_eva_first_screen_cannibalization", "f10_ux_family_landing_and_onboarding", "f13_hyp_privacy_and_soft_interrupt", "f16_unknown_price_elasticity_and_mixed_sim", "f17_family_repriced_99_and_deli_tariff"], "strategy:experiment": ["f06_megafon_family_terms", "f08_committee_targets_and_guardrails", "f10_ux_family_landing_and_onboarding", "f12_econ_family_shield_margin_and_headroom", "f13_hyp_privacy_and_soft_interrupt", "f15_forecast_q1_2027_family_pilot", "f16_unknown_price_elasticity_and_mixed_sim", "f17_family_repriced_99_and_deli_tariff"]}};
 function relatedSet(nodeId) {
   const rel = new Set([nodeId]);
@@ -261,6 +852,8 @@ function resetSelection() {
     el.classList.remove("active-link", "dimmed");
   });
 }
+updateAcceptCommand();
+initWhatIf();
 </script>
 </body>
 </html>

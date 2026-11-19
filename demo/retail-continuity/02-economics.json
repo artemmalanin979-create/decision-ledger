@@ -6,9 +6,32 @@
     "managed_failover",
     "self_service"
   ],
+  "switching_analysis": [
+    {
+      "plan_id": "self_service",
+      "current_status": "viable",
+      "flips_to_non_viable_if": {
+        "upfront_cac_exceeds": 4314.0,
+        "retention_months_below": 6.68,
+        "direct_cost_exceeds": 709.5,
+        "monthly_price_below": 1000.0
+      }
+    },
+    {
+      "plan_id": "managed_failover",
+      "current_status": "viable",
+      "flips_to_non_viable_if": {
+        "upfront_cac_exceeds": 8034.0,
+        "retention_months_below": 8.96,
+        "direct_cost_exceeds": 1369.5,
+        "monthly_price_below": 2181.82
+      }
+    }
+  ],
   "plans": {
     "self_service": {
       "title": "Комплект SIM + LTE-роутер (самостоятельное переключение)",
+      "epistemic_basis": "scenario_assumptions",
       "monthly_revenue": 1290.0,
       "recurring_cost": 350.0,
       "upfront_total": 2400.0,
@@ -23,6 +46,11 @@
       "cost_headroom": 159.5,
       "max_cost_increase_pct": 29.0,
       "operational_payback_months": 2.55,
+      "breakeven_for_target_margin": {
+        "max_upfront_cac": 4314.0,
+        "min_retention_months": 6.68,
+        "min_monthly_price": 1000.0
+      },
       "sensitivity": {
         "cost_plus_15pct": {
           "monthly_revenue": 1290.0,
@@ -53,6 +81,7 @@
     },
     "managed_failover": {
       "title": "Настроенный LTE-резерв с проверкой оплаты и чека на кассе",
+      "epistemic_basis": "scenario_assumptions",
       "monthly_revenue": 2490.0,
       "recurring_cost": 700.0,
       "upfront_total": 6000.0,
@@ -65,8 +94,13 @@
       "meets_target": true,
       "max_allowable_cost": 1369.5,
       "cost_headroom": 169.5,
-      "max_cost_increase_pct": 14.12,
+      "max_cost_increase_pct": 14.13,
       "operational_payback_months": 3.35,
+      "breakeven_for_target_margin": {
+        "max_upfront_cac": 8034.0,
+        "min_retention_months": 8.96,
+        "min_monthly_price": 2181.82
+      },
       "sensitivity": {
         "cost_plus_15pct": {
           "monthly_revenue": 2490.0,

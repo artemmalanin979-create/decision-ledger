@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Пересборка контентных подписок МегаФона на 2027 год (v2): двухуровневая CVM-модель (МегаКино 399 ₽ + слот МегаКино Лайт 249 ₽ в МегаСилах), перевод индексированного МегаФон Плюс (345/460 ₽) в retention-контур и комплаенс по 376-ФЗ — Decision Ledger</title>
+<style>
+  :root {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --ink: #0F172A;
+    --muted: #475569;
+    --subtle: #64748B;
+    --line: #E2E8F0;
+    --accent: #0F766E;
+    --accent-soft: #F0FDFA;
+    --warn: #B45309;
+    --warn-soft: #FFFBEB;
+    --alert: #B91C1C;
+    --alert-soft: #FEF2F2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 40px 56px;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .container { max-width: 1360px; margin: 0 auto; }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
+    padding-bottom: 20px; border-bottom: 1px solid var(--line); margin-bottom: 24px;
+  }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 6px;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 26px; line-height: 1.2; letter-spacing: -0.02em;
+  }
+  h2 {
+    margin: 28px 0 12px;
+    font-family: "Inter Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 16px; letter-spacing: -0.01em;
+  }
+  h3 { margin: 0; font-size: 14px; }
+  .summary { margin: 0; color: var(--muted); max-width: 840px; font-size: 14px; }
+  .status-pill {
+    padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--line); background: var(--surface); white-space: nowrap;
+  }
+  .status-ok { border-color: #99F6E4; background: var(--accent-soft); color: var(--accent); }
+  .status-warn { border-color: #FDE68A; background: var(--warn-soft); color: var(--warn); }
+  .status-alert { border-color: #FECACA; background: var(--alert-soft); color: var(--alert); }
+  .meta-strip {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px;
+  }
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+  }
+  .metric-label { font-size: 11px; color: var(--subtle); text-transform: uppercase; letter-spacing: 0.05em; }
+  .metric-value { font-size: 14px; font-weight: 600; margin-top: 4px; }
+  .impact-banner {
+    background: var(--alert-soft); border: 1px solid #FECACA; border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 18px; color: #7F1D1D;
+  }
+  .impact-banner p { margin: 4px 0 0; font-size: 13px; }
+  .accept-panel, .whatif-panel {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 20px;
+  }
+  .accept-grid {
+    display: grid; grid-template-columns: 1.2fr 0.8fr 1.4fr; gap: 12px; align-items: end;
+  }
+  .field-label {
+    display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--subtle);
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .field-input {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font-size: 13px; font-family: inherit; color: var(--ink); background: #F8FAFC;
+  }
+  .cmd-box {
+    margin-top: 10px; padding: 9px 12px; background: #0F172A; color: #E2E8F0;
+    border-radius: 6px; overflow-x: auto; font-size: 12px;
+  }
+  .accept-actions {
+    margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+  .action-btn {
+    padding: 7px 13px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--ink); font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .action-btn-primary {
+    background: var(--accent); border-color: var(--accent); color: #FFFFFF;
+  }
+  .action-btn-primary:hover { background: #115E59; color: #FFFFFF; }
+  .accept-feedback { font-size: 12px; font-weight: 600; color: var(--accent); }
+  .whatif-header {
+    display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }
+  .preset-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset-btn {
+    padding: 5px 11px; border-radius: 6px; border: 1px solid var(--line); background: #F8FAFC;
+    color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+  .preset-btn.active-preset {
+    border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  }
+  .whatif-controls-top {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 12px 0;
+  }
+  .checkbox-inline {
+    display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); padding-bottom: 6px; cursor: pointer;
+  }
+  .sliders-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 12px;
+  }
+  .slider-card {
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #F8FAFC;
+  }
+  .slider-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; margin-bottom: 8px;
+  }
+  .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+  .num-input {
+    width: 72px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--surface); font-size: 12px; text-align: right;
+  }
+  .whatif-kpi-strip {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px;
+  }
+  .kpi-mini {
+    border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px; background: var(--surface);
+  }
+  .kpi-mini .k-lbl { font-size: 11px; color: var(--subtle); }
+  .kpi-mini .k-val { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  tr.whatif-selected-row td { background: var(--accent-soft); }
+  .lineage-grid {
+    display: grid; grid-template-columns: 0.85fr 1.25fr 1.1fr; gap: 16px; align-items: start;
+  }
+  .col-title {
+    font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 10px; display: flex; justify-content: space-between;
+  }
+  .node-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 11px 13px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.12s ease, opacity 0.12s ease;
+  }
+  .node-card:hover { border-color: #94A3B8; }
+  .node-card.selected-option { border-left: 3px solid var(--accent); }
+  .node-card.stale, .strategy-card.stale { border-color: #FCA5A5; background: #FFFDFD; }
+  .node-card.active-link, .strategy-card.active-link { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .node-card.dimmed, .strategy-card.dimmed { opacity: 0.35; }
+  .node-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .node-body { font-size: 13px; color: var(--ink); margin-bottom: 6px; }
+  .objection-line { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; margin-bottom: 6px; }
+  .objection-line span { font-weight: 600; color: var(--ink); }
+  .node-meta { font-size: 11px; color: var(--subtle); }
+  .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--line);
+    color: var(--muted); background: #F8FAFC;
+  }
+  .tag-ok { border-color: #99F6E4; background: var(--accent-soft); color: var(--accent); }
+  .tag-warn { border-color: #FDE68A; background: var(--warn-soft); color: var(--warn); }
+  .tag-alert { border-color: #FECACA; background: var(--alert-soft); color: var(--alert); }
+  .strategy-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .strategy-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; cursor: pointer;
+  }
+  .strategy-card p { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+  .claim-ok { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--accent); font-weight: 500; }
+  .claim-warn { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--alert); font-weight: 500; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 13px; vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtle); background: #F8FAFC; }
+  .history-list { display: grid; gap: 8px; }
+  .history-item {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; font-size: 13px;
+  }
+  .mono { font-family: "Source Code Pro", "DejaVu Sans Mono", monospace; font-size: 12px; }
+  .reset-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+    border-radius: 5px; padding: 2px 8px; font-size: 11px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Decision Ledger · Паспорт продуктового решения · megakino-plus-2027</div>
+      <h1>Пересборка контентных подписок МегаФона на 2027 год (v2): двухуровневая CVM-модель (МегаКино 399 ₽ + слот МегаКино Лайт 249 ₽ в МегаСилах), перевод индексированного МегаФон Плюс (345/460 ₽) в retention-контур и комплаенс по 376-ФЗ</h1>
+      <p class="summary">На фоне плато проникновения экосистемных подписок в городах РФ (50–51% пять кварталов подряд, ICMR), индексации «Яндекс Плюса» до 449 ₽/мес, вступления в силу № 376-ФЗ и официального повышения цен подписки «МегаФон Плюс» с 16.06.2026 (299 -&gt; 345 ₽ и 399 -&gt; 460 ₽ за 30 дней) подтверждается и уточняется курс Решения №1 (закупка платного внешнего трафика с CAC 290 ₽ уже остановлена по act_3). Индексация создала жёсткую ценовую развилку позиционирования: старший «МегаФон Плюс» за 460 ₽/30 дн. стал дороже прямого «Яндекс Плюса» (449 ₽/мес) и на 61 ₽ выше «МегаКино» (399 ₽), давая на сценарных допущениях меньший вклад (163,88 ₽/мес, маржа 35,6%, хрупкий запас +2,88 ₽), а младший тир 345 ₽ (вклад 123,88 ₽/мес, маржа 35,9%, запас +3,12 ₽) сжал дистанцию до полного «МегаКино» до 54 ₽ и оголил входной сегмент до 300 ₽. Активное CVM-привлечение (CAC 25 ₽) фокусируется на двухуровневой видео-линейке: флагман «МегаКино» 399 ₽ (расчётная маржа 45,8%, вклад 182,88 ₽/мес, на 50 ₽ дешевле «Яндекс Плюса» и на 61 ₽ дешевле «МегаФон Плюс» 460 ₽) и входной апгрейд слота «МегаСил» за 249 ₽ на «МегаФон 3.0» (маржа 45,3%, вклад 112,88 ₽/мес, на 96 ₽ дешевле младшего «МегаФон Плюс» 345 ₽), тогда как «МегаФон Плюс» (345/460 ₽) переводится в режим удержания действующей мультисервисной базы, а ресейл 449 ₽ (21,8%) остаётся пассивной витриной с пре-чек экраном по № 376-ФЗ. Масштабирование защищено 60-дневным когортным A/B-пилотом Q1 2027 со стоп-порогами по 95% ДИ Вильсона: жалобы на списания не более 0,5%, каннибализация баз 399 ₽ и 345/460 ₽ не более 15%, конверсия во 2-й платный месяц не менее 55%.</p>
+    </div>
+    <div class="status-pill status-ok">Утверждено · Решение №2</div>
+  </header>
+
+  <section class="meta-strip">
+    <div class="metric-card">
+      <div class="metric-label">Исходный запрос</div>
+      <div class="metric-value">Контентные мультиподписки МегаФона (МегаКино / партнёрские пакеты / МегаСилы) на 2027 год: что делать с продуктом и как честно коммуницировать условия при насыщении рынка и действии 376-ФЗ?</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Контрольная точка (follow-up)</div>
+      <div class="metric-value">Сопровождение Решения №2 (opt_change_cvm_twotier) и контроль триггеров пересмотра</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Источники и ревизии</div>
+      <div class="metric-value">12 источников · 2 утверждённых решения</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Затраты и участие человека</div>
+      <div class="metric-value">4 286 894 вх. (323 749 нов. + 3 963 145 кэш) / 98 818 вых. токенов · 2960.0 с · ₽ не рассчитываются (квота подписки) · чел: не измерялось</div>
+      <div class="node-meta" style="margin-top:5px;"><span class="tag tag-ok" style="margin-right:6px;">Логи CLI (verified)</span>Верифицированный импорт из 01-session1-intake-and-yaml-draft.jsonl.gz: сумма input_tokens + cache_read_tokens и output_tokens по PLANNER_RESPONSE, время по created_at; квота подписки IDE (₽ не рассчитываются); Верифицированный импорт из…</div>
+    </div>
+  </section>
+
+  
+  
+  <section class="accept-panel" id="accept-gate-panel">
+    <div class="node-head" style="margin-bottom:10px;">
+      <div>
+        <span class="eyebrow" style="margin-bottom:2px;display:block;">Гейт человека (Human-in-the-loop)</span>
+        <h3 style="font-size:15px;">Утверждение решения комитетом (<span class="mono">ledger accept</span>)</h3>
+      </div>
+      <span class="tag tag-ok">Решение №2 зафиксировано · Продуктовый комитет (контентные сервисы)</span>
+    </div>
+    <div class="accept-grid">
+      <label class="field-label"><span>Вариант решения</span>
+        <select id="accept-option" class="field-input" onchange="updateAcceptCommand()"><option value="opt_keep_status_quo">opt_keep_status_quo — Инерционная витрина: продвигать МегаКино 399 ₽, индексированный МегаФон Плюс (345/460 ₽) и ресейл Яндекс Плюс 449 ₽ без входного слота 249 ₽</option><option value="opt_change_cvm_twotier" selected>opt_change_cvm_twotier — Двухуровневая CVM-линейка видео (МегаКино 399 ₽ + слот МегаКино Лайт 249 ₽ в МегаСилах), retention-режим для МегаФон Плюс (345/460 ₽) и комплаенс по 376-ФЗ</option><option value="opt_change_resale_push">opt_change_resale_push — Ставка на верхний мультисервисный чек (промо МегаФон Плюс 460 ₽ и партнёрского ресейла Яндекс Плюс 449 ₽) с заморозкой развития МегаКино</option><option value="opt_close_standalone">opt_close_standalone — Свернуть платные контентные подписки как коммерческое направление, оставив только бесплатные опции МегаСил</option></select>
+      </label>
+      <label class="field-label"><span>Кто утверждает (<span class="mono">--by</span>)</span>
+        <input id="accept-by" type="text" class="field-input" value="Продуктовый комитет" oninput="updateAcceptCommand()"/>
+      </label>
+      <label class="field-label"><span>Основание (<span class="mono">--reason</span>)</span>
+        <input id="accept-reason" type="text" class="field-input" value="Утверждён пересмотр после индексации МегаФон Плюс до 345/460 ₽: фокус на МегаКино 399 ₽ + слот МегаСил 249 ₽ в CVM, тир 460 ₽ только на удержание базы" oninput="updateAcceptCommand()"/>
+      </label>
+    </div>
+    <div id="accept-mismatch-note" class="claim-warn" style="display:none;margin-top:8px;border-top:none;padding-top:0;">
+      Выбранный вариант отличается от <span class="mono">opt_change_cvm_twotier</span> в черновике: <span class="mono">ledger accept</span> заблокирует подмену без обновления черновика через <span class="mono">propose</span>.
+    </div>
+    <div class="cmd-box">
+      <code id="accept-cmd-preview" class="mono"></code>
+    </div>
+    <div class="accept-actions">
+      <button type="button" class="action-btn" id="accept-copy-btn" onclick="copyAcceptCommand()">Скопировать команду accept</button>
+      <span class="node-meta" style="align-self:center;">Зафиксировано 2026-11-19T12:25:46+00:00 · SHA <span class="mono">c1ccb5204a534056…</span></span>
+      <span id="accept-feedback" class="accept-feedback" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h2>Трассировка оснований (кликните узел для подсветки зависимостей)</h2>
+    <button class="reset-btn" onclick="resetSelection()">Сбросить фильтр</button>
+  </div>
+  <section class="lineage-grid">
+    <div>
+      <div class="col-title"><span>1. Источники (12)</span></div>
+      <div class="node-card" data-node="source:brief_2027" onclick="selectNode('source:brief_2027')"><div class="node-head"><span class="mono">brief_2027</span><span class="tag">document · ok</span></div><div class="node-meta">input/brief_2027.md · <span class="mono">530cdea8e5</span></div></div><div class="node-card" data-node="source:cnews_ecosystems_2026" onclick="selectNode('source:cnews_ecosystems_2026')"><div class="node-head"><span class="mono">cnews_ecosystems_2026</span><span class="tag">web · ok</span></div><div class="node-meta">input/web/cnews_ecosystems_2026.md · <span class="mono">b61565dd2d</span></div></div><div class="node-card" data-node="source:cnews_icmr_2026" onclick="selectNode('source:cnews_icmr_2026')"><div class="node-head"><span class="mono">cnews_icmr_2026</span><span class="tag">web · ok</span></div><div class="node-meta">input/web/cnews_icmr_2026.md · <span class="mono">bb4231c3a5</span></div></div><div class="node-card" data-node="source:economics_inputs_2027" onclick="selectNode('source:economics_inputs_2027')"><div class="node-head"><span class="mono">economics_inputs_2027</span><span class="tag">document · ok</span></div><div class="node-meta">input/economics_inputs_2027.json · <span class="mono">0ea0ab6383</span></div></div><div class="node-card" data-node="source:economics_plans" onclick="selectNode('source:economics_plans')"><div class="node-head"><span class="mono">economics_plans</span><span class="tag">document · ok</span></div><div class="node-meta">economics_spec.json · <span class="mono">691f8ad5e3</span></div></div><div class="node-card" data-node="source:megafon_megakino" onclick="selectNode('source:megafon_megakino')"><div class="node-head"><span class="mono">megafon_megakino</span><span class="tag">web · ok</span></div><div class="node-meta">input/web/megafon_megakino.md · <span class="mono">8b2c55a790</span></div></div><div class="node-card" data-node="source:megafon_megasily" onclick="selectNode('source:megafon_megasily')"><div class="node-head"><span class="mono">megafon_megasily</span><span class="tag">web · ok</span></div><div class="node-meta">input/web/megafon_megasily.md · <span class="mono">cb1b0b0fd2</span></div></div><div class="node-card" data-node="source:megafon_plus_20260604" onclick="selectNode('source:megafon_plus_20260604')"><div class="node-head"><span class="mono">megafon_plus_20260604</span><span class="tag">web · ok</span></div><div class="node-meta">input/web/megafon_plus_20260604.md · <span class="mono">7949aeed94</span></div></div><div class="node-card" data-node="source:megafon_yandex_plus" onclick="selectNode('source:megafon_yandex_plus')"><div class="node-head"><span class="mono">megafon_yandex_plus</span><span class="tag">web · ok</span></div><div class="node-meta">input/web/megafon_yandex_plus.md · <span class="mono">9e1efc8c81</span></div></div><div class="node-card" data-node="source:rskrf_376fz_2026" onclick="selectNode('source:rskrf_376fz_2026')"><div class="node-head"><span class="mono">rskrf_376fz_2026</span><span class="tag">web · ok</span></div><div class="node-meta">input/web/rskrf_376fz_2026.md · <span class="mono">11ffc723c3</span></div></div><div class="node-card" data-node="source:subscription_benchmarks_2026" onclick="selectNode('source:subscription_benchmarks_2026')"><div class="node-head"><span class="mono">subscription_benchmarks_2026</span><span class="tag">table · ok</span></div><div class="node-meta">input/tables/subscription_benchmarks_2026.xlsx · <span class="mono">a10abb0b77</span></div></div><div class="node-card" data-node="source:yandex_plus_449" onclick="selectNode('source:yandex_plus_449')"><div class="node-head"><span class="mono">yandex_plus_449</span><span class="tag">web · ok</span></div><div class="node-meta">input/web/yandex_plus_449.md · <span class="mono">1f9fd08022</span></div></div>
+    </div>
+    <div>
+      <div class="col-title"><span>2. Утверждения и гипотезы (12)</span></div>
+      <div class="node-card" data-node="finding:f1_icmr_saturation" onclick="selectNode('finding:f1_icmr_saturation')"><div class="node-head"><span class="mono">f1_icmr_saturation</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">По данным исследования ICMR (ООО «ГФК-Русь», опрос 7200 жителей городов РФ 16–55 лет в Q4 2025), проникновение экосистемных подписок в городах России вышло на плато и удерживается на уровне 50–51% пять кварталов подряд (51% в Q4 2025; 59% в Москве и Санкт-Петербурге). При стагнации общего охвата рынок растёт за счёт перевода бесплатных пользователей в платящие: доля платящих горожан выросла за 2025 год с 32% до 38% (74% текущих подписчиков оплачивают подписку, доля бесплатных сократилась с трети до 26%). Безусловный лидер — «Яндекс Плюс» (29% всех горожан и 23% платящих), далее следуют «СберПрайм» (13%), Ozon Premium (6% всего, 3% платно), «Т-Банк Про» (5% всего, 4% платно) и МТС Premium (5% всего, 4% платно).</div><div class="node-meta">Опора: cnews_icmr_2026:строки 3, 121–129 (https://www.cnews.ru/news/line/2026-03-26_issledovanie_icmr_bolee_poloviny)</div></div><div class="node-card" data-node="finding:f2_ecosystem_scale_and_shift" onclick="selectNode('finding:f2_ecosystem_scale_and_shift')"><div class="node-head"><span class="mono">f2_ecosystem_scale_and_shift</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Согласно обзору CNews Analytics «Российские цифровые экосистемы 2026» со ссылкой на J&#x27;son &amp; Partners Consulting, объём российского рынка экосистемных подписок составил 130 млрд ₽ в 2024 году с прогнозом роста до 273 млрд ₽ по итогам 2025 года, а совокупная подписная база пяти крупнейших экосистем («Сбер», «Яндекс», VK, МТС, «Т-Банк») утроилась за 2021–2024 годы до 95,3 млн и превышает 110,8 млн пользователей по прогнозу 2025 года. Вектор конкуренции сместился от механического объединения сервисов к супераппам, ИИ-персонализации предложений на данных профиля/трафика и удержанию существующей базы.</div><div class="node-meta">Опора: cnews_ecosystems_2026:строки 3, 125–138 (https://www.cnews.ru/reviews/karta_rossijskih_tsifrovyh_ekosistem_2026/articles/top-5_trendov_na_rynke_rossijskih)</div></div><div class="node-card" data-node="finding:f3_yandex_plus_449_indexation" onclick="selectNode('finding:f3_yandex_plus_449_indexation')"><div class="node-head"><span class="mono">f3_yandex_plus_449_indexation</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">С 1 декабря 2025 года базовая стоимость ежемесячной мультиподписки «Яндекс Плюс» («Кинопоиск», «Яндекс Музыка», «Яндекс Книги», программа лояльности «Свои Плюсы») повышена с 399 ₽ до 449 ₽ в месяц (до индексации сохранялась возможность годовой оплаты за 3490 ₽, т.е. около 291 ₽/мес, а при оплате картой «Яндекс Пэй» начисляется кешбэк 10% баллами). Архивные модификации «МегаФон Плюс» по 299 ₽ и 399 ₽ за 30 дней из прежней тарифной сводки действовали лишь до летней индексации 16 июня 2026 года (345 ₽ и 460 ₽ за 30 дней).</div><div class="node-meta">Опора: yandex_plus_449:строки 3, 58, 69–70 (https://3dnews.ru/1131783/stoimost-podpiski-yandeks-plyus-uvelichitsya-s-1-dekabrya), subscription_benchmarks_2026:лист PublicTariffs, строки yandex_plus_mf, megafon_plus_legacy_low, megafon_plus_legacy_std, megafon_plus_20260604:строки 3, 189–201 (https://moscow.megafon.ru/help/info/popular/information/20260604-1108.html)</div></div><div class="node-card" data-node="finding:f4_megakino_rules_and_limits" onclick="selectNode('finding:f4_megakino_rules_and_limits')"><div class="node-head"><span class="mono">f4_megakino_rules_and_limits</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Подписка «МегаКино» на витрине МегаФона стоит 399 ₽ за 30 дней (промопериод на кнопке подключения не заявлен) и доступна только на номере МегаФона. Под слоганом «5 кинотеатров по цене одного» фактически работает ротационная модель: в стоимость входят 5 основных кинотеатров (START, Wink, КИОН, PREMIER, Кинопоиск), между которыми доступно 3 бесплатных переключения каждые 30 дней, а каждое следующее переключение стоит 30 ₽ (либо оплачивается безлимит переключений на 1, 7 или 30 дней). Дополнительные кинотеатры — Иви, Смотрёшка, Wink Дети и Wink Всё в одном — не входят в стоимость 399 ₽ и списываются с баланса номера отдельно.</div><div class="node-meta">Опора: megafon_megakino:строки 3, 188–196, 229–247 (https://moscow.megafon.ru/services/megakino/), subscription_benchmarks_2026:лист PublicTariffs, строка megakino_399</div></div><div class="node-card" data-node="finding:f5_megafon_yandex_plus_ux_gap" onclick="selectNode('finding:f5_megafon_yandex_plus_ux_gap')"><div class="node-head"><span class="mono">f5_megafon_yandex_plus_ux_gap</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">На партнёрской странице «Яндекс Плюс МегаФон» заголовок первого экрана («Все развлечения для вас и 3 близких») и основные кнопки «Подключить / Активировать» не содержат цены подписки после промопериода: условие «30 дней бесплатно, если оформите мультиподписку впервые. Далее — 449 ₽ в месяц» размещено ниже в секции состава подписки, а блок юридической информации на странице датирован 15 декабря 2025 года.</div><div class="node-meta">Опора: megafon_yandex_plus:строки 3, 187–198, 223, 230–231 (https://moscow.megafon.ru/services/joy/yandex_plus/), subscription_benchmarks_2026:лист PublicTariffs, строка yandex_plus_mf</div></div><div class="node-card" data-node="finding:f6_megasily_tariff_mechanics" onclick="selectNode('finding:f6_megasily_tariff_mechanics')"><div class="node-head"><span class="mono">f6_megasily_tariff_mechanics</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Конструктор «МегаСилы» встроен в тарифы линейки «МегаФон 3.0» (от 550 ₽ за 30 дней на тарифе «Минимум» и 650–800 ₽ на «Минимум +» / «Максимум» с 9 МегаСилами на выбор до 1600–3000 ₽ на «ВИП +» / «Премиум» с 5 МегаСилами) с активацией опций за 0 ₽ в рамках тарифных слотов. В состав бесплатных опций уже входят «Безлимит на музыку и кинотеатры» (не расходует ГБ на Иви, Okko, START, Кинопоиск, Амедиатеку, PREMIER, Wink) и базовая коллекция «Онлайн-кинотеатр START» со специальной ценой полного доступа; при смене тарифа выбранные МегаСилы автоматически отключаются, а активация в приложении сопровождается согласием на рекламу от оператора и партнёров.</div><div class="node-meta">Опора: megafon_megasily:строки 3, 187–207, 224–227, 235, 240–296, 312 (https://moscow.megafon.ru/services/megapowers/megasily/), subscription_benchmarks_2026:лист PublicTariffs, строка megasily_addon</div></div><div class="node-card" data-node="finding:f7_law_376fz_requirements" onclick="selectNode('finding:f7_law_376fz_requirements')"><div class="node-head"><span class="mono">f7_law_376fz_requirements</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">С 1 марта 2026 года действует Федеральный закон № 376-ФЗ, запрещающий онлайн-сервисам автоматические списания без явного согласия пользователя, после отказа от подписки или при удалении/замене платёжных реквизитов без повторного подтверждения, а также требующий понятной и сразу видимой кнопки отписки в личном кабинете («не через 7 экранов»). Согласно статистике в разъяснении Роскачества, 62% пользователей в РФ сталкивались с автопродлением без согласия, 4–50% отмечали несоответствие ожиданиям или сложности с отменой, и 60% из них не смогли вернуть деньги; типовой маршрут спора включает претензию сервису, жалобу в Роспотребнадзор (через Госуслуги), банковский чарджбэк и суд.</div><div class="node-meta">Опора: rskrf_376fz_2026:строки 3, 564–570, 589–598 (https://rskrf.ru/tips/eksperty-obyasnyayut/kak-zashchitit-sebya-ot-avtomaticheskikh-spisaniy-za-podpiski/), brief_2027:строки 3, 6–7</div></div><div class="node-card" data-node="finding:f12_megafon_plus_repricing_202606" onclick="selectNode('finding:f12_megafon_plus_repricing_202606')"><div class="node-head"><span class="mono">f12_megafon_plus_repricing_202606</span><div class="tags"><span class="tag tag-ok">Факт</span></div></div><div class="node-body">Согласно официальному информационному сообщению ПАО «МегаФон» от 4 июня 2026 года, с 16 июня 2026 года стоимость мультиподписки «МегаФон Плюс» проиндексирована по двум тарифным модификациям: с 299 ₽ до 345 ₽ за 30 дней (+46 ₽, +15,4%) и с 399 ₽ до 460 ₽ за 30 дней (+61 ₽, +15,3%). Тем самым старшая модификация «МегаФон Плюс» (460 ₽ за 30 дней, или ~466,4 ₽ за календарный месяц) превысила как цену собственной видеоподписки «МегаКино» (399 ₽ за 30 дней, разрыв +61 ₽), так и базовую цену прямого «Яндекс Плюса» (449 ₽ в месяц, разрыв +11 ₽ номинально), а младшая модификация (345 ₽ за 30 дней) вышла за порог 300 ₽ и сблизилась с «МегаКино» 399 ₽ на дистанцию 54 ₽.</div><div class="node-meta">Опора: megafon_plus_20260604:строки 3, 189–201 (https://moscow.megafon.ru/help/info/popular/information/20260604-1108.html), subscription_benchmarks_2026:лист PublicTariffs, строки megafon_plus_legacy_low, megafon_plus_legacy_std</div></div><div class="node-card" data-node="finding:f8_econ_cvm_vs_paid_cac" onclick="selectNode('finding:f8_econ_cvm_vs_paid_cac')"><div class="node-head"><span class="mono">f8_econ_cvm_vs_paid_cac</span><div class="tags"><span class="tag ">Вывод</span></div></div><div class="node-body">Детерминированный расчёт юнит-экономики для 7 планов (`ledger economics`, критерий комитета `min_margin_rate = 35%`) подтверждает преимущество двухуровневой CVM-модели «МегаКино» над внешним трафиком и индексированными тирами «МегаФон Плюс». Для «МегаКино» 399 ₽ (роялти и CDN 195 ₽ + опс 18 ₽ = 213 ₽/мес) платный внешний трафик (`CAC = 290 ₽`, 4 мес., отключён по `act_3`) ронял маржу до `28,4%` (`113,50 ₽/мес`), тогда как собственные CVM-каналы (`CAC = 25 ₽`, 8 мес.) дают вклад `182,88 ₽/мес` (`45,8% &gt;= 35%`, запас прочности `+43,23 ₽` / `+20,0%`, стресс `+15%` к затратам — `37,7%`), а входной пакет «МегаКино Лайт» 249 ₽ со слотом «МегаСил» (роялти 115 ₽ + опс 18 ₽) приносит в CVM `112,88 ₽/мес` (`45,3% &gt;= 35%`, запас `+25,72 ₽`, стресс `+15%` — `37,1%` против `17,5%` в платном трафике). Добавленные индексированные тиры «МегаФон Плюс» в CVM (сценарное мультисервисное роялти `200 ₽/мес` для `345 ₽` и `275 ₽/мес` для `460 ₽`) объясняют июньское повышение цен: старые пороги 35% составляли `340,19 ₽` и `455,58 ₽`, поэтому новые цены `345 ₽` и `460 ₽` возвращают действующую базу лишь к самой границе норматива — `35,9%` (`123,88 ₽/мес`, буфер `+3,12 ₽`) и `35,6%` (`163,88 ₽/мес`, буфер `+2,88 ₽`). Оба тира «МегаФон Плюс» проваливают стресс-тест `+15%` к затратам (`26,3%` и `26,0%`), срываются ниже 35% при удержании `&lt; 4,0–4,17 мес.` или `CAC &gt; 48–50 ₽`, причём старший тир `460 ₽` приносит оператору на `19,00 ₽/мес` меньше маржинального вклада, чем более доступное для абонента «МегаКино» `399 ₽` (`163,88 ₽` против `182,88 ₽`).</div><div class="node-meta">Опора: economics_plans:plans.megakino_399_paid_traffic, plans.megakino_399_own_cvm, plans.megafon_plus_345_cvm, plans.megafon_plus_460_cvm, plans.megasily_hybrid_lite_249_cvm, plans.megasily_hybrid_lite_249_paid_traffic, economics_inputs_2027:строки 26–43 (model_assumptions), brief_2027:строка 4 (min_margin_rate = 0.35), f1_icmr_saturation, f4_megakino_rules_and_limits, f6_megasily_tariff_mechanics, f7_law_376fz_requirements, f12_megafon_plus_repricing_202606</div></div><div class="node-card" data-node="finding:f9_econ_resale_449_structural_deficit" onclick="selectNode('finding:f9_econ_resale_449_structural_deficit')"><div class="node-head"><span class="mono">f9_econ_resale_449_structural_deficit</span><div class="tags"><span class="tag ">Вывод</span></div></div><div class="node-body">Верхний ценовой диапазон `449–460 ₽` создаёт двойную ловушку для активного привлечения в МегаФоне. С одной стороны, партнёрский ресейл «Яндекс Плюс МегаФон» за `449 ₽/мес` структурно не проходит порог комитета `&gt;= 35%` при сценарном роялти `330 ₽/мес` и опс `18 ₽/мес`: рекуррентные затраты (`348,00 ₽/мес`) превышают потолок `291,85 ₽/мес` на `56,15 ₽/мес` (`max_upfront_cac = null`, маржа в CVM `21,8%` и не выше `22,5%` даже при нулевом CAC; для 35% нужна нерыночная цена `&gt;= 540,19 ₽` или снижение прямых затрат до `&lt;= 291,85 ₽`). С другой стороны, собственный мультибандл «МегаФон Плюс» после индексации до `460 ₽ за 30 дней` перешагнул розничный якорь прямого «Яндекс Плюса» (`449 ₽/мес`, которым уже пользуются 29% горожан и 23% платящих): продвижение тира `460 ₽` на холодную базу проигрывает лидеру рынка в лобовом сравнении цены на первом экране при минимальном запасе маржинальности (`35,6%`, буфер `+2,88 ₽`).</div><div class="node-meta">Опора: economics_plans:plans.partner_resale_449_cvm, plans.megafon_plus_460_cvm, switching_analysis, economics_inputs_2027:строки 15–18, 31, 34, f1_icmr_saturation, f3_yandex_plus_449_indexation, f5_megafon_yandex_plus_ux_gap, f12_megafon_plus_repricing_202606</div></div><div class="node-card" data-node="finding:f10_two_tier_cvm_hypothesis" onclick="selectNode('finding:f10_two_tier_cvm_hypothesis')"><div class="node-head"><span class="mono">f10_two_tier_cvm_hypothesis</span><div class="tags"><span class="tag tag-warn">Гипотеза</span></div></div><div class="node-body">В условиях индексации «МегаФон Плюс» до `345 ₽` и `460 ₽` с 16.06.2026 разведение продуктовых ролей внутри CVM-каналов МегаФона — (1) входной апгрейд слота «МегаСил» «МегаКино Лайт» за `249 ₽/30 дн.` (закрывает опустевшую после ухода цены `299 ₽` нишу до 300 ₽ с дисконтом `-96 ₽` к младшему «МегаФон Плюс» `345 ₽` и `-200 ₽` к «Яндекс Плюсу» `449 ₽`), (2) видео-флагман «МегаКино» за `399 ₽/30 дн.` (на `50 ₽` дешевле «Яндекс Плюса» `449 ₽` и на `61 ₽` дешевле «МегаФон Плюс» `460 ₽`) с прозрачным счётчиком 3 переключений и пре-чек экраном по № 376-ФЗ и (3) перевод «МегаФон Плюс» `345/460 ₽` в режим удержания лояльной мультисервисной базы — увеличит суммарный маржинальный вклад на 1000 CVM-контактов минимум на 12% относительно одиночной витрины 399 ₽ при каннибализации платящих баз `399 ₽` и `345/460 ₽` не выше 15% и конверсии во 2-й платный месяц не ниже 72%.</div><div class="node-meta">Опора: f3_yandex_plus_449_indexation, f4_megakino_rules_and_limits, f6_megasily_tariff_mechanics, f7_law_376fz_requirements, f8_econ_cvm_vs_paid_cac, f12_megafon_plus_repricing_202606</div></div><div class="node-card" data-node="finding:f11_billing_retention_and_contracts_unknown" onclick="selectNode('finding:f11_billing_retention_and_contracts_unknown')"><div class="node-head"><span class="mono">f11_billing_retention_and_contracts_unknown</span><div class="tags"><span class="tag tag-warn">Неизвестно</span></div></div><div class="node-body">В открытых материалах отсутствуют внутренние данные биллинга и контрактов ПАО «МегаФон»: размер активной платящей базы «МегаКино», «Яндекс Плюс МегаФон» и индексированного «МегаФон Плюс» (`345/460 ₽`), фактический когортный отток после июньского повышения цен `299 -&gt; 345 ₽` и `399 -&gt; 460 ₽`, Retention 30d/90d после вступления в силу № 376-ФЗ, реальная частота платных переключений (&gt;3 раз за 30 дней), перекрёстная эластичность между уровнями `249 ₽`, `345 ₽`, `399 ₽` и `460 ₽`, а также точные минимальные гарантии (MG) и договорные ставки роялти внутри мультиподписки «МегаФон Плюс» и планируемого лайт-слота `249 ₽`. Без сверки с биллингом и 60-дневного полевого A/B-пилота Q1 2027 показатели маржи остаются сценарной оценкой на допущениях.</div><div class="node-meta">Опора: brief_2027:строка 8, subscription_benchmarks_2026:лист DataDictionary, строка internal_churn_and_base, economics_inputs_2027:строки 5, 28, f4_megakino_rules_and_limits, f5_megafon_yandex_plus_ux_gap, f12_megafon_plus_repricing_202606</div></div>
+    </div>
+    <div>
+      <div class="col-title"><span>3. Альтернативы комитета (4)</span></div>
+      <div class="node-card" data-node="option:opt_keep_status_quo" onclick="selectNode('option:opt_keep_status_quo')"><div class="node-head"><strong>Инерционная витрина: продвигать МегаКино 399 ₽, индексированный МегаФон Плюс (345/460 ₽) и ресейл Яндекс Плюс 449 ₽ без входного слота 249 ₽</strong><div class="tags"><span class="tag">Оставить как есть</span></div></div><div class="node-body">После уже выполненного отключения платного внешнего трафика (`act_3`) не требует запуска нового тарифного слота 249 ₽ и пересогласования оптовых ставок однослотового пакета, опираясь на текущие витрины и повышенные с 16.06.2026 чеки «МегаФон Плюс» (`345 ₽` и `460 ₽`).</div><div class="objection-line"><span>Возражение:</span> Оставляет нерешённой ценовую развилку позиционирования после индексации 16.06.2026: старший «МегаФон Плюс» (`460 ₽`) дороже прямого «Яндекс Плюса» (`449 ₽`) при хрупком запасе маржи (`35,6%`, `+2,88 ₽`, провал `+15%` стресса), младший тир (`345 ₽`) лишает абонентов доступного входа ниже 300 ₽ и конкурирует с собственным «МегаКино» `399 ₽` при разнице 54 ₽, ресейл `449 ₽` остаётся ниже норматива комитета (`21,8% &lt; 35%`), а нерешённые UX-разрывы первого экрана сохраняют риски жалоб по № 376-ФЗ.</div><div class="node-meta">Основания: f1_icmr_saturation, f4_megakino_rules_and_limits, f5_megafon_yandex_plus_ux_gap, f7_law_376fz_requirements, f8_econ_cvm_vs_paid_cac, f9_econ_resale_449_structural_deficit, f12_megafon_plus_repricing_202606</div></div><div class="node-card selected-option" data-node="option:opt_change_cvm_twotier" onclick="selectNode('option:opt_change_cvm_twotier')"><div class="node-head"><strong>Двухуровневая CVM-линейка видео (МегаКино 399 ₽ + слот МегаКино Лайт 249 ₽ в МегаСилах), retention-режим для МегаФон Плюс (345/460 ₽) и комплаенс по 376-ФЗ</strong><div class="tags"><span class="tag">Изменить продукт</span><span class="tag tag-ok">Рекомендован</span></div></div><div class="node-body">Точно отыгрывает ценовую развилку после индексации 16.06.2026: флагман «МегаКино» 399 ₽ удерживает выгодную отстройку и от «Яндекс Плюса» (`-50 ₽` к `449 ₽`), и от «МегаФон Плюс» (`-61 ₽` к `460 ₽`), принося больше маржинального вклада (`182,88 ₽/мес`, `45,8%`, запас `+43,23 ₽` против `163,88 ₽/мес`, `35,6%` у `460 ₽`), а ступень «МегаКино Лайт» 249 ₽ (`112,88 ₽/мес`, `45,3%`, запас `+25,72 ₽`) закрывает опустевшую после повышения `299 -&gt; 345 ₽` входную нишу в «МегаСилах». Перевод «МегаФон Плюс» (`345/460 ₽`) в режим удержания действующей мультисервисной базы и ресейла `449 ₽` в пассивный каталог защищает среднюю маржу портфеля выше 40% при соблюдении № 376-ФЗ.</div><div class="objection-line"><span>Возражение:</span> Расчёт маржи `45,3–45,8%` и `35,6–35,9%` базируется на сценарных допущениях роялти и удержания `8 мес.` при закрытой статистике биллинга; появление ступени 249 ₽ и акцент на 399 ₽ без жёсткой сегментации в CVM несут риск даунгрейда действующих подписчиков «МегаФон Плюс» (`345/460 ₽`) и «МегаКино» (`399 ₽`), рост партнёрских роялти на `+25%` опустит маржу ниже 35%, а вынос лимита 3 переключений и исключения Иви на первый экран способен снизить первичную конверсию клика на 15–25%.</div><div class="node-meta">Основания: f1_icmr_saturation, f3_yandex_plus_449_indexation, f4_megakino_rules_and_limits, f6_megasily_tariff_mechanics, f7_law_376fz_requirements, f8_econ_cvm_vs_paid_cac, f9_econ_resale_449_structural_deficit, f10_two_tier_cvm_hypothesis, f11_billing_retention_and_contracts_unknown, f12_megafon_plus_repricing_202606</div></div><div class="node-card" data-node="option:opt_change_resale_push" onclick="selectNode('option:opt_change_resale_push')"><div class="node-head"><strong>Ставка на верхний мультисервисный чек (промо МегаФон Плюс 460 ₽ и партнёрского ресейла Яндекс Плюс 449 ₽) с заморозкой развития МегаКино</strong><div class="tags"><span class="tag">Изменить продукт</span></div></div><div class="node-body">Опирается на широкие мультисервисные пакеты (кино + музыка + книги) и высокий номинальный ARPU 449–460 ₽, не требуя запуска отдельного однослотового продукта 249 ₽ и развития механики ротации кинотеатров.</div><div class="objection-line"><span>Возражение:</span> Проваливается по обеим веткам развилки: ресейл «Яндекс Плюс МегаФон» 449 ₽ структурно дефицитен по нормативу комитета (`21,8% &lt; 35%` в CVM, рекуррентные затраты `348 ₽ &gt; 291,85 ₽`), а активный пуш собственного «МегаФон Плюс» за `460 ₽/30 дн.` наталкивается на барьер цены выше прямого «Яндекс Плюса» (`449 ₽/мес` у 23% платящих горожан) и теряет рентабельность `&lt; 35%` при малейшем росте `CAC &gt; 48 ₽` или сокращении удержания ниже `4,17 мес.`</div><div class="node-meta">Основания: f1_icmr_saturation, f2_ecosystem_scale_and_shift, f3_yandex_plus_449_indexation, f5_megafon_yandex_plus_ux_gap, f8_econ_cvm_vs_paid_cac, f9_econ_resale_449_structural_deficit, f12_megafon_plus_repricing_202606</div></div><div class="node-card" data-node="option:opt_close_standalone" onclick="selectNode('option:opt_close_standalone')"><div class="node-head"><strong>Свернуть платные контентные подписки как коммерческое направление, оставив только бесплатные опции МегаСил</strong><div class="tags"><span class="tag">Закрыть инициативу</span></div></div><div class="node-body">Устраняет риски претензий Роспотребнадзора и чарджбэков по № 376-ФЗ на платных автопродлениях (`249–460 ₽`) и концентрирует ресурс на базовых тарифах связи «МегаФон 3.0», где «МегаСилы» уже включают безлимитный видео-трафик и базовую коллекцию START за 0 ₽.</div><div class="objection-line"><span>Возражение:</span> Лишает оператора рентабельного сервисного потока в собственных CVM-каналах (`182,88 ₽` и `112,88 ₽` вклада в целевой линейке «МегаКино» при марже `&gt;45%`, а также `123,88–163,88 ₽` на удерживаемой базе «МегаФон Плюс»), ослабляет удержание в конкуренции с конвергентными экосистемами МТС, Сбера и Т-Банка и грозит штрафами по невыбранным минимальным гарантиям (MG).</div><div class="node-meta">Основания: f2_ecosystem_scale_and_shift, f6_megasily_tariff_mechanics, f7_law_376fz_requirements, f8_econ_cvm_vs_paid_cac, f11_billing_retention_and_contracts_unknown, f12_megafon_plus_repricing_202606</div></div>
+    </div>
+  </section>
+
+  <h2>Согласованная продуктовая и коммуникационная стратегия</h2>
+  <section class="strategy-grid">
+    <div class="strategy-card" data-node="strategy:product" onclick="selectNode('strategy:product')"><div class="node-head"><h3>Продуктовая стратегия</h3><span class="tag" title="f3_yandex_plus_449_indexation, f4_megakino_rules_and_limits, f5_megafon_yandex_plus_ux_gap, f6_megasily_tariff_mechanics, f7_law_376fz_requirements, f8_econ_cvm_vs_paid_cac, f9_econ_resale_449_structural_deficit, f10_two_tier_cvm_hypothesis, f12_megafon_plus_repricing_202606">9 оснований</span></div><p>1) Целевой сегмент и разведение продуктовой линейки после индексации 16.06.2026: продукт работает строго по действующей базе ПАО «МегаФон» в собственных CVM-каналах (закупка платного внешнего трафика с CAC 290 ₽ уже остановлена по `act_3`). Поскольку индексация «МегаФон Плюс» до 345 ₽ и 460 ₽ вывела старший мультибандл выше прямого «Яндекс Плюса» (449 ₽/мес), а младший сблизила с полным видеопакетом, портфель чётко разделяется по ролям: (а) основной флагман видео-привлечения — «МегаКино» 399 ₽ за 30 дней (на 50 ₽ дешевле «Яндекс Плюса» 449 ₽ и на 61 ₽ дешевле «МегаФон Плюс» 460 ₽; 5 основных кинотеатров START, Wink, КИОН, PREMIER, Кинопоиск по очереди со счётчиком 3 бесплатных смен за 30 дней, с 4-й — 30 ₽); (б) входная ступень — «МегаКино Лайт» 249 ₽ за 30 дней в конструкторе «МегаСилы» на тарифах «МегаФон 3.0» (закрывает ценовую нишу до 300 ₽, освободившуюся после повышения 299 -&gt; 345 ₽; запускается только для абонентов без активных платных подписок «МегаКино» и «МегаФон Плюс» при подтверждении роялти &lt;= 115–128 ₽/мес); (в) контур удержания (`retention-only`) — «МегаФон Плюс» 345 ₽ и 460 ₽ за 30 дней сохраняется для действующих лояльных подписчиков, которым важна связка видео с аудио/книгами, без активного CVM-пуша на новых видеозрителей. До клика подключения на всех карточках действует обязательный экран согласия по № 376-ФЗ и отписка в 1 экран ЛК.<br/>2) Связь с юнит-экономикой и порогами смены решения (расчёт по 7 планам при `min_margin_rate &gt;= 35%`): в CVM (`CAC = 25 ₽`, удержание `8 мес.`) ядро роста — «МегаКино» 399 ₽ (`182,88 ₽/мес`, маржа `45,8%`, потолок затрат `259,35 ₽`, запас `+43,23 ₽`, стресс `+15%` — `37,7%`) и «МегаКино Лайт» 249 ₽ (`112,88 ₽/мес`, маржа `45,3%`, потолок затрат `161,85 ₽`, запас `+25,72 ₽`, стресс `+15%` — `37,1%`). Индексированные тиры «МегаФон Плюс» 345 ₽ (`123,88 ₽/мес`, `35,9%`, запас `+3,12 ₽`) и 460 ₽ (`163,88 ₽/мес`, `35,6%`, запас `+2,88 ₽`) проходят норматив лишь на действующей CVM-базе и выпадают ниже 35% при `CAC &gt; 48–50 ₽`, удержании `&lt; 4,0–4,17 мес.` или росте прямых затрат свыше `224,25 / 299,00 ₽/мес`.<br/>3) Осознанные отказы: сохранён полный запрет на платный внешний digital-трафик (`28,4%` на 399 ₽ и `17,5%` на 249 ₽); исключён промо-пуш «МегаФон Плюс» 460 ₽ как массового оффера (проигрыш в цене прямому «Яндекс Плюсу» 449 ₽ и меньший вклад `163,88 ₽ &lt; 182,88 ₽`); ресейл «Яндекс Плюс МегаФон» 449 ₽ (`21,8%`) остаётся только в пассивном каталоге после исправления первого экрана; Иви, Смотрёшка, Wink Дети и Wink Всё в одном остаются отдельными опциями вне чека 399 ₽.</p><div class="node-meta" style="margin-top:8px;">Основания: f3_yandex_plus_449_indexation, f4_megakino_rules_and_limits, f5_megafon_yandex_plus_ux_gap, f6_megasily_tariff_mechanics, f7_law_376fz_requirements, f8_econ_cvm_vs_paid_cac, f9_econ_resale_449_structural_deficit, f10_two_tier_cvm_hypothesis, f12_megafon_plus_repricing_202606</div></div><div class="strategy-card" data-node="strategy:communication" onclick="selectNode('strategy:communication')"><div class="node-head"><h3>Коммуникационная стратегия</h3><span class="tag" title="f4_megakino_rules_and_limits, f5_megafon_yandex_plus_ux_gap, f6_megasily_tariff_mechanics, f7_law_376fz_requirements, f10_two_tier_cvm_hypothesis, f12_megafon_plus_repricing_202606">6 оснований</span></div><p>1) Ситуация выбора и честная ценовая отстройка: после индексации «Яндекс Плюса» до 449 ₽/мес и «МегаФон Плюс» до 345 / 460 ₽ за 30 дней абонент при настройке «МегаФон 3.0» или выборе кино чувствителен как к переплате за лишние не-видео сервисы в бандлах 449–460 ₽, так и к скрытым автосписаниям (62% россиян сталкивались с продлением без явного согласия). Ключевое проверяемое сообщение для видео-сегмента: «Платите только за кино на номере МегаФона без переплаты за лишние сервисы: 5 онлайн-кинотеатров по очереди в МегаКино за 399 ₽ на 30 дней или 1 выбранный кинотеатр со слотом МегаСил за 249 ₽ — полная цена и дата продления видны до подключения, отключение доступно в 1 экран Личного кабинета».<br/>2) Обязательные условия и ограничения применимости обещания (выводятся на первом экране до клика оплаты): предложение действует только при условии использования активного номера ПАО «МегаФон» (пакет «МегаКино Лайт» 249 ₽ доступен исключительно в рамках тарифов «МегаФон 3.0» для сегмента без активных платных подписок «МегаКино» и «МегаФон Плюс»; при смене тарифа выбранные «МегаСилы» отключаются и требуют повторного включения). В «МегаКино» 399 ₽ одновременно активен один выбранный основной кинотеатр из пяти (START, Wink, КИОН, PREMIER, Кинопоиск): в каждые 30 дней включены 3 бесплатных переключения, с 4-го переключения взимается 30 ₽ за смену (кроме случаев платной опции безлимитных переключений); Иви, Смотрёшка, Wink Дети и Wink Всё в одном не покрываются тарифом 399 ₽ и оплачиваются отдельно. В карточках и уведомлениях подписки «МегаФон Плюс» без смешения с брендом «МегаКино» указываются актуальные с 16.06.2026 цены 345 ₽ или 460 ₽ за 30 дней, а на странице «Яндекс Плюс МегаФон» условие «30 дней 0 ₽ для новых пользователей, далее 449 ₽/мес» выносится в заголовок первого экрана с запросом повторного согласия после отказа по № 376-ФЗ.<br/>3) Роль каналов: коммуникация остаётся строго внутри собственных CVM-каналов (конструктор «МегаСилы», карточки услуг в МП «МегаФон» и ЛК, таргетированные push/SMS с фильтрацией действующих платящих подписчиков 345/399/460 ₽ и SMS-квитанция условий сразу после подключения) без возврата к внешнему платному трафику.</p><div class="node-meta" style="margin-top:8px;">Основания: f4_megakino_rules_and_limits, f5_megafon_yandex_plus_ux_gap, f6_megasily_tariff_mechanics, f7_law_376fz_requirements, f10_two_tier_cvm_hypothesis, f12_megafon_plus_repricing_202606</div><div class="claim-ok">Аудит обещаний: границы применимости согласованы с продуктом</div></div><div class="strategy-card" data-node="strategy:experiment" onclick="selectNode('strategy:experiment')"><div class="node-head"><h3>План проверки и стоп-правила</h3><span class="tag" title="f7_law_376fz_requirements, f8_econ_cvm_vs_paid_cac, f10_two_tier_cvm_hypothesis, f11_billing_retention_and_contracts_unknown, f12_megafon_plus_repricing_202606">5 оснований</span></div><p>1) Дизайн и окно проверки с учётом защиты базы МегаФон Плюс (Q1 2027, 60 календарных дней, замер 1-го и 2-го платных списаний): контролируемый когортный A/B-пилот в МП и ЛК проводится среди абонентов «МегаФон 3.0» с активным видео-трафиком и без действующих платных подписок «МегаКино» (399 ₽) и «МегаФон Плюс» (345 / 460 ₽). Контрольная группа A (`n = 15 000` показов) видит одиночную карточку «МегаКино» 399 ₽ с пре-чек экраном по № 376-ФЗ; тестовая группа B (`n = 15 000` показов) видит двухуровневую витрину («МегаКино Лайт» 249 ₽ в конструкторе «МегаСил» + «МегаКино» 399 ₽ со счётчиком 3 переключений). Дополнительно на когорте действующих подписчиков «МегаФон Плюс» 345 / 460 ₽ мониторится естественная миграция в «МегаКино» 399 ₽ и отток после индексации 16.06.2026, а на органике карточки «Яндекс Плюс МегаФон» (`n = 5 000`) проверяется вынос цены «далее 449 ₽/мес» в заголовок первого экрана.<br/>2) Критерии успеха для масштабирования во Q2 2027: прирост суммарного маржинального вклада в группе B не менее `+12%` на 1000 CVM-показов относительно контроля A; фактический CVM `CAC &lt;= 40 ₽` (строго ниже порога срыва `48–50 ₽` даже для мультисервисных тиров); конверсия из 1-го платного периода во 2-й платный месяц `&gt;= 72%`. Все доли оцениваются через `ledger rates --ci --guardrail` с 95% доверительными интервалами Вильсона в разрезе тарифных и поведенческих когорт (включая бывших подписчиков архивных тиров 299 / 399 ₽).<br/>3) Жёсткие стоп-правила и пороги отката (guardrails): (а) стоп-порог по № 376-ФЗ — при `ci95_high &gt; 0,5%` жалоб на автосписания, старые цены в офертах или ошибки отписки хотя бы в одной когорте промо-показы останавливаются; (б) стоп-порог по каннибализации — если суммарная доля переходов действующих платящих абонентов «МегаКино» 399 ₽ и «МегаФон Плюс» 345 / 460 ₽ на младшую ступень 249 ₽ превышает лимит `15%` (`ci95_high`), оффер 249 ₽ жёстко запирается внутри онбординга новых SIM/тарифов «МегаФон 3.0» (при этом добровольный переход с «МегаФон Плюс» 460 ₽ на «МегаКино» 399 ₽ не блокируется, так как расчётный вклад оператора растёт со `163,88 ₽` до `182,88 ₽/мес`); (в) стоп-порог по удержанию и экономике — при падении `ci95_low` удержания ко 2-му платному месяцу ниже `55%` или роялти лайт-слота выше `128 ₽/мес` запуск ступени 249 ₽ отменяется.</p><div class="node-meta" style="margin-top:8px;">Основания: f7_law_376fz_requirements, f8_econ_cvm_vs_paid_cac, f10_two_tier_cvm_hypothesis, f11_billing_retention_and_contracts_unknown, f12_megafon_plus_repricing_202606</div></div>
+  </section>
+
+  
+  <h2>Интерактивный калькулятор чувствительности юнит-экономики (what-if)</h2>
+  <section class="whatif-panel" id="whatif-panel">
+    <div class="whatif-header">
+      <div>
+        <div class="node-meta" style="font-size:12px;color:var(--muted);">
+          Порог комитета: <strong>маржинальный вклад &gt;= 35%</strong> (источник модели: <span class="mono">economics_plans</span>).
+          Цены с витрин — публичные факты или рыночные ориентиры; <strong>CAC, срок удержания и рекуррентные затраты — сценарные допущения (what-if)</strong>,
+          пересчитываемые в браузере строго по формулам <span class="mono">ledger/economics.py</span> без внешних зависимостей.
+        </div>
+      </div>
+      <div class="preset-bar">
+        <button type="button" class="preset-btn active-preset" data-preset="base" onclick="applyEconPreset('base', this)">База спецификации</button>
+        <button type="button" class="preset-btn" data-preset="cvm" onclick="applyEconPreset('cvm', this)">Собственные CVM-каналы (CAC 25 ₽)</button>
+        <button type="button" class="preset-btn" data-preset="paid" onclick="applyEconPreset('paid', this)">Платный внешний трафик (CAC +25%)</button>
+        <button type="button" class="preset-btn" data-preset="stress" onclick="applyEconPreset('stress', this)">Стресс затрат (+15%) и оттока (-2 мес.)</button>
+      </div>
+    </div>
+
+    <div class="whatif-controls-top">
+      <label class="field-label" style="flex:1;min-width:260px;">Вариант для настройки ползунками
+        <select id="whatif-plan-select" class="field-input" onchange="selectWhatIfPlan(this.value)"><option value="megakino_399_paid_traffic">megakino_399_paid_traffic — МегаКино 399 ₽ — платный внешний трафик (промо-когорта)</option><option value="megakino_399_own_cvm">megakino_399_own_cvm — МегаКино 399 ₽ — собственные CVM-каналы с прозрачным согласием</option><option value="partner_resale_449_cvm">partner_resale_449_cvm — Партнёрский ресейл 449 ₽ (витрина типа Яндекс Плюс МегаФон, CVM)</option><option value="megafon_plus_345_cvm">megafon_plus_345_cvm — МегаФон Плюс 345 ₽ — младший индексированный тир (с 299 ₽ с 16.06.2026, CVM)</option><option value="megafon_plus_460_cvm">megafon_plus_460_cvm — МегаФон Плюс 460 ₽ — старший индексированный тир (с 399 ₽ с 16.06.2026, выше Яндекс Плюс 449 ₽, CVM)</option><option value="megasily_hybrid_lite_249_cvm">megasily_hybrid_lite_249_cvm — МегаКино Лайт 249 ₽ — апгрейд слота МегаСил через CVM (МегаФон 3.0)</option><option value="megasily_hybrid_lite_249_paid_traffic">megasily_hybrid_lite_249_paid_traffic — МегаКино Лайт 249 ₽ — при масштабировании платным внешним трафиком</option></select>
+      </label>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="whatif-apply-all" checked onchange="recomputeAllWhatIf()"/>
+        <span>Применять пресет канала привлечения (CVM / платный / стресс) сразу ко всем вариантам сравнения</span>
+      </label>
+    </div>
+
+    <div class="sliders-grid">
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Цена / 30 дн. (₽)</span>
+          <span id="badge-price-basis" class="tag">факт витрины</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-price" min="29" max="600" step="1" oninput="onSliderInput('price', this.value)"/>
+          <input type="number" id="num-price" min="1" max="50000" step="1" class="num-input mono" oninput="onSliderInput('price', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-price"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>CAC привлечения (₽)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-cac" min="0" max="800" step="5" oninput="onSliderInput('cac', this.value)"/>
+          <input type="number" id="num-cac" min="0" max="100000" step="5" class="num-input mono" oninput="onSliderInput('cac', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-cac"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Срок удержания (мес.)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-retention" min="1" max="36" step="1" oninput="onSliderInput('retention', this.value)"/>
+          <input type="number" id="num-retention" min="1" max="120" step="1" class="num-input mono" oninput="onSliderInput('retention', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-retention"></div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span>Рекуррентные затраты / мес. (₽)</span>
+          <span class="tag tag-warn">допущение (what-if)</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sl-recurring" min="0" max="300" step="1" oninput="onSliderInput('recurring', this.value)"/>
+          <input type="number" id="num-recurring" min="0" max="50000" step="1" class="num-input mono" oninput="onSliderInput('recurring', this.value)"/>
+        </div>
+        <div class="node-meta" id="delta-recurring"></div>
+      </div>
+    </div>
+
+    <div class="whatif-kpi-strip" id="whatif-kpi-strip"></div>
+
+    <table style="margin-top:12px;">
+      <thead>
+        <tr>
+          <th>Вариант</th>
+          <th>Цена / 30 дн.</th>
+          <th>Рекуррентные (допущ.)</th>
+          <th>CAC (допущ.)</th>
+          <th>Удержание (допущ.)</th>
+          <th>Прямые затраты / мес.</th>
+          <th>Маржинальный вклад</th>
+          <th>Пороги безубыточности к цели 35%</th>
+        </tr>
+      </thead>
+      <tbody id="whatif-table-body"></tbody>
+    </table>
+  </section>
+  <h2>Продуктовая методология и контроль рисков</h2><div class="strategy-card" style="margin-bottom:14px;"><div class="node-head"><h3>JTBD: Покупатель vs Пользователь</h3><span class="tag" title="f1_icmr_saturation, f3_yandex_plus_449_indexation, f4_megakino_rules_and_limits, f6_megasily_tariff_mechanics, f7_law_376fz_requirements, f12_megafon_plus_repricing_202606">6 оснований</span></div><p><strong>Задача плательщика:</strong> Когда я оплачиваю связь «МегаФон 3.0» на фоне подорожания «Яндекс Плюса» до 449 ₽/мес и индексации «МегаФон Плюс» до 345–460 ₽ за 30 дней, я хочу подключить легальный доступ именно к российским фильмам и сериалам с баланса номера по более выгодной цене (249–399 ₽) и с честными правилами продления до клика оплаты, чтобы не переплачивать за ненужные сервисы и при необходимости отключить подписку в 1 экран Личного кабинета без споров о списаниях.<br/><strong>Задача пользователя:</strong> Когда вечером дома на Smart TV или в дороге со смартфона я выбираю сериал, я хочу смотреть нужный онлайн-кинотеатр без расхода гигабайтов по тарифу и при выходе громкой премьеры на другой платформе переключать кинотеатр в пару нажатий, сразу видя остаток бесплатных переключений и понимая, какие сервисы входят в пакет, а какие оплачиваются отдельно.</p><div class="node-meta" style="margin-top:8px;"><strong>Толчок:</strong> Повышение цены «Яндекс Плюса» с 399 ₽ до 449 ₽/мес с 01.12.2025 и индексация «МегаФон Плюс» с 16.06.2026 до 345 ₽ и 460 ₽ за 30 дней (выше прямого «Яндекс Плюса»), переплата за несколько подписок ради отдельных премьер и раздражение непрозрачными автопродлениями (62% россиян сталкивались со списаниями без явного согласия). · <strong>Притяжение:</strong> Экономия 50–200 ₽ относительно чеков 449–460 ₽: доступ к 5 кинотеатрам по очереди в «МегаКино» за 399 ₽ (на 50 ₽ дешевле «Яндекс Плюса» и на 61 ₽ дешевле «МегаФон Плюс» 460 ₽) или 1 выбранному кинотеатру со слотом «МегаСил» за 249 ₽ (на 96 ₽ дешевле младшего «МегаФон Плюс» 345 ₽), единый счёт номера и отписка в 1 экран ЛК. · <strong>Тревога:</strong> Опасение столкнуться со скрытой платой 30 ₽ за 4-ю смену кинотеатра, спутать тарифы «МегаКино» (399 ₽) и индексированного «МегаФон Плюс» (345 / 460 ₽), случайно списать отдельную плату за Иви или не вернуть деньги после автопродления (60% пострадавших на рынке не добились возврата). · <strong>Инерция:</strong> Стабилизировавшаяся привычка 51% горожан пользоваться уже оформленной в домохозяйстве экосистемной подпиской («Яндекс Плюс» у 29%, «СберПрайм» у 13%) либо смотреть бесплатное видео (VK Видео, RUTUBE) и базовый каталог START в рамках бесплатных слотов «МегаСил».</div></div><div style="margin-bottom:14px;"><div class="col-title"><span>Opportunity Solution Tree · Исход: Обеспечить маржинальный вклад контентных подписок МегаФона не ниже 35% на платящего абонента в месяц и вырастить суммарный чистый вклад портфеля в 2027 году при полном соблюдении № 376-ФЗ и доле жалоб на автосписания менее 0,5%.</span></div><div class="strategy-grid"><div class="node-card"><div class="node-head"><span class="mono">opp_channel_cac</span><span class="tag">3 основания</span></div><div class="node-body"><strong>Привлечение через платный внешний digital-трафик (`CAC = 290 ₽`, остановлен по `act_3`) на насыщенном городском рынке (51% проникновение) опускает маржу подписок ниже порога 35%, тогда как внутри базы «МегаФон 3.0» сосредоточена тёплая CVM-аудитория бесплатных видео-слотов «МегаСил».</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt_change_cvm_twotier</span> — тест допущения: Когортный пилот в МП/ЛК после отключения платного внешнего трафика подтвердит фактический CVM `CAC &lt;= 40 ₽` и удержание во 2-й платный месяц `&gt;= 72%`.</li><li><span class="mono">opt_keep_status_quo</span> — тест допущения: Сверка воронки после остановки платного трафика проверит, хватает ли органического притока на одиночную цену 399 ₽ без входной ступени 249 ₽.</li><li><span class="mono">opt_close_standalone</span> — тест допущения: Финансовая сверка проверит, превышают ли постоянные накладные расходы и риски MG чистый маржинальный вклад собственной CVM-базы.</li></ul><div class="node-meta">Опора: f1_icmr_saturation, f6_megasily_tariff_mechanics, f8_econ_cvm_vs_paid_cac</div></div><div class="node-card"><div class="node-head"><span class="mono">opp_price_entry_gap</span><span class="tag">5 оснований</span></div><div class="node-body"><strong>После индексации младшего «МегаФон Плюс» с 299 ₽ до 345 ₽ за 30 дней с 16.06.2026 минимальный чек платных подписок МегаФона сблизился с «МегаКино» 399 ₽ (разница 54 ₽), и между бесплатными опциями «МегаСил» (0 ₽) и 345–399 ₽ возник незакрытый ценовой разрыв для зрителей одного кинотеатра.</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt_change_cvm_twotier</span> — тест допущения: 60-дневный A/B-тест ступени «МегаКино Лайт» 249 ₽ в конструкторе «МегаСил» покажет прирост маржинального вклада `&gt;= +12%` на 1000 показов при каннибализации баз 399 ₽ и 345/460 ₽ не выше `15%` (`ci95_high`).</li></ul><div class="node-meta">Опора: f3_yandex_plus_449_indexation, f4_megakino_rules_and_limits, f6_megasily_tariff_mechanics, f10_two_tier_cvm_hypothesis, f12_megafon_plus_repricing_202606</div></div><div class="node-card"><div class="node-head"><span class="mono">opp_resale_margin_trap</span><span class="tag">5 оснований</span></div><div class="node-body"><strong>Верхний сегмент 449–460 ₽ зажат с двух сторон: сторонний ресейл «Яндекс Плюс МегаФон» за 449 ₽ даёт рекуррентные затраты 348 ₽/мес выше потолка 291,85 ₽/мес (`21,8% &lt; 35%`), а индексированный с 16.06.2026 «МегаФон Плюс» за 460 ₽ превышает цену прямого «Яндекс Плюса» (449 ₽ у 23% платящих горожан) при минимальном буфере маржи (`35,6%`, `+2,88 ₽`).</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt_change_resale_push</span> — тест допущения: Переговоры с партнёрами проверят готовность снизить отчисления в ресейле 449 ₽ до `&lt;= 270 ₽/мес` и в мультибандле 460 ₽ до `&lt;= 240 ₽/мес` (без чего активный пуш верхних чеков нецелесообразен).</li><li><span class="mono">opt_change_cvm_twotier</span> — тест допущения: Перевод ресейла 449 ₽ в пассивный каталог и «МегаФон Плюс» 345/460 ₽ в retention-режим с фокусом CVM-витрины на «МегаКино» 249/399 ₽ удержит средневзвешенную маржу новых когорт выше 42%.</li></ul><div class="node-meta">Опора: f1_icmr_saturation, f3_yandex_plus_449_indexation, f8_econ_cvm_vs_paid_cac, f9_econ_resale_449_structural_deficit, f12_megafon_plus_repricing_202606</div></div><div class="node-card"><div class="node-head"><span class="mono">opp_trust_and_376fz</span><span class="tag">4 основания</span></div><div class="node-body"><strong>Отсутствие цены автопродления в заголовке первого экрана «Яндекс Плюс МегаФон», риск расхождения старых (299/399 ₽) и индексированных (345/460 ₽) цен «МегаФон Плюс» и неочевидность лимита 3 переключений и отдельной оплаты Иви в «МегаКино» порождают недоверие и регуляторные риски по № 376-ФЗ.</strong></div><ul style="margin:6px 0 8px 18px;padding:0;font-size:12px;color:var(--muted);"><li><span class="mono">opt_change_cvm_twotier</span> — тест допущения: Редизайн первого экрана с пре-чеком согласия, выверкой цен 249/345/399/449/460 ₽ и отпиской в 1 экран ЛК удержит верхнюю границу 95% ДИ Вильсона по жалобам на автосписания в пределах `&lt;= 0,5%`.</li></ul><div class="node-meta">Опора: f4_megakino_rules_and_limits, f5_megafon_yandex_plus_ux_gap, f7_law_376fz_requirements, f12_megafon_plus_repricing_202606</div></div></div></div><div style="margin-bottom:14px;"><div class="col-title"><span>Матрица «Обещание коммуникации ↔ Возможность продукта»</span></div><table><thead><tr><th>Обещание аудитории</th><th>Механизм продукта</th><th>Основания</th><th>Честная граница</th><th>Канал</th></tr></thead><tbody><tr><td><strong>Пять популярных онлайн-кинотеатров (START, Wink, КИОН, PREMIER, Кинопоиск) по очереди в подписке МегаКино за 399 ₽ на 30 дней — дешевле базовых мультиподписок 449–460 ₽ и до 3 бесплатных смен кинотеатра в каждые 30 дней</strong></td><td>Ротационное управление активным кинотеатром на номере МегаФона с наглядным счётчиком доступных бесплатных переключений в мобильном приложении и Личном кабинете</td><td class="mono">f3_yandex_plus_449_indexation, f4_megakino_rules_and_limits, f8_econ_cvm_vs_paid_cac, f12_megafon_plus_repricing_202606</td><td>Доступно только на номере ПАО «МегаФон»; одновременно активен выбранный основной кинотеатр; с 4-го переключения за 30 дней взимается 30 ₽ за смену (кроме случаев платной опции безлимитных переключений); Иви, Смотрёшка, Wink Дети и Wink Всё в одном в стоимость 399 ₽ не входят и оплачиваются отдельно</td><td>Первый экран карточки «МегаКино» в мобильном приложении «МегаФон», Личном кабинете и на веб-витрине до нажатия кнопки подключения</td></tr><tr><td><strong>Один выбранный онлайн-кинотеатр на 30 дней и безлимитный мобильный трафик на видео за 249 ₽ при подключении контентного апгрейда в конструкторе МегаСил</strong></td><td>Связка тарифного слота обнуления трафика «МегаСилы» на линейке «МегаФон 3.0» с однослотовой партнёрской подпиской на 30 дней на едином балансе номера</td><td class="mono">f6_megasily_tariff_mechanics, f8_econ_cvm_vs_paid_cac, f12_megafon_plus_repricing_202606</td><td>Действует только для абонентов тарифов «МегаФон 3.0» без активных платных подписок «МегаКино» и «МегаФон Плюс» при условии подтверждения партнёрского тарифа в пилоте Q1 2027; при смене тарифа выбранные «МегаСилы» отключаются и требуют повторной активации; обнуление трафика действует в сети МегаФона по правилам тарифной опции</td><td>Экран конструктора «МегаСилы» в разделе «Мой тариф» мобильного приложения и Личного кабинета МегаФона</td></tr><tr><td><strong>Честная актуальная цена до подключения и отмена автопродления подписки в один экран Личного кабинета без звонков и чатов с поддержкой</strong></td><td>Пре-чек экран явного согласия с актуальной суммой (249 / 345 / 399 / 449 / 460 ₽) и датой следующего списания, прямая кнопка отключения в разделе «Услуги → Подключённые» и блокировка автосписаний после отказа по № 376-ФЗ</td><td class="mono">f4_megakino_rules_and_limits, f5_megafon_yandex_plus_ux_gap, f7_law_376fz_requirements, f12_megafon_plus_repricing_202606</td><td>После отмены автопродления доступ сохраняется до конца оплаченного 30-дневного периода; для модификаций «МегаФон Плюс» с 16.06.2026 действуют тарифы 345 ₽ и 460 ₽ за 30 дней; для возобновления подписки после отказа или отзыва платёжных реквизитов требуется новое явное подтверждение абонента в соответствии с № 376-ФЗ</td><td>Экраны оформления и управления услугами «МегаКино», «МегаКино Лайт», «МегаФон Плюс» и «Яндекс Плюс МегаФон» в МП/ЛК и сервисные SMS/push-уведомления</td></tr></tbody></table></div><div style="margin-bottom:14px;"><div class="col-title"><span>Pre-mortem выбранного варианта (через 6 месяцев)</span></div><table><thead><tr><th>Сценарий провала</th><th>Вероятность</th><th>Влияние</th><th>Предотвратимость</th><th>Защитная мера / стоп-правило</th></tr></thead><tbody><tr><td>После запуска «МегаКино Лайт» 249 ₽ не только часть подписчиков «МегаКино» 399 ₽, но и ощутимая доля платящей базы индексированного «МегаФон Плюс» (345 ₽ и 460 ₽) мигрирует на младший тариф 249 ₽ ради экономии 96–211 ₽/мес, размывая валовую маржу портфеля.</td><td class="mono">medium</td><td class="mono">high</td><td class="mono">high</td><td>Исключить из таргетинга оффера 249 ₽ всех абонентов с активными подписками «МегаКино» (399 ₽) и «МегаФон Плюс» (345/460 ₽) за последние 90 дней и контролировать в A/B-пилоте блокирующий стоп-порог совокупной каннибализации `ci95_high &lt;= 15%`.</td></tr><tr><td>Правообладатели видеосервисов при контрактации на 2027 год индексируют оптовые ставки роялти вслед за летним повышением «МегаФон Плюс» на 15–25% (выше потолков `161,85 ₽/мес` для 249 ₽ и `259,35 ₽/мес` для 399 ₽, а на тирах 345/460 ₽ уже при +2% к затратам), опуская маржу портфеля ниже норматива 35%.</td><td class="mono">medium</td><td class="mono">high</td><td class="mono">medium</td><td>Закрепить до старта пилота контрактный потолок роялти (`&lt;= 128 ₽/мес` для однослотового лайт-пакета и `&lt;= 225 ₽/мес` для ротационного пакета 399 ₽) с оплатой строго за активный слот, а по базе «МегаФон Плюс» 460 ₽ поощрять мягкий даунселл отказников в более маржинальное «МегаКино» 399 ₽ (`182,88 ₽` против `163,88 ₽` вклада).</td></tr><tr><td>Честное вынесение на первый экран правила 3 переключений (далее 30 ₽) и отдельной оплаты Иви снижает верхнюю конверсию клика, после чего маркетинг пытается добрать объём возвратом платного внешнего трафика (`CAC = 290 ₽`) или промо-кампаниями «МегаФон Плюс» 460 ₽ с `CAC &gt; 48 ₽`, обрушивая маржу ниже 35%.</td><td class="mono">low</td><td class="mono">high</td><td class="mono">high</td><td>Удерживать исполненный по `act_3` запрет на внешний платный трафик (`CAC &lt;= 40 ₽` только в собственных CVM-каналах) и оценивать воронку по чистому маржинальному вкладу когорты на 60-й день.</td></tr><tr><td>Сохранение в отдельных веб-сниппетах или пуш-шаблонах архивных цен «МегаФон Плюс» (299 / 399 ₽ вместо действующих с 16.06.2026 345 / 460 ₽) либо сбой отключения при смене тарифа «МегаФон 3.0» приводит к жалобам в Роспотребнадзор через Госуслуги и чарджбэкам по № 376-ФЗ.</td><td class="mono">low</td><td class="mono">high</td><td class="mono">high</td><td>Провести сквозной аудит цен и сценариев отмены на всех витринах («МегаКино» 399 ₽, «МегаФон Плюс» 345/460 ₽, «Яндекс Плюс МегаФон» 449 ₽, «МегаСилы») с блокирующим стоп-правилом пилота по жалобам `ci95_high &lt;= 0,5%`.</td></tr></tbody></table></div>
+
+  <h2>Обязательства команды и триггеры пересмотра</h2>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Владелец</th><th>Срок</th><th>Задача</th><th>Условие пересмотра</th><th>Статус</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="mono">act_1_billing_and_royalty_verification</td><td>Финансовый бизнес-партнёр и руководитель контентных партнёрств МегаФона</td><td class="mono">2026-12-15</td><td>Выгрузить из биллинга закрытые исторические данные по активной платящей базе, Retention 30d/90d, частоте платных переключений (&gt;3 за 30 дней) в «МегаКино» и фактическому оттоку/ставкам роялти в «МегаФон Плюс» после индексации 16.06.2026 (`299 -&gt; 345 ₽` и `399 -&gt; 460 ₽`), а также зафиксировать с правообладателями письменный потолок роялти `&lt;= 115–128 ₽/мес` для пилотного пакета «МегаКино Лайт» 249 ₽.</td><td>Пересчитать `economics_spec.json` и вынести корректировку на комитет, если фактический средний срок жизни CVM-когорты ниже 6 мес., прямые затраты «МегаФон Плюс» превышают `224,25 / 299,00 ₽/мес` или оптовое роялти лайт-слота превышает 128 ₽/мес.</td><td>Открыто</td></tr><tr><td class="mono">act_2_376fz_vitrine_and_lk_redesign</td><td>Юридическая служба, UX-лид витрин и владелец Личного кабинета / МП МегаФон</td><td class="mono">2026-12-25</td><td>Привести витрины «Яндекс Плюс МегаФон» (вынести «30 дней 0 ₽ для новых пользователей, далее 449 ₽/мес» в заголовок первого экрана), «МегаКино» (счётчик 3 бесплатных смен за 30 дней, явная пометка отдельной оплаты Иви и доп. сервисов) и карточки «МегаФон Плюс» (проверка актуальных с 16.06.2026 цен `345 ₽` и `460 ₽` за 30 дней без остатков старых 299/399 ₽) к нормам № 376-ФЗ с отпиской в 1 экран ЛК.</td><td>Заблокировать запуск пилота и любых CVM-рассылок, если юридическая приёмка или `ledger audit-claims` фиксируют расхождение между первым экраном, действующими тарифами и офертой.</td><td>Открыто</td></tr><tr><td class="mono">act_3_reposition_megafon_plus_retention_only</td><td>Руководитель CVM-коммуникаций и владелец портфеля подписок</td><td class="mono">2027-01-15</td><td>При сохранении уже исполненного отключения платного внешнего трафика (`act_3` Решения №1) перевести модификации «МегаФон Плюс» (`345 ₽` и `460 ₽`, где тир `460 ₽` дороже прямого «Яндекс Плюса» `449 ₽`) в режим `retention-only` для действующей базы, исключить показ слота «МегаКино Лайт» `249 ₽` активным подписчикам `345/399/460 ₽` и настроить win-back предложение «МегаКино» `399 ₽` для отказников тира `460 ₽`.</td><td>Немедленно остановить любую CVM-кампанию при превышении порога `CAC &gt; 40 ₽` (критический предел рентабельности `48–50 ₽` для тиров 345/460 ₽) или при попадании оффера 249 ₽ в выборку действующих платящих абонентов.</td><td>Открыто</td></tr><tr><td class="mono">act_4_q1_cohort_ab_pilot</td><td>Владелец продукта «МегаКино» и лид продуктовой аналитики</td><td class="mono">2027-03-15</td><td>Провести 60-дневный когортный A/B-пилот на базе «МегаФон 3.0» без активных платных подписок (`15 000` контроль 399 ₽ vs `15 000` двухуровневая витрина 249 ₽ + 399 ₽) с параллельным мониторингом перетоков из базы «МегаФон Плюс» (`345/460 ₽`) и расчётом 95% интервалов Вильсона через `ledger rates --ci --guardrail`.</td><td>Немедленно остановить пилот или откатить ступень 249 ₽ при срабатывании любого стоп-правила: `ci95_high` жалоб на автосписания `&gt; 0,5%`, совокупная каннибализация платящих баз 399 ₽ и 345/460 ₽ на тир 249 ₽ `&gt; 15%` или удержание ко 2-му платному месяцу `&lt; 55%` (`ci95_low`).</td><td>Открыто</td></tr>
+    </tbody>
+  </table>
+
+  <h2>История принятых решений</h2>
+  <section class="history-list">
+    <div class="history-item"><span class="mono">Решение №1</span><strong>opt_change_cvm_twotier</strong><span>Утвердил: Продуктовый комитет (контентные сервисы) · 2026-11-19T11:52:47+00:00</span><div class="node-meta">Утверждена двухуровневая CVM-линейка (МегаКино 399 ₽ + слот МегаСил 249 ₽) с экраном прозрачного согласия по 376-ФЗ и отказом от платного внешнего CAC · снимок <span class="mono">47558f8f9683</span></div></div><div class="history-item"><span class="mono">Решение №2</span><strong>opt_change_cvm_twotier</strong><span>Утвердил: Продуктовый комитет (контентные сервисы) · 2026-11-19T12:25:46+00:00</span><div class="node-meta">Утверждён пересмотр после индексации МегаФон Плюс до 345/460 ₽: фокус на МегаКино 399 ₽ + слот МегаСил 249 ₽ в CVM, тир 460 ₽ только на удержание базы · снимок <span class="mono">c1ccb5204a53</span></div></div>
+  </section>
+</div>
+<script>
+const GRAPH = {"sources": {}, "findings": {"f1_icmr_saturation": {"sources": ["cnews_icmr_2026"], "depends_on": []}, "f2_ecosystem_scale_and_shift": {"sources": ["cnews_ecosystems_2026"], "depends_on": []}, "f3_yandex_plus_449_indexation": {"sources": ["yandex_plus_449", "subscription_benchmarks_2026", "megafon_plus_20260604"], "depends_on": []}, "f4_megakino_rules_and_limits": {"sources": ["megafon_megakino", "subscription_benchmarks_2026"], "depends_on": []}, "f5_megafon_yandex_plus_ux_gap": {"sources": ["megafon_yandex_plus", "subscription_benchmarks_2026"], "depends_on": []}, "f6_megasily_tariff_mechanics": {"sources": ["megafon_megasily", "subscription_benchmarks_2026"], "depends_on": []}, "f7_law_376fz_requirements": {"sources": ["rskrf_376fz_2026", "brief_2027"], "depends_on": []}, "f12_megafon_plus_repricing_202606": {"sources": ["megafon_plus_20260604", "subscription_benchmarks_2026"], "depends_on": []}, "f8_econ_cvm_vs_paid_cac": {"sources": ["economics_plans", "economics_inputs_2027", "brief_2027"], "depends_on": ["f1_icmr_saturation", "f4_megakino_rules_and_limits", "f6_megasily_tariff_mechanics", "f7_law_376fz_requirements", "f12_megafon_plus_repricing_202606"]}, "f9_econ_resale_449_structural_deficit": {"sources": ["economics_plans", "economics_inputs_2027"], "depends_on": ["f1_icmr_saturation", "f3_yandex_plus_449_indexation", "f5_megafon_yandex_plus_ux_gap", "f12_megafon_plus_repricing_202606"]}, "f10_two_tier_cvm_hypothesis": {"sources": [], "depends_on": ["f3_yandex_plus_449_indexation", "f4_megakino_rules_and_limits", "f6_megasily_tariff_mechanics", "f7_law_376fz_requirements", "f8_econ_cvm_vs_paid_cac", "f12_megafon_plus_repricing_202606"]}, "f11_billing_retention_and_contracts_unknown": {"sources": ["brief_2027", "subscription_benchmarks_2026", "economics_inputs_2027"], "depends_on": ["f4_megakino_rules_and_limits", "f5_megafon_yandex_plus_ux_gap", "f12_megafon_plus_repricing_202606"]}}, "targets": {"option:opt_keep_status_quo": ["f1_icmr_saturation", "f4_megakino_rules_and_limits", "f5_megafon_yandex_plus_ux_gap", "f7_law_376fz_requirements", "f8_econ_cvm_vs_paid_cac", "f9_econ_resale_449_structural_deficit", "f12_megafon_plus_repricing_202606"], "option:opt_change_cvm_twotier": ["f1_icmr_saturation", "f3_yandex_plus_449_indexation", "f4_megakino_rules_and_limits", "f6_megasily_tariff_mechanics", "f7_law_376fz_requirements", "f8_econ_cvm_vs_paid_cac", "f9_econ_resale_449_structural_deficit", "f10_two_tier_cvm_hypothesis", "f11_billing_retention_and_contracts_unknown", "f12_megafon_plus_repricing_202606"], "option:opt_change_resale_push": ["f1_icmr_saturation", "f2_ecosystem_scale_and_shift", "f3_yandex_plus_449_indexation", "f5_megafon_yandex_plus_ux_gap", "f8_econ_cvm_vs_paid_cac", "f9_econ_resale_449_structural_deficit", "f12_megafon_plus_repricing_202606"], "option:opt_close_standalone": ["f2_ecosystem_scale_and_shift", "f6_megasily_tariff_mechanics", "f7_law_376fz_requirements", "f8_econ_cvm_vs_paid_cac", "f11_billing_retention_and_contracts_unknown", "f12_megafon_plus_repricing_202606"], "strategy:product": ["f3_yandex_plus_449_indexation", "f4_megakino_rules_and_limits", "f5_megafon_yandex_plus_ux_gap", "f6_megasily_tariff_mechanics", "f7_law_376fz_requirements", "f8_econ_cvm_vs_paid_cac", "f9_econ_resale_449_structural_deficit", "f10_two_tier_cvm_hypothesis", "f12_megafon_plus_repricing_202606"], "strategy:communication": ["f4_megakino_rules_and_limits", "f5_megafon_yandex_plus_ux_gap", "f6_megasily_tariff_mechanics", "f7_law_376fz_requirements", "f10_two_tier_cvm_hypothesis", "f12_megafon_plus_repricing_202606"], "strategy:experiment": ["f7_law_376fz_requirements", "f8_econ_cvm_vs_paid_cac", "f10_two_tier_cvm_hypothesis", "f11_billing_retention_and_contracts_unknown", "f12_megafon_plus_repricing_202606"]}};
+const ACCEPT_META = {"has_draft": false, "case_cli": ".cases/megakino-plus-2027", "recommended": "opt_change_cvm_twotier", "expect_sha": "c1ccb5204a534056136919bcac2b5527cf25a4d28d83e170050ee404ddd446ea", "live_enabled": false, "live_token": ""};
+const ECON_MODEL = {"source_id": "economics_plans", "currency": "RUB", "min_margin_rate": 0.35, "note": "Сценарная юнит-экономика контентных мультиподписок ПАО МегаФон на 2027 год (критерий комитета min_margin_rate = 0.35). Публичные цены витрин МегаКино (399 ₽), Яндекс Плюс (449 ₽) и индексированной с 16.06.2026 подписки МегаФон Плюс (299 -> 345 ₽ и 399 -> 460 ₽ за 30 дней) зафиксированы по открытым веб-снимкам; партнёрские роялти, операционные затраты биллинга/поддержки, CAC и среднее удержание заданы как сценарные допущения.", "plans": [{"id": "megakino_399_paid_traffic", "title": "МегаКино 399 ₽ — платный внешний трафик (промо-когорта)", "basis_code": "public_price_plus_model_assumptions", "basis_label": "факт витрины", "price": 399.0, "recurring": 213.0, "cac": 290.0, "retention": 4, "assumptions": {"channel": "Внешний платный digital-трафик с агрессивным промо", "retention_basis": "4 месяца (standalone_paid_promo_cohort)"}}, {"id": "megakino_399_own_cvm", "title": "МегаКино 399 ₽ — собственные CVM-каналы с прозрачным согласием", "basis_code": "public_price_plus_model_assumptions", "basis_label": "факт витрины", "price": 399.0, "recurring": 213.0, "cac": 25.0, "retention": 8, "assumptions": {"channel": "МП МегаФон, Личный кабинет и целевые CVM-коммуникации по базе", "retention_basis": "8 месяцев (tariff_embedded_or_transparent_consent_cohort)"}}, {"id": "partner_resale_449_cvm", "title": "Партнёрский ресейл 449 ₽ (витрина типа Яндекс Плюс МегаФон, CVM)", "basis_code": "public_price_plus_model_assumptions", "basis_label": "факт витрины", "price": 449.0, "recurring": 348.0, "cac": 25.0, "retention": 8, "assumptions": {"channel": "Собственная CVM-витрина для допродажи сторонней экосистемной подписки", "retention_basis": "8 месяцев при прозрачном оформлении"}}, {"id": "megafon_plus_345_cvm", "title": "МегаФон Плюс 345 ₽ — младший индексированный тир (с 299 ₽ с 16.06.2026, CVM)", "basis_code": "public_price_plus_model_assumptions", "basis_label": "факт витрины", "price": 345.0, "recurring": 218.0, "cac": 25.0, "retention": 8, "assumptions": {"channel": "Удержание действующей базы МегаФон Плюс и собственная CVM-витрина", "retention_basis": "8 месяцев (сценарное мультисервисное роялти 200 ₽/мес после индексации партнёров)"}}, {"id": "megafon_plus_460_cvm", "title": "МегаФон Плюс 460 ₽ — старший индексированный тир (с 399 ₽ с 16.06.2026, выше Яндекс Плюс 449 ₽, CVM)", "basis_code": "public_price_plus_model_assumptions", "basis_label": "факт витрины", "price": 460.0, "recurring": 293.0, "cac": 25.0, "retention": 8, "assumptions": {"channel": "Удержание архивной мультисервисной базы МегаФон Плюс в CVM-контуре", "retention_basis": "8 месяцев для лояльной базы (сценарное мультисервисное роялти 275 ₽/мес; риск ускоренного оттока новых когорт при цене 460 ₽ > 449 ₽ у Яндекс Плюс)"}}, {"id": "megasily_hybrid_lite_249_cvm", "title": "МегаКино Лайт 249 ₽ — апгрейд слота МегаСил через CVM (МегаФон 3.0)", "basis_code": "scenario_hypothesis_assumptions", "basis_label": "допущение", "price": 249.0, "recurring": 133.0, "cac": 25.0, "retention": 8, "assumptions": {"channel": "Апсейл внутри конструктора МегаСилы (МП / ЛК) для абонентов МегаФон 3.0", "retention_basis": "8 месяцев (встроенность в тарифный цикл оплаты связи)"}}, {"id": "megasily_hybrid_lite_249_paid_traffic", "title": "МегаКино Лайт 249 ₽ — при масштабировании платным внешним трафиком", "basis_code": "scenario_hypothesis_assumptions", "basis_label": "допущение", "price": 249.0, "recurring": 133.0, "cac": 290.0, "retention": 4, "assumptions": {"channel": "Внешний платный digital-трафик на низкий чек 249 ₽", "retention_basis": "4 месяца (промо-когорта)"}}]};
+
+function relatedSet(nodeId) {
+  const rel = new Set([nodeId]);
+  if (nodeId.startsWith("source:")) {
+    const sid = nodeId.slice(7);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [fid, f] of Object.entries(GRAPH.findings)) {
+        const key = "finding:" + fid;
+        if (rel.has(key)) continue;
+        if (f.sources.includes(sid) || f.depends_on.some(d => rel.has("finding:" + d))) {
+          rel.add(key); changed = true;
+        }
+      }
+    }
+    for (const [tid, deps] of Object.entries(GRAPH.targets)) {
+      if (deps.some(d => rel.has("finding:" + d))) rel.add(tid);
+    }
+  } else if (nodeId.startsWith("finding:")) {
+    const start = nodeId.slice(8);
+    const up = [start];
+    while (up.length) {
+      const cur = up.pop();
+      const f = GRAPH.findings[cur];
+      if (!f) continue;
+      f.sources.forEach(s => rel.add("source:" + s));
+      f.depends_on.forEach(d => { if (!rel.has("finding:" + d)) { rel.add("finding:" + d); up.push(d); } });
+    }
+    const down = new Set([start]);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [fid, f] of Object.entries(GRAPH.findings)) {
+        if (!down.has(fid) && f.depends_on.some(d => down.has(d))) {
+          down.add(fid); rel.add("finding:" + fid); changed = true;
+        }
+      }
+    }
+    for (const [tid, deps] of Object.entries(GRAPH.targets)) {
+      if (deps.some(d => down.has(d))) rel.add(tid);
+    }
+  } else {
+    const deps = GRAPH.targets[nodeId] || [];
+    const stack = [...deps];
+    stack.forEach(d => rel.add("finding:" + d));
+    while (stack.length) {
+      const cur = stack.pop();
+      const f = GRAPH.findings[cur];
+      if (!f) continue;
+      f.sources.forEach(s => rel.add("source:" + s));
+      f.depends_on.forEach(d => { if (!rel.has("finding:" + d)) { rel.add("finding:" + d); stack.push(d); } });
+    }
+  }
+  return rel;
+}
+function selectNode(nodeId) {
+  const rel = relatedSet(nodeId);
+  document.querySelectorAll("[data-node]").forEach(el => {
+    const id = el.getAttribute("data-node");
+    el.classList.toggle("active-link", rel.has(id));
+    el.classList.toggle("dimmed", !rel.has(id));
+  });
+}
+function resetSelection() {
+  document.querySelectorAll("[data-node]").forEach(el => {
+    el.classList.remove("active-link", "dimmed");
+  });
+}
+
+/* --- Committee Accept Gate (Item 4) --- */
+function shQuote(val) {
+  const s = String(val || "").trim();
+  return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+}
+function buildAcceptCommand() {
+  const optEl = document.getElementById("accept-option");
+  if (!optEl) return "";
+  const opt = optEl.value;
+  const by = (document.getElementById("accept-by")?.value || "Продуктовый комитет").trim();
+  const reason = (document.getElementById("accept-reason")?.value || "Согласовано").trim();
+  const sha = ACCEPT_META.expect_sha || "<draft_sha256>";
+  return `python3 -m ledger accept ${ACCEPT_META.case_cli} ${opt} --expect ${sha} --by ${shQuote(by)} --reason ${shQuote(reason)}`;
+}
+function updateAcceptCommand() {
+  const preview = document.getElementById("accept-cmd-preview");
+  if (!preview) return;
+  preview.textContent = buildAcceptCommand();
+  const opt = document.getElementById("accept-option")?.value || "";
+  const warn = document.getElementById("accept-mismatch-note");
+  if (warn) {
+    warn.style.display = (ACCEPT_META.recommended && opt !== ACCEPT_META.recommended) ? "block" : "none";
+  }
+}
+function copyAcceptCommand() {
+  const cmd = buildAcceptCommand();
+  const fb = document.getElementById("accept-feedback");
+  const showOk = (msg) => {
+    if (!fb) return;
+    fb.textContent = msg;
+    setTimeout(() => { if (fb.textContent === msg) fb.textContent = ""; }, 3200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(cmd).then(() => showOk("Команда скопирована в буфер обмена")).catch(() => fallbackCopy(cmd, showOk));
+  } else {
+    fallbackCopy(cmd, showOk);
+  }
+}
+function fallbackCopy(text, cb) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand("copy"); cb("Команда скопирована в буфер обмена"); }
+  catch (e) { cb("Выделите строку выше и скопируйте (Ctrl+C)"); }
+  document.body.removeChild(ta);
+}
+async function triggerLiveAccept() {
+  if (!ACCEPT_META.live_enabled) return;
+  const fb = document.getElementById("accept-feedback");
+  const btn = document.getElementById("accept-live-btn");
+  const payload = {
+    option: document.getElementById("accept-option").value,
+    expect: ACCEPT_META.expect_sha,
+    by: document.getElementById("accept-by").value,
+    reason: document.getElementById("accept-reason").value
+  };
+  if (btn) btn.disabled = true;
+  if (fb) fb.textContent = "Запись решения в case.sqlite3…";
+  try {
+    const res = await fetch("/api/accept", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Ledger-Token": ACCEPT_META.live_token },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      if (fb) fb.textContent = "Ошибка гейта: " + (data.error || res.statusText);
+      if (btn) btn.disabled = false;
+      return;
+    }
+    if (fb) fb.textContent = `Утверждено: Решение №${data.decision.revision} (${data.decision.option})`;
+    setTimeout(() => window.location.reload(), 700);
+  } catch (err) {
+    if (fb) fb.textContent = "Сбой соединения с локальным сервером: " + err;
+    if (btn) btn.disabled = false;
+  }
+}
+
+/* --- Interactive What-If Unit Economics (Item 1 · exact ledger/economics.py formulas) --- */
+const WHATIF_STATE = { selectedId: null, preset: "base", overrides: {} };
+
+function fmtRub(val, digits = 2) {
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  const parts = rounded.toFixed(digits).split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const dec = (digits > 0 && parts[1] !== "00" && parts[1] !== "0") ? ("," + parts[1]) : "";
+  return parts[0] + dec + " ₽";
+}
+function fmtNum(val, suffix = "", digits = 2) {
+  if (val === null || val === undefined || Number.isNaN(val)) return "недостижимо";
+  const rounded = Number(val.toFixed(digits));
+  let s = rounded.toFixed(digits).replace(".", ",");
+  if (s.endsWith(",00")) s = s.slice(0, -3);
+  return s + suffix;
+}
+function evaluatePlanExact(price, recurring, cac, retention, minMargin) {
+  const rev = Math.max(0.01, Number(price));
+  const rec = Math.max(0, Number(recurring));
+  const upf = Math.max(0, Number(cac));
+  const ret = Math.max(1, Math.round(Number(retention)));
+  const amortUpfront = upf > 0 ? (upf / ret) : 0.0;
+  const directCost = rec + amortUpfront;
+  const contribution = rev - directCost;
+  const contributionRate = contribution / rev;
+  const maxAllowableCost = rev * (1.0 - minMargin);
+  const costHeadroom = maxAllowableCost - directCost;
+  const cashMarginBeforeCapex = rev - rec;
+  const paybackMonths = (upf > 0 && cashMarginBeforeCapex > 0)
+    ? Number((upf / cashMarginBeforeCapex).toFixed(2))
+    : (upf === 0 ? 0.0 : null);
+  let maxUpfrontCac = Number(((maxAllowableCost - rec) * ret).toFixed(2));
+  if (maxUpfrontCac < 0) maxUpfrontCac = null;
+  const monthlyRoom = maxAllowableCost - rec;
+  let minRetention = null;
+  if (upf === 0) {
+    minRetention = monthlyRoom >= 0 ? 1 : null;
+  } else if (monthlyRoom > 0) {
+    minRetention = Number((upf / monthlyRoom).toFixed(2));
+  }
+  const minMonthlyPrice = minMargin < 1.0 ? Number((directCost / (1.0 - minMargin)).toFixed(2)) : null;
+  const meetsTarget = (contributionRate + 1e-12) >= minMargin;
+  return {
+    price: rev, recurring: rec, cac: upf, retention: ret,
+    amortUpfront, directCost, contribution, contributionRate,
+    maxAllowableCost, costHeadroom, paybackMonths,
+    maxUpfrontCac, minRetention, minMonthlyPrice, meetsTarget
+  };
+}
+function presetParamsForPlan(plan, preset) {
+  if (preset === "cvm") {
+    return { price: plan.price, recurring: plan.recurring, cac: plan.cac > 0 ? 25 : 0, retention: plan.retention };
+  }
+  if (preset === "paid") {
+    const paidCac = plan.cac > 0 ? Math.round(plan.cac * 1.25) : 260;
+    return { price: plan.price, recurring: plan.recurring, cac: paidCac, retention: plan.retention };
+  }
+  if (preset === "stress") {
+    return {
+      price: plan.price,
+      recurring: Number((plan.recurring * 1.15).toFixed(2)),
+      cac: plan.cac,
+      retention: Math.max(1, plan.retention - 2)
+    };
+  }
+  return { price: plan.price, recurring: plan.recurring, cac: plan.cac, retention: plan.retention };
+}
+function initWhatIf() {
+  if (!ECON_MODEL || !ECON_MODEL.plans || !ECON_MODEL.plans.length) return;
+  ECON_MODEL.plans.forEach(p => {
+    WHATIF_STATE.overrides[p.id] = { price: p.price, recurring: p.recurring, cac: p.cac, retention: p.retention };
+  });
+  WHATIF_STATE.selectedId = ECON_MODEL.plans[0].id;
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function syncSlidersToSelected() {
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  const setPair = (key, val, maxHint) => {
+    const sl = document.getElementById("sl-" + key);
+    const nm = document.getElementById("num-" + key);
+    if (sl) {
+      if (val > Number(sl.max)) sl.max = String(Math.ceil(val * 1.5));
+      sl.value = String(val);
+    }
+    if (nm) nm.value = String(val);
+  };
+  setPair("price", cur.price);
+  setPair("cac", cur.cac);
+  setPair("retention", cur.retention);
+  setPair("recurring", cur.recurring);
+}
+function selectWhatIfPlan(planId) {
+  WHATIF_STATE.selectedId = planId;
+  const sel = document.getElementById("whatif-plan-select");
+  if (sel && sel.value !== planId) sel.value = planId;
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function applyEconPreset(preset, btnEl) {
+  WHATIF_STATE.preset = preset;
+  document.querySelectorAll(".preset-btn").forEach(b => b.classList.toggle("active-preset", b === btnEl));
+  const applyAll = document.getElementById("whatif-apply-all")?.checked;
+  ECON_MODEL.plans.forEach(p => {
+    if (applyAll || p.id === WHATIF_STATE.selectedId || preset === "base") {
+      WHATIF_STATE.overrides[p.id] = presetParamsForPlan(p, preset);
+    }
+  });
+  syncSlidersToSelected();
+  renderWhatIf();
+}
+function recomputeAllWhatIf() {
+  if (WHATIF_STATE.preset !== "base") {
+    const activeBtn = document.querySelector(`.preset-btn[data-preset="${WHATIF_STATE.preset}"]`);
+    applyEconPreset(WHATIF_STATE.preset, activeBtn);
+  } else {
+    renderWhatIf();
+  }
+}
+function onSliderInput(field, rawVal) {
+  const num = Number(rawVal);
+  if (Number.isNaN(num)) return;
+  const plan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId);
+  if (!plan) return;
+  const cur = WHATIF_STATE.overrides[plan.id];
+  cur[field] = field === "retention" ? Math.max(1, Math.round(num)) : Math.max(0, num);
+  const sl = document.getElementById("sl-" + field);
+  const nm = document.getElementById("num-" + field);
+  if (sl && document.activeElement !== sl) {
+    if (cur[field] > Number(sl.max)) sl.max = String(Math.ceil(cur[field] * 1.5));
+    sl.value = String(cur[field]);
+  }
+  if (nm && document.activeElement !== nm) nm.value = String(cur[field]);
+  renderWhatIf();
+}
+function renderWhatIf() {
+  if (!ECON_MODEL) return;
+  const minM = ECON_MODEL.min_margin_rate;
+  const selPlan = ECON_MODEL.plans.find(p => p.id === WHATIF_STATE.selectedId) || ECON_MODEL.plans[0];
+  const selCur = WHATIF_STATE.overrides[selPlan.id];
+  const selEval = evaluatePlanExact(selCur.price, selCur.recurring, selCur.cac, selCur.retention, minM);
+
+  const basisBadge = document.getElementById("badge-price-basis");
+  if (basisBadge) {
+    const priceChanged = Math.abs(selCur.price - selPlan.price) > 1e-6;
+    basisBadge.textContent = priceChanged ? "допущение (what-if)" : selPlan.basis_label;
+    basisBadge.className = priceChanged ? "tag tag-warn" : "tag tag-ok";
+  }
+  const showDelta = (id, baseV, curV, unit) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (Math.abs(curV - baseV) < 1e-6) {
+      el.textContent = `База спецификации: ${fmtNum(baseV, unit)}`;
+    } else {
+      const sign = curV > baseV ? "+" : "";
+      el.textContent = `База: ${fmtNum(baseV, unit)} → изменено (${sign}${fmtNum(curV - baseV, unit)})`;
+    }
+  };
+  showDelta("delta-price", selPlan.price, selCur.price, " ₽");
+  showDelta("delta-cac", selPlan.cac, selCur.cac, " ₽");
+  showDelta("delta-retention", selPlan.retention, selCur.retention, " мес.");
+  showDelta("delta-recurring", selPlan.recurring, selCur.recurring, " ₽");
+
+  const kpiStrip = document.getElementById("whatif-kpi-strip");
+  if (kpiStrip) {
+    const statusCls = selEval.meetsTarget ? "tag tag-ok" : "tag tag-alert";
+    const statusTxt = selEval.meetsTarget ? "Проходит порог комитета" : "Ниже порога комитета";
+    const paybackTxt = selEval.paybackMonths === null ? "не окупается" : fmtNum(selEval.paybackMonths, " мес.");
+    kpiStrip.innerHTML = `
+      <div class="kpi-mini">
+        <div class="k-lbl">Маржинальный вклад (расчёт на допущениях)</div>
+        <div class="k-val">${fmtRub(selEval.contribution)} (${fmtNum(selEval.contributionRate * 100, "%", 1)})</div>
+        <div style="margin-top:4px;"><span class="${statusCls}">${statusTxt}</span></div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Полные прямые затраты / мес.</div>
+        <div class="k-val">${fmtRub(selEval.directCost)}</div>
+        <div class="node-meta">OPEX ${fmtRub(selEval.recurring)} + CAC/мес. ${fmtRub(selEval.amortUpfront)}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Запас до потолка затрат (headroom)</div>
+        <div class="k-val" style="color:${selEval.costHeadroom >= 0 ? 'var(--accent)' : 'var(--alert)'};">${selEval.costHeadroom >= 0 ? '+' : ''}${fmtRub(selEval.costHeadroom)}</div>
+        <div class="node-meta">Потолок прямых затрат: ${fmtRub(selEval.maxAllowableCost)}</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Окупаемость CAC (операционная)</div>
+        <div class="k-val">${paybackTxt}</div>
+        <div class="node-meta">При удержании ${selEval.retention} мес.</div>
+      </div>
+      <div class="kpi-mini">
+        <div class="k-lbl">Границы безубыточности к цели</div>
+        <div class="k-val" style="font-size:12px;">CAC &lt;= ${fmtRub(selEval.maxUpfrontCac)}</div>
+        <div class="node-meta">Удерж. &gt;= ${fmtNum(selEval.minRetention, " мес.")} · Цена &gt;= ${fmtRub(selEval.minMonthlyPrice)}</div>
+      </div>`;
+  }
+
+  const tbody = document.getElementById("whatif-table-body");
+  if (tbody) {
+    tbody.innerHTML = ECON_MODEL.plans.map(p => {
+      const cur = WHATIF_STATE.overrides[p.id];
+      const ev = evaluatePlanExact(cur.price, cur.recurring, cur.cac, cur.retention, minM);
+      const isSel = p.id === WHATIF_STATE.selectedId;
+      const badge = ev.meetsTarget
+        ? '<span class="tag tag-ok">проходит</span>'
+        : '<span class="tag tag-alert">ниже порога</span>';
+      const priceBasis = Math.abs(cur.price - p.price) > 1e-6 ? "what-if" : p.basis_label;
+      const beLine = ev.maxUpfrontCac !== null
+        ? `CAC &lt;= ${fmtRub(ev.maxUpfrontCac)} · удерж. &gt;= ${fmtNum(ev.minRetention, " мес.")}`
+        : `рекуррентные затраты выше потолка ${fmtRub(ev.maxAllowableCost)} (CAC не спасает)`;
+      return `<tr class="${isSel ? 'whatif-selected-row' : ''}" style="cursor:pointer;" onclick="selectWhatIfPlan('${p.id}')">
+        <td><span class="mono">${p.id}</span><div class="node-meta">${p.title}</div></td>
+        <td>${fmtRub(ev.price)} <span class="node-meta">(${priceBasis})</span></td>
+        <td>${fmtRub(ev.recurring)}</td>
+        <td>${fmtRub(ev.cac)}</td>
+        <td>${ev.retention} мес.</td>
+        <td>${fmtRub(ev.directCost)}</td>
+        <td><strong>${fmtNum(ev.contributionRate * 100, "%", 1)}</strong> (${fmtRub(ev.contribution)}) ${badge}</td>
+        <td style="font-size:12px;">${beLine}</td>
+      </tr>`;
+    }).join("");
+  }
+}
+
+updateAcceptCommand();
+initWhatIf();
+</script>
+</body>
+</html>
